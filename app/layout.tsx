@@ -8,54 +8,28 @@ import { JsonLd } from '@/components/json-ld';
 import { absoluteUrl } from '@/lib/utils';
 import './globals.css';
 import './aeon-refresh.css';
+import './kvisl-v2.css';
 
 const motto = 'Ideas begin by branching.';
 const description = `${motto} Kvisl is an independent magazine exploring nature, culture and human thought through essays, deep reading and quiet reflection.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com'),
-  title: {
-    default: 'Kvisl — Ideas begin by branching',
-    template: '%s — Kvisl'
-  },
+  title: { default: 'Kvisl — Ideas begin by branching', template: '%s — Kvisl' },
   description,
   keywords: ['independent magazine', 'essays', 'nature', 'culture', 'philosophy', 'humanities', 'ideas'],
   authors: [{ name: 'Kvisl', url: absoluteUrl('/about') }],
-  creator: 'Kvisl',
-  publisher: 'Kvisl',
-  alternates: { canonical: '/' },
-  openGraph: {
-    type: 'website',
-    siteName: 'Kvisl',
-    title: 'Kvisl — Ideas begin by branching',
-    description,
-    url: '/'
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Kvisl — Ideas begin by branching',
-    description
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1
-    }
-  },
+  creator: 'Kvisl', publisher: 'Kvisl', alternates: { canonical: '/' },
+  openGraph: { type: 'website', siteName: 'Kvisl', title: 'Kvisl — Ideas begin by branching', description, url: '/' },
+  twitter: { card: 'summary_large_image', title: 'Kvisl — Ideas begin by branching', description },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
   category: 'magazine'
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  colorScheme: 'light dark',
+  width: 'device-width', initialScale: 1, colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f6f4ed' },
+    { media: '(prefers-color-scheme: light)', color: '#f2f1ec' },
     { media: '(prefers-color-scheme: dark)', color: '#121210' }
   ]
 };
@@ -66,20 +40,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <ThemeProvider />
         <JsonLd data={[
-          {
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            name: 'Kvisl',
-            url: absoluteUrl('/'),
-            slogan: motto
-          },
-          {
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: 'Kvisl',
-            url: absoluteUrl('/'),
-            description
-          }
+          { '@context': 'https://schema.org', '@type': 'Organization', name: 'Kvisl', url: absoluteUrl('/'), slogan: motto },
+          { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kvisl', url: absoluteUrl('/'), description }
         ]} />
         <Header />
         <main id="main-content">{children}</main>

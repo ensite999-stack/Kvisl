@@ -7,14 +7,23 @@ import { slugify } from '@/lib/utils';
 
 function normaliseSources(value: unknown): ArticleSource[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .map((item: any) => ({
-      label: String(item?.label || '').trim(),
-      url: item?.url ? String(item.url).trim() : undefined,
-      note: item?.note ? String(item.note).trim() : undefined
-    }))
-    .filter((item) => item.label)
-    .slice(0, 50);
+  return value.map((item: any) => ({
+    label: String(item?.label || '').trim(),
+    url: item?.url ? String(item.url).trim() : undefined,
+    note: item?.note ? String(item.note).trim() : undefined
+  })).filter((item) => item.label).slice(0, 50);
+}
+
+function normaliseTags(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<string>();
+  return value.map((item) => String(item).trim()).filter((item) => {
+    if (!item || item.length > 60) return false;
+    const key = item.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 20);
 }
 
 function parseArticle(body: any): ArticleInput {
@@ -31,6 +40,7 @@ function parseArticle(body: any): ArticleInput {
     publishedAt: String(body?.publishedAt || new Date().toISOString()),
     status: body?.status === 'published' ? 'published' : 'draft',
     section: String(body?.section || 'Essay').trim().slice(0, 80),
+    tags: normaliseTags(body?.tags),
     coverImage: body?.coverImage ? String(body.coverImage).trim() : undefined,
     coverAlt: body?.coverAlt ? String(body.coverAlt).trim().slice(0, 300) : undefined,
     supportingImages: Array.isArray(body?.supportingImages) ? body.supportingImages.map(String).filter(Boolean).slice(0, 30) : [],
@@ -40,20 +50,13 @@ function parseArticle(body: any): ArticleInput {
 }
 
 export async function GET() {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 });
-  }
-  try {
-    return NextResponse.json({ articles: await getAllArticles() });
-  } catch (error) {
-    return NextResponse.json({ message: error instanceof Error ? error.message : 'Unable to load articles.' }, { status: 503 });
-  }
+  if (!(await isAdminAuthenticated())) return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 });
+  try { return NextResponse.json({ articles: await getAllArticles() }); }
+  catch (error) { return NextResponse.json({ message: error instanceof Error ? error.message : 'Unable to load articles.' }, { status: 503 }); }
 }
 
 export async function POST(request: Request) {
-  if (!(await isAdminAuthenticated())) {
-    return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 });
-  }
+  if (!(await isAdminAuthenticated())) return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 });
   try {
     const article = parseArticle(await request.json());
     return NextResponse.json({ article: await saveArticle(article) });

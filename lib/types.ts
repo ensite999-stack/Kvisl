@@ -17,6 +17,7 @@ export type Article = {
   updatedAt?: string;
   status: ArticleStatus;
   section: string;
+  tags: string[];
   coverImage?: string;
   coverAlt?: string;
   supportingImages: string[];
@@ -25,3 +26,10 @@ export type Article = {
 };
 
 export type ArticleInput = Omit<Article, 'id' | 'updatedAt'>;
+
+export type NewsletterFrequency = 'daily' | 'weekly';
+
+export type NewsletterSubscriber = {
+  email: string;
+  frequency: NewsletterFrequency;
+};

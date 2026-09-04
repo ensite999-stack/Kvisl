@@ -10,13 +10,13 @@ import { slugify } from '@/lib/utils';
 
 type Draft = {
   slug: string; title: string; dek: string; body: string; author: string;
-  publishedAt: string; section: string; coverImage: string; coverAlt: string;
+  publishedAt: string; section: string; tagsText: string; coverImage: string; coverAlt: string;
   supportingImagesText: string; sourcesText: string; featured: boolean;
 };
 
 const fresh = (): Draft => ({
   slug: '', title: '', dek: '', body: '<p></p>', author: 'Kvisl Editors',
-  publishedAt: new Date().toISOString().slice(0, 16), section: 'Essay',
+  publishedAt: new Date().toISOString().slice(0, 16), section: 'Essay', tagsText: '',
   coverImage: '', coverAlt: '', supportingImagesText: '', sourcesText: '', featured: false
 });
 
@@ -24,7 +24,7 @@ function toDraft(a: Article): Draft {
   return {
     slug: a.slug, title: a.title, dek: a.dek, body: a.body, author: a.author,
     publishedAt: new Date(a.publishedAt).toISOString().slice(0, 16), section: a.section,
-    coverImage: a.coverImage || '', coverAlt: a.coverAlt || '',
+    tagsText: (a.tags || []).join(', '), coverImage: a.coverImage || '', coverAlt: a.coverAlt || '',
     supportingImagesText: a.supportingImages.join('\n'),
     sourcesText: a.sources.map((s) => [s.label, s.url || '', s.note || ''].join(' | ')).join('\n'),
     featured: Boolean(a.featured)
@@ -38,6 +38,10 @@ function parseSources(value: string): ArticleSource[] {
   }).filter((source) => source.label);
 }
 
+function parseTags(value: string): string[] {
+  return value.split(/[,\n]/).map((tag) => tag.trim()).filter(Boolean);
+}
+
 export function EditorDashboard() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [draft, setDraft] = useState<Draft>(fresh);
@@ -45,11 +49,7 @@ export function EditorDashboard() {
   const [message, setMessage] = useState('');
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ link: false }),
-      Image.configure({ inline: false }),
-      Link.configure({ openOnClick: false, autolink: true })
-    ],
+    extensions: [StarterKit.configure({ link: false }), Image.configure({ inline: false }), Link.configure({ openOnClick: false, autolink: true })],
     content: draft.body,
     immediatelyRender: false,
     onUpdate: ({ editor }) => setDraft((d) => ({ ...d, body: editor.getHTML() }))
@@ -114,7 +114,7 @@ export function EditorDashboard() {
         body: JSON.stringify({
           slug, title, dek: draft.dek, body: editor?.getHTML() || draft.body,
           author: draft.author, publishedAt: new Date(draft.publishedAt).toISOString(), status,
-          section: draft.section, coverImage: draft.coverImage || undefined, coverAlt: draft.coverAlt || undefined,
+          section: draft.section, tags: parseTags(draft.tagsText), coverImage: draft.coverImage || undefined, coverAlt: draft.coverAlt || undefined,
           supportingImages: draft.supportingImagesText.split('\n').map((v) => v.trim()).filter(Boolean),
           sources: parseSources(draft.sourcesText), featured: draft.featured
         })
@@ -146,7 +146,7 @@ export function EditorDashboard() {
     <div className="editor-layout">
       <aside className="editor-list" aria-label="Articles"><h2>Articles</h2>{articles.map((a) =>
         <button key={a.slug} type="button" className={draft.slug === a.slug ? 'active' : ''} onClick={() => select(a)}>
-          <span>{a.title}</span><small>{a.status} · {a.section}</small>
+          <span>{a.title}</span><small>{a.status} · {a.section}{a.tags?.length ? ` · ${a.tags.join(', ')}` : ''}</small>
         </button>)}</aside>
       <section className="editor-panel">
         <div className="field-grid">
@@ -156,10 +156,11 @@ export function EditorDashboard() {
           <label className="field"><span>Date</span><input type="datetime-local" value={draft.publishedAt} onChange={(e) => setDraft((d) => ({ ...d, publishedAt: e.target.value }))} /></label>
           <label className="field"><span>Section</span><input value={draft.section} onChange={(e) => setDraft((d) => ({ ...d, section: e.target.value }))} /></label>
           <label className="field"><span>Slug</span><input value={draft.slug} onChange={(e) => setDraft((d) => ({ ...d, slug: slugify(e.target.value) }))} /></label>
+          <label className="field full"><span>Independent tags</span><input value={draft.tagsText} placeholder="Politics & society, War & peace, Ethics" onChange={(e) => setDraft((d) => ({ ...d, tagsText: e.target.value }))} /><small>Comma-separated. Each article can have its own labels.</small></label>
           <label className="field full"><span>Cover image URL</span><div className="inline-field"><input value={draft.coverImage} onChange={(e) => setDraft((d) => ({ ...d, coverImage: e.target.value }))} /><label className="upload-button">Upload<input type="file" accept="image/*" onChange={uploadCover} /></label></div></label>
           <label className="field full"><span>Cover alt text</span><input value={draft.coverAlt} onChange={(e) => setDraft((d) => ({ ...d, coverAlt: e.target.value }))} /></label>
         </div>
-        <div className="editor-block"><div className="editor-block-head"><div><span className="field-label">Body</span></div>
+        <div className="editor-block"><div className="editor-block-head"><span className="field-label">Body</span>
           <div className="toolbar" aria-label="Editor formatting">
             <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()}>B</button><button type="button" onClick={() => editor?.chain().focus().toggleItalic().run()}>I</button>
             <button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}>H2</button><button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}>H3</button>
@@ -170,7 +171,7 @@ export function EditorDashboard() {
         <div className="field-grid">
           <label className="field full"><span>Supporting image URLs</span><textarea rows={4} value={draft.supportingImagesText} placeholder="One image URL per line" onChange={(e) => setDraft((d) => ({ ...d, supportingImagesText: e.target.value }))} /></label>
           <label className="field full"><span>Sources & data</span><textarea rows={5} value={draft.sourcesText} placeholder="Label | URL | Note" onChange={(e) => setDraft((d) => ({ ...d, sourcesText: e.target.value }))} /></label>
-          <label className="check-field"><input type="checkbox" checked={draft.featured} onChange={(e) => setDraft((d) => ({ ...d, featured: e.target.checked }))} /><span>Feature on homepage</span></label>
+          <label className="check-field"><input type="checkbox" checked={draft.featured} onChange={(e) => setDraft((d) => ({ ...d, featured: e.target.checked }))} /><span>Feature marker</span></label>
         </div>
         <div className="editor-actions"><button type="button" disabled={busy} onClick={() => save('draft')}>Save draft</button><button type="button" className="primary" disabled={busy} onClick={() => save('published')}>Publish</button>{draft.slug && <button type="button" className="danger" disabled={busy} onClick={remove}>Delete</button>}<span role="status" aria-live="polite">{message}</span></div>
       </section>
