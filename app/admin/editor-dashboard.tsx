@@ -45,7 +45,11 @@ export function EditorDashboard() {
   const [message, setMessage] = useState('');
 
   const editor = useEditor({
-    extensions: [StarterKit, Image.configure({ inline: false }), Link.configure({ openOnClick: false, autolink: true })],
+    extensions: [
+      StarterKit.configure({ link: false }),
+      Image.configure({ inline: false }),
+      Link.configure({ openOnClick: false, autolink: true })
+    ],
     content: draft.body,
     immediatelyRender: false,
     onUpdate: ({ editor }) => setDraft((d) => ({ ...d, body: editor.getHTML() }))
