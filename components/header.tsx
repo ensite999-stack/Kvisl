@@ -10,6 +10,7 @@ const navigation = [
   ['/submissions', 'Pitch an essay'],
   ['/donate', 'Donate'],
   ['/privacy', 'Privacy Policy'],
+  ['/terms', 'Terms of Service'],
   ['/contact', 'Contact']
 ] as const;
 
