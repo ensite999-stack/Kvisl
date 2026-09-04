@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import type { NewsletterFrequency } from '@/lib/types';
 
@@ -85,7 +84,7 @@ export function Newsletter() {
       </div>
 
       <input className="honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-      <p id="newsletter-note" className="newsletter-note">See our <Link href="/newsletter-privacy">newsletter privacy policy</Link>.</p>
+      <p id="newsletter-note" className="newsletter-note">See our <a href="/newsletter-privacy">newsletter privacy policy</a>.</p>
       <p id="newsletter-status" className="newsletter-status" role="status" aria-live="polite" aria-atomic="true">{message}</p>
     </form>
   );
