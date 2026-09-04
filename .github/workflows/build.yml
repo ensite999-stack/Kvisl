@@ -22,7 +22,8 @@ jobs:
           node-version: 22
 
       - name: Fix CSS compatibility warnings
-        run: sed -i 's/align-items: end;/align-items: flex-end;/g' app/globals.css
+        run: |
+          sed -i 's/align-items: end;/align-items: flex-end;/g' app/globals.css
 
       - name: Install dependencies
         run: npm install
