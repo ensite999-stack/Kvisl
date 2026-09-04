@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { Newsletter } from './newsletter';
 import { InstagramIcon } from './instagram-icon';
 
@@ -23,7 +22,7 @@ export function Footer() {
         </div>
 
         <nav className="footer-nav" aria-label="Footer">
-          {footerLinks.map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}
+          {footerLinks.map(([href, label]) => <a key={href} href={href}>{label}</a>)}
         </nav>
 
         <a className="footer-instagram" href="https://www.instagram.com/kvisl_?igsi=MW1wNTVscXl5c3ozbw==" target="_blank" rel="noreferrer" aria-label="Kvisl on Instagram">
