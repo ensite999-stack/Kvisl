@@ -15,7 +15,7 @@ const description = `${motto}. Kvisl is an independent magazine exploring nature
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com'),
-  title: { default: 'Kvisl — Sparking Thought, Growing Wild', template: '%s — Kvisl' },
+  title: { default: motto, template: '%s — Kvisl' },
   description,
   keywords: ['independent magazine', 'essays', 'nature', 'culture', 'philosophy', 'humanities', 'ideas'],
   authors: [{ name: 'Kvisl', url: absoluteUrl('/about') }],
