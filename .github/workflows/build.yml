@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -14,35 +14,33 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7.0.1
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
+          cache: npm
 
-      - name: Fix CSS compatibility warnings
-        run: |
-          sed -i 's/align-items: end;/align-items: flex-end;/g' app/globals.css
+      - name: Restore Next.js build cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install locked dependencies
+        run: npm ci
 
       - name: Security audit
         run: npm audit --audit-level=moderate
+
+      - name: Type check
+        run: npm run lint
 
       - name: Production build
         env:
           NEXT_PUBLIC_SITE_URL: https://kvisl.com
           NEXT_TELEMETRY_DISABLED: 1
         run: npm run build
-
-      - name: Persist lockfile and CSS fixes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json app/globals.css
-          if ! git diff --cached --quiet; then
-            git commit -m "Lock secure dependencies and fix CSS warnings"
-            git push
-          fi
