@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -19,8 +20,7 @@ export default function AboutPage() {
         <p>Here, a passing curiosity may grow as freely as a wild plant. A quiet reflection may lead inward, outward, or somewhere unexpected. We are interested in the small idea and the large horizon, and in the paths between them.</p>
         <h2>Editorial position</h2>
         <p>Kvisl is independent. We do not sell behavioural profiles, use advertising trackers, or shape editorial decisions around engagement-maximising systems. We publish for readers rather than dashboards.</p>
-        <h2>Contact</h2>
-        <p>Editorial, submissions and general correspondence: <a href="mailto:distributary@kvisl.com">distributary@kvisl.com</a>.</p>
+        <p>For correspondence, use our <Link href="/contact">Contact</Link> page. Writers can find pitching information on <Link href="/submissions">Submissions</Link>.</p>
       </div>
     </article>
   );
