@@ -1,6 +1,6 @@
 :root{--bg:#f2f1ec;--surface:#e9e7e0;--text:#171714;--muted:#6e6b64;--line:#c8c5bd;--strong-line:#44413b}
 html[data-theme="dark"]{--bg:#121210;--surface:#1b1a17;--text:#f1eee7;--muted:#aaa69d;--line:#3b3933;--strong-line:#d7d2c8}
-html[data-theme="comfort"]{--bg:#e9e2d0;--surface:#ddd4bd;--text:#2b281f;--muted:#6d6655;--line:#b9ad94;--strong-line:#4d483b}
+html[data-theme="comfort"]{--bg:#e9e2d0;--surface:#ddd4bd;--text:#2b281f;--muted:#6a6353;--line:#b9ad94;--strong-line:#4d483b}
 html{scroll-behavior:auto}
 html,body,.static-page,.static-hero,.prose,.search-page{background:var(--bg);color:var(--text)}
 a,button{transition:opacity .12s ease,background-color .12s ease,color .12s ease,border-color .12s ease;transform:none!important}
