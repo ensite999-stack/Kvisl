@@ -7,6 +7,8 @@ const footerLinks = [
   ['/submissions', 'Pitch an essay'],
   ['/contact', 'Contact'],
   ['/donate', 'Donate'],
+  ['/privacy', 'Privacy Policy'],
+  ['/terms', 'Terms of Service'],
   ['/accessibility', 'Accessibility'],
   ['/copyright', 'Copyright']
 ] as const;
@@ -17,7 +19,7 @@ export function Footer() {
       <div className="footer-inner">
         <div className="footer-brand-block notranslate" translate="no">
           <img className="footer-wordmark" src="/kvisl-wordmark.svg" alt="Kvisl" />
-          <p className="footer-tagline">Ideas begin by branching.</p>
+          <p className="footer-tagline">Sparking Thought, Growing Wild</p>
         </div>
 
         <nav className="footer-nav" aria-label="Footer">
@@ -32,7 +34,6 @@ export function Footer() {
 
         <div className="footer-legal">
           <p>© 2026 <span className="notranslate" translate="no">Kvisl</span>. All rights reserved.</p>
-          <div><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></div>
         </div>
       </div>
     </footer>
