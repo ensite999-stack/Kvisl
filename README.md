@@ -15,7 +15,7 @@ The private `/admin` area provides:
 - homepage-feature flag
 - automatic article typography and responsive layout
 
-Articles and newsletter subscriptions are stored in PostgreSQL through `DATABASE_URL`. Tables are created automatically on first use. Editorial images are uploaded server-side to Cloudflare R2 through its S3-compatible API and are served from the public origin configured in `R2_PUBLIC_URL`.
+Articles and newsletter subscriptions are stored in PostgreSQL through `DATABASE_URL`. Tables are created automatically on first use. Editorial image uploads use Vercel Blob.
 
 ## Privacy and analytics
 
@@ -44,17 +44,16 @@ Included:
 - noindex on editorial routes
 - native Web Share / clipboard sharing without social tracking SDKs
 
-## Vercel + Cloudflare R2 setup
+## Vercel setup
 
 1. Import this GitHub repository into Vercel.
 2. Set `NEXT_PUBLIC_SITE_URL=https://kvisl.com`.
 3. Attach a PostgreSQL-compatible database and expose its connection string as `DATABASE_URL`.
 4. Set strong `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` values.
-5. Create a Cloudflare R2 bucket and S3 API credentials, then configure `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` and `R2_BUCKET_NAME` in Vercel.
-6. Bind a public custom domain to the R2 bucket, preferably `media.kvisl.com`, and set `R2_PUBLIC_URL=https://media.kvisl.com`.
-7. Enable Vercel Web Analytics and the desired Vercel Firewall / Bot protection features in the Vercel project.
-8. Add `kvisl.com` and `www.kvisl.com` as domains, with one canonical redirect.
-9. Test `/admin`, image uploads, newsletter subscription, sitemap, RSS, sharing previews and accessibility before launch.
+5. Attach Vercel Blob to create `BLOB_READ_WRITE_TOKEN`.
+6. Enable Vercel Web Analytics and the desired Vercel Firewall / Bot protection features in the Vercel project.
+7. Add `kvisl.com` and `www.kvisl.com` as domains, with one canonical redirect.
+8. Test `/admin`, newsletter subscription, sitemap, RSS, sharing previews and accessibility before launch.
 
 The application also sends CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options, Permissions-Policy and Cross-Origin-Opener-Policy headers.
 
@@ -66,4 +65,4 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Without `DATABASE_URL`, the public site falls back to a small built-in editorial sample so layout development remains possible. Publishing and newsletter storage require the database. Editorial image uploads require all five `R2_*` variables.
+Without `DATABASE_URL`, the public site falls back to a small built-in editorial sample so layout development remains possible. Publishing and newsletter storage require the database.
