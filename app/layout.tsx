@@ -7,13 +7,15 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { JsonLd } from '@/components/json-ld';
 import { absoluteUrl } from '@/lib/utils';
 import './globals.css';
+import './aeon-refresh.css';
 
-const description = 'Kvisl is an independent space exploring the meeting points of nature, culture and human thought through essays, deep reading and quiet reflection.';
+const motto = 'Ideas begin by branching.';
+const description = `${motto} Kvisl is an independent magazine exploring nature, culture and human thought through essays, deep reading and quiet reflection.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com'),
   title: {
-    default: 'Kvisl — A branch is only the beginning',
+    default: 'Kvisl — Ideas begin by branching',
     template: '%s — Kvisl'
   },
   description,
@@ -25,13 +27,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'Kvisl',
-    title: 'Kvisl — A branch is only the beginning',
+    title: 'Kvisl — Ideas begin by branching',
     description,
     url: '/'
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kvisl — A branch is only the beginning',
+    title: 'Kvisl — Ideas begin by branching',
     description
   },
   robots: {
@@ -53,8 +55,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f3f0e8' },
-    { media: '(prefers-color-scheme: dark)', color: '#11110f' }
+    { media: '(prefers-color-scheme: light)', color: '#f6f4ed' },
+    { media: '(prefers-color-scheme: dark)', color: '#121210' }
   ]
 };
 
@@ -70,7 +72,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             name: 'Kvisl',
             url: absoluteUrl('/'),
             email: 'distributary@kvisl.com',
-            slogan: 'A branch is only the beginning'
+            slogan: motto
           },
           {
             '@context': 'https://schema.org',
