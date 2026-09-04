@@ -2,7 +2,7 @@
 html[data-theme="dark"]{--bg:#121210;--surface:#1b1a17;--text:#f1eee7;--muted:#aaa69d;--line:#3b3933;--strong-line:#d7d2c8}
 html[data-theme="comfort"]{--bg:#e9e2d0;--surface:#ddd4bd;--text:#2b281f;--muted:#6d6655;--line:#b9ad94;--strong-line:#4d483b}
 html,body,.static-page,.static-hero,.prose,.search-page{background:var(--bg);color:var(--text)}
-a,button{transition:opacity .12s ease,background-color .12s ease,color .12s ease;border-color .12s ease;transform:none!important}
+a,button{transition:opacity .12s ease,background-color .12s ease,color .12s ease,border-color .12s ease;transform:none!important}
 a:hover,button:hover{transform:none!important}.article-card-link:hover,.lead-link:hover{transform:none!important}
 .site-header{position:sticky;top:0;z-index:100;background:transparent;border-bottom:1px solid transparent;backdrop-filter:none;transition:background-color .16s ease,border-color .16s ease}
 .site-header.is-scrolled{background:color-mix(in srgb,var(--bg) 96%,transparent);border-bottom-color:var(--line);backdrop-filter:blur(10px)}
