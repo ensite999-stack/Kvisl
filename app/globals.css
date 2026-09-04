@@ -258,7 +258,7 @@
     display: grid;
     grid-template-columns: minmax(180px, .55fr) 1.5fr 1fr;
     gap: clamp(24px, 4vw, 68px);
-    align-items: end;
+    align-items: flex-end;
     padding: clamp(52px, 8vw, 120px) 0 44px;
     border-bottom: 1px solid var(--strong-line);
   }
@@ -663,7 +663,7 @@
     display: flex;
     justify-content: space-between;
     gap: 20px;
-    align-items: end;
+    align-items: flex-end;
     border-bottom: 1px solid var(--strong-line);
     padding-bottom: 20px;
     margin-bottom: 24px;
@@ -737,7 +737,7 @@
     display: flex;
     justify-content: space-between;
     gap: 20px;
-    align-items: end;
+    align-items: flex-end;
     margin-bottom: 8px;
   }
   .editor-block-head small { color: var(--muted); }
