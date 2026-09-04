@@ -2,7 +2,7 @@ import type { Article } from './types';
 
 export const sampleArticles: Article[] = [
   {
-    slug: 'a-branch-is-only-the-beginning',
+    slug: 'where-thought-begins',
     title: 'Where thought begins',
     dek: 'Kvisl begins with a simple proposition: a single fork in thought can open an entire landscape.',
     body: `<p>The Old Norse word <em>kvísl</em> names a branching limb or a distributary: a form that leaves one course without severing its relation to the whole.</p><p>Kvisl is built around that image. We are interested in the places where nature, culture and human thought meet; in small observations that widen into larger questions; and in essays that reward attention rather than urgency.</p><p>We publish slowly. We do not optimise an editorial agenda around outrage, trend cycles or behavioural tracking. The aim is simpler: to make a quiet, durable place for ideas that deserve room to branch.</p>`,
