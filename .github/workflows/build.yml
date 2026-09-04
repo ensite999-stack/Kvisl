@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: build-${{ github.ref }}
@@ -34,8 +34,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-
 
-      - name: Refresh dependencies
-        run: npm install
+      - name: Install locked dependencies
+        run: npm ci
 
       - name: Security audit
         run: npm audit --audit-level=moderate
@@ -48,14 +48,3 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://kvisl.com
           NEXT_TELEMETRY_DISABLED: 1
         run: npm run build
-
-      - name: Commit refreshed lockfile
-        run: |
-          if git diff --quiet -- package-lock.json; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
-          git commit -m "Refresh lockfile after R2 migration"
-          git push
