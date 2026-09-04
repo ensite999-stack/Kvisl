@@ -10,11 +10,13 @@ export default async function HomePage() {
   const rest = articles.filter((article) => article.slug !== lead?.slug);
 
   return (
-    <div className="home">
+    <div className="home aeon-home">
       <section className="home-intro" aria-labelledby="home-intro-title">
-        <p className="section-label">Independent essays on nature, culture & human thought</p>
-        <h1 id="home-intro-title">Ideas begin by branching.</h1>
-        <p>Kvisl follows those branches slowly — from the intimate scale of attention to the wide structures of culture, landscape and mind.</p>
+        <div>
+          <p className="section-label">Independent magazine</p>
+          <h1 id="home-intro-title">Ideas begin by branching.</h1>
+        </div>
+        <p>Essays on nature, culture and human thought, made for slower reading and wider questions.</p>
       </section>
 
       {lead && (
@@ -45,10 +47,6 @@ export default async function HomePage() {
         <div className="article-grid">
           {rest.map((article) => <ArticleCard key={article.slug} article={article} />)}
         </div>
-      </section>
-
-      <section className="manifesto-strip" aria-label="Kvisl editorial principle">
-        <p>A branch is only the beginning.</p>
       </section>
     </div>
   );
