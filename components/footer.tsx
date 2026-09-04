@@ -4,7 +4,7 @@ import { InstagramIcon } from './instagram-icon';
 
 const footerLinks = [
   ['/about', 'About Kvisl'],
-  ['/submissions', 'Pitch an essay'],
+  ['/submissions', 'Editorial Submissions'],
   ['/contact', 'Contact'],
   ['/donate', 'Donate'],
   ['/privacy', 'Privacy Policy'],
