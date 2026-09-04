@@ -10,18 +10,18 @@ import './globals.css';
 import './aeon-refresh.css';
 import './kvisl-v2.css';
 
-const motto = 'Ideas begin by branching.';
-const description = `${motto} Kvisl is an independent magazine exploring nature, culture and human thought through essays, deep reading and quiet reflection.`;
+const motto = 'Sparking Thought, Growing Wild';
+const description = `${motto}. Kvisl is an independent magazine exploring nature, culture and human thought through essays, deep reading and quiet reflection.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com'),
-  title: { default: 'Kvisl — Ideas begin by branching', template: '%s — Kvisl' },
+  title: { default: 'Kvisl — Sparking Thought, Growing Wild', template: '%s — Kvisl' },
   description,
   keywords: ['independent magazine', 'essays', 'nature', 'culture', 'philosophy', 'humanities', 'ideas'],
   authors: [{ name: 'Kvisl', url: absoluteUrl('/about') }],
   creator: 'Kvisl', publisher: 'Kvisl', alternates: { canonical: '/' },
-  openGraph: { type: 'website', siteName: 'Kvisl', title: 'Kvisl — Ideas begin by branching', description, url: '/' },
-  twitter: { card: 'summary_large_image', title: 'Kvisl — Ideas begin by branching', description },
+  openGraph: { type: 'website', siteName: 'Kvisl', title: 'Kvisl — Sparking Thought, Growing Wild', description, url: '/' },
+  twitter: { card: 'summary_large_image', title: 'Kvisl — Sparking Thought, Growing Wild', description },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
   category: 'magazine'
 };
