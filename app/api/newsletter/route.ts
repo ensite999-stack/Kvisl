@@ -4,6 +4,29 @@ import type { NewsletterFrequency } from '@/lib/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+async function sendSubscriptionThanks(email: string, frequency: NewsletterFrequency) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return;
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      from: 'Kvisl <newsletter@kvisl.com>',
+      to: [email],
+      reply_to: 'distributary@kvisl.com',
+      template: {
+        id: 'kvisl-subscription-thanks',
+        variables: { FREQUENCY: frequency }
+      }
+    })
+  });
+
+  if (!response.ok) {
+    console.error('Subscription thank-you email failed', response.status, await response.text());
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -17,6 +40,9 @@ export async function POST(request: Request) {
     }
 
     await subscribeEmail(email, frequency);
+    await sendSubscriptionThanks(email, frequency).catch((error) => {
+      console.error('Subscription thank-you email error', error);
+    });
     return NextResponse.json({ message: `Subscribed to the ${frequency} Kvisl newsletter.` });
   } catch (error) {
     const message = error instanceof Error && error.message.includes('DATABASE_URL')
