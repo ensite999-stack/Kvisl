@@ -6,11 +6,12 @@ export async function GET() {
   const list = articles.map((article) => `- [${article.title}](${absoluteUrl(`/articles/${article.slug}`)}): ${article.dek}`).join('\n');
   const text = `# Kvisl
 
-> Kvisl is an independent magazine exploring nature, culture and human thought. Its editorial principle is: "A branch is only the beginning."
+> Kvisl is an independent magazine exploring nature, culture and human thought. Its motto is: "Sparking Thought, Growing Wild."
 
 ## Canonical pages
 - [About](${absoluteUrl('/about')})
 - [Privacy](${absoluteUrl('/privacy')})
+- [Terms](${absoluteUrl('/terms')})
 - [Contact](${absoluteUrl('/contact')})
 - [Submissions](${absoluteUrl('/submissions')})
 - [RSS](${absoluteUrl('/feed.xml')})
