@@ -13,14 +13,14 @@ export default function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: '#f3f0e8',
-          color: '#11110f',
+          background: '#f6f4ed',
+          color: '#181816',
           padding: '76px 84px',
           fontFamily: 'Georgia, serif'
         }}
       >
         <div style={{ fontSize: 42, letterSpacing: '0.08em' }}>KVISL</div>
-        <div style={{ fontSize: 82, lineHeight: 1.02, maxWidth: 880 }}>A branch is only the beginning.</div>
+        <div style={{ fontSize: 82, lineHeight: 1.02, maxWidth: 880 }}>Ideas begin by branching.</div>
         <div style={{ fontSize: 28, fontFamily: 'Arial, sans-serif' }}>Nature · Culture · Human thought</div>
       </div>
     ),
