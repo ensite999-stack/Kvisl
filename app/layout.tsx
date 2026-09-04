@@ -71,7 +71,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             '@type': 'Organization',
             name: 'Kvisl',
             url: absoluteUrl('/'),
-            email: 'distributary@kvisl.com',
             slogan: motto
           },
           {
