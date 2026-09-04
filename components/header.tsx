@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { applyTheme, type ThemeName } from './theme-provider';
 import { InstagramIcon } from './instagram-icon';
@@ -52,9 +51,9 @@ export function Header() {
     <header className={`site-header${scrolled || panel ? ' is-scrolled' : ''}`}>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="header-inner">
-        <Link className="wordmark-link notranslate" translate="no" href="/" aria-label="Kvisl home">
+        <a className="wordmark-link notranslate" translate="no" href="/" aria-label="Kvisl home">
           <img className="wordmark" src="/kvisl-wordmark.svg" alt="Kvisl" />
-        </Link>
+        </a>
 
         <div className="header-actions">
           <button
@@ -92,7 +91,7 @@ export function Header() {
         <div className="header-panel menu-panel" role="dialog" aria-label="Site menu">
           <nav className="menu-nav" aria-label="Primary">
             {navigation.map(([href, label]) => (
-              <Link key={href} href={href} onClick={() => setPanel(null)}>{label}</Link>
+              <a key={href} href={href} onClick={() => setPanel(null)}>{label}</a>
             ))}
           </nav>
           <div className="menu-utility">
