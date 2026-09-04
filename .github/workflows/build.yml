@@ -24,6 +24,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Audit dependencies
+        run: npm audit --json || true
+
+      - name: Show outdated packages
+        run: npm outdated || true
+
       - name: Production build
         env:
           NEXT_PUBLIC_SITE_URL: https://kvisl.com
