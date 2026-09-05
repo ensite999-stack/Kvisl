@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Mark, mergeAttributes } from '@tiptap/core';
+import { upload as uploadBlob } from '@vercel/blob/client';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -87,34 +88,26 @@ function parseTags(value: string): string[] {
 
 const copy = {
   zh: {
-    admin: 'Kvisl 后台', untitled: '文章编辑', newArticle: '新建文章', signOut: '退出',
-    language: '语言', articles: '文章', total: '全部', published: '已发布', drafts: '草稿',
-    title: '标题', titlePlaceholder: '输入文章标题', subtitle: '副标题（可选）', subtitlePlaceholder: '输入副标题', subtitleHelp: '显示在文章标题下方；不填写则不显示。',
-    summary: '简介', summaryHelp: '用一两句话告诉读者这篇文章讲什么。', author: '作者', date: '发布时间', category: '分类', categoryPlaceholder: '例如：自然',
-    tags: '标签', tagsHelp: '多个标签用逗号隔开。发布后会自动进入站内分类与标签列表。', tagsPlaceholder: '自然，文化，思想',
-    cover: '封面图', uploadCover: '上传封面', replaceCover: '更换封面', removeCover: '移除封面', coverDescription: '封面图文字说明', coverDescriptionHelp: '简单描述图片内容，方便图片无法显示或读屏时理解。',
-    imageSource: '图片来源说明（可选）', coverSourceHelp: '例如摄影者、机构或图片出处，会显示在封面图下方。',
+    admin: 'Kvisl 后台', untitled: '文章编辑', newArticle: '新建文章', signOut: '退出', language: '语言', articles: '文章', total: '全部', published: '已发布', drafts: '草稿',
+    title: '标题', titlePlaceholder: '输入文章标题', subtitle: '副标题（可选）', subtitlePlaceholder: '输入副标题', subtitleHelp: '显示在文章标题下方；不填写则不显示。', summary: '简介', summaryHelp: '用一两句话告诉读者这篇文章讲什么。',
+    author: '作者', date: '发布时间', category: '分类', categoryPlaceholder: '例如：自然', tags: '标签', tagsHelp: '多个标签用逗号隔开。发布后会自动进入站内分类与标签列表。', tagsPlaceholder: '自然，文化，思想',
+    cover: '封面图', uploadCover: '上传封面', replaceCover: '更换封面', removeCover: '移除封面', coverDescription: '封面图文字说明', coverDescriptionHelp: '简单描述图片内容，方便图片无法显示或读屏时理解。', imageSource: '图片来源说明（可选）', coverSourceHelp: '例如摄影者、机构或图片出处，会显示在封面图下方。',
     body: '正文', collapseBody: '折叠正文', expandBody: '展开正文', bold: '粗体', italic: '斜体', heading: '小标题', smallerHeading: '次级标题', quote: '引用', list: '列表', link: '链接', undo: '撤销', redo: '重做',
     textColor: '文字颜色', paragraphColor: '整段颜色', clearColor: '清除颜色', imageLine: '插入到第几行', imageLineHelp: '按正文中的段落、标题、列表或图片顺序计算。', inlineSourceHelp: '填写后会按原样插在图片下一行。', insertImage: '选择并插入图片',
-    uploading: '正在上传…', uploadSuccess: '上传成功，图片已显示。', uploadFailed: '图片上传失败，请稍后再试。', imageLoadFailed: '图片已上传，但预览加载失败。', coverUploaded: '封面已上传。', imageInserted: '图片已插入正文。',
-    sources: '资料来源（可选）', sourcesHelp: '每行一条：名称｜链接｜备注。只有名称也可以。', sourcesPlaceholder: '资料名称｜https://example.com｜可选备注',
-    saveDraft: '存为草稿', publish: '发布', delete: '删除', draftStatus: '草稿', publishedStatus: '已发布', loadFailed: '文章加载失败，请稍后再试。',
-    addTitle: '请先填写标题。', saveFailed: '保存失败，请稍后再试。', publishedMessage: '文章已发布。', draftSaved: '草稿已保存。', deleteConfirm: '确定删除这篇文章吗？删除后无法恢复。', deleteFailed: '删除失败，请稍后再试。', deleted: '文章已删除。', linkPrompt: '输入链接地址', noArticles: '还没有文章。'
+    uploading: '正在上传…', uploadSuccess: '上传成功，图片已显示。', uploadFailed: '图片上传失败。请确认图片不超过 12 MB，并重试。', coverUploaded: '封面已上传。', imageInserted: '图片已插入正文。',
+    sources: '资料来源（可选）', sourcesHelp: '每行一条：名称｜链接｜备注。只有名称也可以。', sourcesPlaceholder: '资料名称｜https://example.com｜可选备注', saveDraft: '存为草稿', publish: '发布', delete: '删除', draftStatus: '草稿', publishedStatus: '已发布',
+    loadFailed: '文章加载失败，请稍后再试。', addTitle: '请先填写标题。', saveFailed: '保存失败，请稍后再试。', publishedMessage: '文章已发布。', draftSaved: '草稿已保存。', deleteConfirm: '确定删除这篇文章吗？删除后无法恢复。', deleteFailed: '删除失败，请稍后再试。', deleted: '文章已删除。', linkPrompt: '输入链接地址', noArticles: '还没有文章。'
   },
   en: {
-    admin: 'Kvisl Admin', untitled: 'Article editor', newArticle: 'New article', signOut: 'Sign out',
-    language: 'Language', articles: 'Articles', total: 'All', published: 'Published', drafts: 'Drafts',
-    title: 'Title', titlePlaceholder: 'Type the article title', subtitle: 'Subtitle (optional)', subtitlePlaceholder: 'Type the subtitle', subtitleHelp: 'Shown directly below the article title. Leave blank to hide it.',
-    summary: 'Summary', summaryHelp: 'Describe what the article is about in one or two sentences.', author: 'Author', date: 'Publish date', category: 'Category', categoryPlaceholder: 'e.g. Nature',
-    tags: 'Tags', tagsHelp: 'Separate multiple tags with commas. Published terms are added automatically to site search.', tagsPlaceholder: 'Nature, Culture, Ideas',
-    cover: 'Cover image', uploadCover: 'Upload cover', replaceCover: 'Replace cover', removeCover: 'Remove cover', coverDescription: 'Cover image description', coverDescriptionHelp: 'Briefly describe the image for readers when it cannot be seen or loaded.',
-    imageSource: 'Image source / credit (optional)', coverSourceHelp: 'Photographer, institution or image source. It is shown below the cover image.',
+    admin: 'Kvisl Admin', untitled: 'Article editor', newArticle: 'New article', signOut: 'Sign out', language: 'Language', articles: 'Articles', total: 'All', published: 'Published', drafts: 'Drafts',
+    title: 'Title', titlePlaceholder: 'Type the article title', subtitle: 'Subtitle (optional)', subtitlePlaceholder: 'Type the subtitle', subtitleHelp: 'Shown directly below the article title. Leave blank to hide it.', summary: 'Summary', summaryHelp: 'Describe what the article is about in one or two sentences.',
+    author: 'Author', date: 'Publish date', category: 'Category', categoryPlaceholder: 'e.g. Nature', tags: 'Tags', tagsHelp: 'Separate multiple tags with commas. Published terms are added automatically to site search.', tagsPlaceholder: 'Nature, Culture, Ideas',
+    cover: 'Cover image', uploadCover: 'Upload cover', replaceCover: 'Replace cover', removeCover: 'Remove cover', coverDescription: 'Cover image description', coverDescriptionHelp: 'Briefly describe the image for readers when it cannot be seen or loaded.', imageSource: 'Image source / credit (optional)', coverSourceHelp: 'Photographer, institution or image source. It is shown below the cover image.',
     body: 'Article text', collapseBody: 'Collapse article text', expandBody: 'Expand article text', bold: 'Bold', italic: 'Italic', heading: 'Heading', smallerHeading: 'Smaller heading', quote: 'Quote', list: 'List', link: 'Link', undo: 'Undo', redo: 'Redo',
     textColor: 'Text color', paragraphColor: 'Whole paragraph color', clearColor: 'Clear color', imageLine: 'Insert at line', imageLineHelp: 'Lines are counted by paragraphs, headings, lists and images in the editor.', inlineSourceHelp: 'When supplied, this text is inserted exactly as written on the line below the image.', insertImage: 'Choose and insert image',
-    uploading: 'Uploading…', uploadSuccess: 'Upload succeeded and the image is visible.', uploadFailed: 'Could not upload the image. Please try again.', imageLoadFailed: 'The image uploaded, but its preview could not be loaded.', coverUploaded: 'Cover uploaded.', imageInserted: 'Image inserted into the article.',
-    sources: 'Sources (optional)', sourcesHelp: 'One per line: name | link | note. A name by itself is also fine.', sourcesPlaceholder: 'Source name | https://example.com | optional note',
-    saveDraft: 'Save draft', publish: 'Publish', delete: 'Delete', draftStatus: 'Draft', publishedStatus: 'Published', loadFailed: 'Could not load the articles. Please try again.',
-    addTitle: 'Add a title first.', saveFailed: 'Could not save. Please try again.', publishedMessage: 'Article published.', draftSaved: 'Draft saved.', deleteConfirm: 'Delete this article? This cannot be undone.', deleteFailed: 'Could not delete the article. Please try again.', deleted: 'Article deleted.', linkPrompt: 'Enter the link address', noArticles: 'No articles yet.'
+    uploading: 'Uploading…', uploadSuccess: 'Upload succeeded and the image is visible.', uploadFailed: 'Image upload failed. Check that the file is under 12 MB and try again.', coverUploaded: 'Cover uploaded.', imageInserted: 'Image inserted into the article.',
+    sources: 'Sources (optional)', sourcesHelp: 'One per line: name | link | note. A name by itself is also fine.', sourcesPlaceholder: 'Source name | https://example.com | optional note', saveDraft: 'Save draft', publish: 'Publish', delete: 'Delete', draftStatus: 'Draft', publishedStatus: 'Published',
+    loadFailed: 'Could not load the articles. Please try again.', addTitle: 'Add a title first.', saveFailed: 'Could not save. Please try again.', publishedMessage: 'Article published.', draftSaved: 'Draft saved.', deleteConfirm: 'Delete this article? This cannot be undone.', deleteFailed: 'Could not delete the article. Please try again.', deleted: 'Article deleted.', linkPrompt: 'Enter the link address', noArticles: 'No articles yet.'
   }
 } as const;
 
@@ -138,6 +131,7 @@ export function EditorDashboard() {
     extensions: [StarterKit.configure({ link: false }), TextColor, Image.configure({ inline: false }), Link.configure({ openOnClick: false, autolink: true })],
     content: draft.body,
     immediatelyRender: false,
+    editorProps: { attributes: { 'aria-label': language === 'zh' ? '正文输入框' : 'Article text editor' } },
     onUpdate: ({ editor }) => setDraft((current) => ({ ...current, body: editor.getHTML() }))
   });
 
@@ -175,6 +169,7 @@ export function EditorDashboard() {
     setDraft(next);
     editor?.commands.setContent(next.body);
     setMessage('');
+    setBodyOpen(true);
     resetUploadState();
   }
 
@@ -189,12 +184,13 @@ export function EditorDashboard() {
   }
 
   async function upload(file: File) {
-    const form = new FormData();
-    form.append('file', file);
-    const response = await fetch('/api/admin/upload', { method: 'POST', body: form });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.url) throw new Error(t.uploadFailed);
-    return String(data.url);
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-').slice(-120) || 'image';
+    const blob = await uploadBlob(`editorial/${Date.now()}-${safeName}`, file, {
+      access: 'public',
+      handleUploadUrl: '/api/admin/upload',
+      multipart: file.size > 4 * 1024 * 1024
+    });
+    return blob.url;
   }
 
   async function uploadCover(event: ChangeEvent<HTMLInputElement>) {
@@ -232,11 +228,10 @@ export function EditorDashboard() {
     setInlineUploadStatus('uploading');
     try {
       const url = await upload(file);
-      const line = Number(imageLine) || 1;
       const content: any[] = [{ type: 'image', attrs: { src: url, alt: '' } }];
       const source = inlineSource.trim();
       if (source) content.push({ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'italic' }], text: source }] });
-      editor.chain().focus().insertContentAt(blockInsertPosition(line), content).run();
+      editor.chain().focus().insertContentAt(blockInsertPosition(Number(imageLine) || 1), content).run();
       setInlinePreview(url);
       setInlineUploadStatus('success');
       setMessage(t.imageInserted);
@@ -299,7 +294,9 @@ export function EditorDashboard() {
       await load();
     } catch {
       setMessage(t.saveFailed);
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function remove() {
@@ -311,8 +308,11 @@ export function EditorDashboard() {
       newArticle();
       setMessage(t.deleted);
       await load();
-    } catch { setMessage(t.deleteFailed); }
-    finally { setBusy(false); }
+    } catch {
+      setMessage(t.deleteFailed);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function logout() {
@@ -349,10 +349,7 @@ export function EditorDashboard() {
       <aside className="editor-list" aria-label={t.articles}>
         <h2>{t.articles} <small>({publishedCount} {t.published})</small></h2>
         {articles.length === 0 && <p className="editor-empty-note">{t.noArticles}</p>}
-        {articles.map((article) =>
-          <button key={article.slug} type="button" className={draft.slug === article.slug ? 'active' : ''} onClick={() => select(article)}>
-            <span>{article.title}</span><small>{statusLabel(article.status)} · {article.section || '—'}</small>
-          </button>)}
+        {articles.map((article) => <button key={article.slug} type="button" className={draft.slug === article.slug ? 'active' : ''} onClick={() => select(article)}><span>{article.title}</span><small>{statusLabel(article.status)} · {article.section || '—'}</small></button>)}
       </aside>
 
       <section className="editor-panel">
@@ -367,10 +364,10 @@ export function EditorDashboard() {
 
           <div className="field full">
             <span>{t.cover}</span>
-            {draft.coverImage && <img className="admin-image-preview" src={draft.coverImage} alt={draft.coverAlt || ''} onError={() => setCoverUploadStatus('error')} />}
+            {draft.coverImage && <img className="admin-image-preview" src={draft.coverImage} alt={draft.coverAlt || ''} />}
             <div className="admin-inline-controls">
-              <label className="upload-button">{draft.coverImage ? t.replaceCover : t.uploadCover}<input type="file" accept="image/*" onChange={uploadCover} /></label>
-              {draft.coverImage && <button type="button" className="text-button" onClick={() => setDraft((current) => ({ ...current, coverImage: '', coverAlt: '', coverSource: '' }))}>{t.removeCover}</button>}
+              <label className="upload-button">{draft.coverImage ? t.replaceCover : t.uploadCover}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadCover} /></label>
+              {draft.coverImage && <button type="button" className="text-button" onClick={() => { setDraft((current) => ({ ...current, coverImage: '', coverAlt: '', coverSource: '' })); setCoverUploadStatus('idle'); }}>{t.removeCover}</button>}
             </div>
             {coverUploadStatus !== 'idle' && <p className={`upload-status ${coverUploadStatus}`}>{uploadText(coverUploadStatus)}</p>}
           </div>
@@ -396,6 +393,8 @@ export function EditorDashboard() {
               <button type="button" onClick={() => editor?.chain().focus().redo().run()}>{t.redo}</button>
             </div>
 
+            <EditorContent editor={editor} className="tiptap-shell" />
+
             <div className="editor-format-row">
               <label><span>{t.textColor}</span><input type="color" value={textColor} onChange={(event) => setTextColor(event.target.value)} /></label>
               <button type="button" className="text-button" onClick={() => applyColor(false)}>{t.textColor}</button>
@@ -406,13 +405,11 @@ export function EditorDashboard() {
             <div className="inline-image-tools">
               <label><span>{t.imageLine}</span><input type="number" min="1" max={lineMax} value={imageLine} onChange={(event) => setImageLine(event.target.value)} /></label>
               <label className="inline-source-field"><span>{t.imageSource}</span><input value={inlineSource} onChange={(event) => setInlineSource(event.target.value)} /></label>
-              <label className="upload-button">{t.insertImage}<input type="file" accept="image/*" onChange={uploadInline} /></label>
+              <label className="upload-button">{t.insertImage}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadInline} /></label>
               <small>{t.imageLineHelp} {t.inlineSourceHelp}</small>
               {inlineUploadStatus !== 'idle' && <p className={`upload-status ${inlineUploadStatus}`}>{uploadText(inlineUploadStatus)}</p>}
-              {inlinePreview && <img className="admin-inline-preview" src={inlinePreview} alt="" onError={() => setInlineUploadStatus('error')} />}
+              {inlinePreview && <img className="admin-inline-preview" src={inlinePreview} alt="" />}
             </div>
-
-            <EditorContent editor={editor} className="tiptap-shell" />
           </div>
         </div>
 
