@@ -1,0 +1,62 @@
+.masthead-wordmark-art{display:none}
+
+.site-header.home-masthead:not(.is-scrolled){background:var(--bg);border-bottom-color:var(--strong-line)}
+
+.site-header.home-masthead:not(.is-scrolled) .header-inner{
+  position:relative;
+  min-height:clamp(150px,18vw,250px);
+  max-width:1400px;
+  margin:0 auto;
+  padding:18px 20px 16px;
+  align-items:flex-end;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .wordmark-link{
+  width:min(1180px,calc(100vw - 40px));
+  max-width:none;
+  display:block;
+  line-height:0;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .compact-wordmark{display:none}
+
+.site-header.home-masthead:not(.is-scrolled) .masthead-wordmark-art{
+  display:block;
+  width:100%;
+  aspect-ratio:1536 / 316;
+  background:var(--text);
+  -webkit-mask:url('/kvisl-wordmark.svg') left bottom / contain no-repeat;
+  mask:url('/kvisl-wordmark.svg') left bottom / contain no-repeat;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .header-actions{
+  position:absolute;
+  top:14px;
+  right:20px;
+}
+
+.site-header.home-masthead.is-scrolled .masthead-wordmark-art{display:none}
+.site-header.home-masthead.is-scrolled .compact-wordmark{display:block}
+
+@media(max-width:800px){
+  .site-header.home-masthead:not(.is-scrolled) .header-inner{
+    min-height:clamp(126px,34vw,175px);
+    padding:14px 14px 12px;
+  }
+
+  .site-header.home-masthead:not(.is-scrolled) .wordmark-link{
+    width:calc(100vw - 28px);
+  }
+
+  .site-header.home-masthead:not(.is-scrolled) .header-actions{
+    top:8px;
+    right:14px;
+  }
+}
+
+@media(forced-colors:active){
+  .site-header.home-masthead:not(.is-scrolled) .masthead-wordmark-art{
+    background:CanvasText;
+    forced-color-adjust:auto;
+  }
+}
