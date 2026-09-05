@@ -10,7 +10,7 @@ export function ArticleCard({ article, compact = false }: { article: Article; co
           {article.coverImage ? (
             <img src={article.coverImage} alt={article.coverAlt || ''} loading="lazy" />
           ) : (
-            <div className="image-placeholder" aria-hidden="true"><span>K</span></div>
+            <div className="image-placeholder" aria-hidden="true" />
           )}
         </div>
         <div className="card-copy">
