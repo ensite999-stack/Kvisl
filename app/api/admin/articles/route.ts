@@ -39,7 +39,7 @@ function parseArticle(body: any): ArticleInput {
     author: String(body?.author || 'Kvisl Editors').trim().slice(0, 120),
     publishedAt: String(body?.publishedAt || new Date().toISOString()),
     status: body?.status === 'published' ? 'published' : 'draft',
-    section: String(body?.section || 'Essay').trim().slice(0, 80),
+    section: String(body?.section || '').trim().slice(0, 80),
     tags: normaliseTags(body?.tags),
     coverImage: body?.coverImage ? String(body.coverImage).trim() : undefined,
     coverAlt: body?.coverAlt ? String(body.coverAlt).trim().slice(0, 300) : undefined,

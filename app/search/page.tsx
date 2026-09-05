@@ -17,9 +17,29 @@ export default async function SearchPage({
   const term = (raw || '').trim();
   const articles = await getPublishedArticles(100);
   const needle = term.toLowerCase();
+
+  const categoryCounts = new Map<string, number>();
+  const tagCounts = new Map<string, number>();
+  for (const article of articles) {
+    const category = article.section?.trim();
+    if (category) categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+    for (const rawTag of article.tags || []) {
+      const tag = rawTag.trim();
+      if (tag) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+    }
+  }
+
+  const sortTerms = (map: Map<string, number>) =>
+    [...map.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+
+  const categories = sortTerms(categoryCounts);
+  const tags = sortTerms(tagCounts);
+
   const results = term
     ? articles.filter((article) =>
-        [article.title, article.dek, article.author, article.section]
+        [article.title, article.dek, article.author, article.section, ...(article.tags || [])]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(needle))
       )
@@ -34,6 +54,35 @@ export default async function SearchPage({
           <input id="search-page-input" name="q" type="search" defaultValue={term} placeholder="Search articles" autoFocus />
           <button type="submit">Search</button>
         </form>
+
+        {(categories.length > 0 || tags.length > 0) && (
+          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--line)' }}>
+            {categories.length > 0 && (
+              <div style={{ marginBottom: tags.length ? 20 : 0 }}>
+                <p style={{ margin: '0 0 10px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--muted)' }}>Categories</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {categories.map((item) => (
+                    <a key={`category-${item.name}`} href={`/search?q=${encodeURIComponent(item.name)}`} style={{ border: '1px solid var(--line)', padding: '7px 10px', textDecoration: 'none', fontSize: 14 }}>
+                      {item.name} <span style={{ color: 'var(--muted)' }}>({item.count})</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            {tags.length > 0 && (
+              <div>
+                <p style={{ margin: '0 0 10px', fontSize: 12, textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--muted)' }}>Tags</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {tags.map((item) => (
+                    <a key={`tag-${item.name}`} href={`/search?q=${encodeURIComponent(item.name)}`} style={{ border: '1px solid var(--line)', padding: '7px 10px', textDecoration: 'none', fontSize: 14 }}>
+                      {item.name} <span style={{ color: 'var(--muted)' }}>({item.count})</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       <section className="search-results" aria-live="polite">
@@ -50,7 +99,7 @@ export default async function SearchPage({
             )}
           </>
         ) : (
-          <p className="search-empty">Enter a title, topic, author or section.</p>
+          <p className="search-empty">Search by title, author, category or tag, or choose one above.</p>
         )}
       </section>
     </div>

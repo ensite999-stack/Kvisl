@@ -20,10 +20,14 @@ const themes: { name: ThemeName; label: string }[] = [
 ];
 
 type Panel = 'menu' | 'search' | null;
+type TaxonomyTerm = { name: string; count: number };
+type Taxonomy = { categories: TaxonomyTerm[]; tags: TaxonomyTerm[] };
 
 export function Header() {
   const [panel, setPanel] = useState<Panel>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [taxonomy, setTaxonomy] = useState<Taxonomy>({ categories: [], tags: [] });
+  const [taxonomyLoaded, setTaxonomyLoaded] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,12 +46,30 @@ export function Header() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [panel]);
 
+  useEffect(() => {
+    if (panel !== 'search' || taxonomyLoaded) return;
+    let active = true;
+    void fetch('/api/taxonomy')
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (!active || !data) return;
+        setTaxonomy({
+          categories: Array.isArray(data.categories) ? data.categories : [],
+          tags: Array.isArray(data.tags) ? data.tags : []
+        });
+        setTaxonomyLoaded(true);
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, [panel, taxonomyLoaded]);
+
   function chooseTheme(theme: ThemeName) {
     applyTheme(theme);
     setPanel(null);
   }
 
   const menuOpen = panel === 'menu';
+  const hasTaxonomy = taxonomy.categories.length > 0 || taxonomy.tags.length > 0;
 
   return (
     <header className={`site-header${scrolled || panel ? ' is-scrolled' : ''}`}>
@@ -86,6 +108,35 @@ export function Header() {
             <input ref={searchRef} id="site-search-input" name="q" type="search" placeholder="Search Kvisl" autoComplete="off" />
             <button type="submit">Search</button>
           </form>
+
+          {hasTaxonomy && (
+            <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+              {taxonomy.categories.length > 0 && (
+                <div style={{ marginBottom: taxonomy.tags.length ? 16 : 0 }}>
+                  <p style={{ margin: '0 0 8px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--muted)' }}>Categories</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {taxonomy.categories.map((term) => (
+                      <a key={`category-${term.name}`} href={`/search?q=${encodeURIComponent(term.name)}`} onClick={() => setPanel(null)} style={{ border: '1px solid var(--line)', padding: '6px 9px', textDecoration: 'none', fontSize: 13 }}>
+                        {term.name} <span style={{ color: 'var(--muted)' }}>({term.count})</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {taxonomy.tags.length > 0 && (
+                <div>
+                  <p style={{ margin: '0 0 8px', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--muted)' }}>Tags</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                    {taxonomy.tags.map((term) => (
+                      <a key={`tag-${term.name}`} href={`/search?q=${encodeURIComponent(term.name)}`} onClick={() => setPanel(null)} style={{ border: '1px solid var(--line)', padding: '6px 9px', textDecoration: 'none', fontSize: 13 }}>
+                        {term.name} <span style={{ color: 'var(--muted)' }}>({term.count})</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
