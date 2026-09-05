@@ -6,6 +6,7 @@ import { Footer } from '@/components/footer';
 import { ThemeProvider } from '@/components/theme-provider';
 import { JsonLd } from '@/components/json-ld';
 import { BrowserTitle } from '@/components/browser-title';
+import { SecondaryClose } from '@/components/secondary-close';
 import { absoluteUrl } from '@/lib/utils';
 import './globals.css';
 import './aeon-refresh.css';
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kvisl', url: absoluteUrl('/'), description }
         ]} />
         <Header />
+        <SecondaryClose />
         <main id="main-content">{children}</main>
         <Footer />
         <Analytics />
