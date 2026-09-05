@@ -21,14 +21,6 @@ const themes: { name: ThemeName; label: string }[] = [
 
 type Panel = 'menu' | 'search' | null;
 
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
-    </svg>
-  );
-}
-
 export function Header() {
   const [panel, setPanel] = useState<Panel>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -55,6 +47,8 @@ export function Header() {
     setPanel(null);
   }
 
+  const menuOpen = panel === 'menu';
+
   return (
     <header className={`site-header${scrolled || panel ? ' is-scrolled' : ''}`}>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -74,11 +68,11 @@ export function Header() {
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="m15.4 15.4 4.4 4.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" /></svg>
           </button>
           <button
-            className="menu-button"
+            className={`menu-button${menuOpen ? ' is-open' : ''}`}
             type="button"
-            aria-label="Menu"
-            aria-expanded={panel === 'menu'}
-            onClick={() => setPanel(panel === 'menu' ? null : 'menu')}
+            aria-label={menuOpen ? 'Close menu' : 'Menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setPanel(menuOpen ? null : 'menu')}
           >
             <span /><span /><span />
           </button>
@@ -95,14 +89,8 @@ export function Header() {
         </div>
       )}
 
-      {panel === 'menu' && (
+      {menuOpen && (
         <div className="header-panel menu-panel" role="dialog" aria-label="Site menu">
-          <div className="menu-panel-head">
-            <span>Menu</span>
-            <button className="panel-close-button" type="button" aria-label="Close menu" onClick={() => setPanel(null)}>
-              <CloseIcon />
-            </button>
-          </div>
           <nav className="menu-nav" aria-label="Primary">
             {navigation.map(([href, label]) => (
               <a key={href} href={href} onClick={() => setPanel(null)}>{label}</a>
