@@ -22,6 +22,7 @@ async function ensureSchema() {
           id uuid primary key default gen_random_uuid(),
           slug text unique not null,
           title text not null,
+          subtitle text not null default '',
           dek text not null default '',
           body text not null default '',
           author text not null default '',
@@ -37,6 +38,7 @@ async function ensureSchema() {
           featured boolean not null default false
         )
       `;
+      await sql`alter table articles add column if not exists subtitle text not null default ''`;
       await sql`alter table articles add column if not exists tags jsonb not null default '[]'::jsonb`;
       await sql`
         create table if not exists newsletter_subscribers (
@@ -59,7 +61,7 @@ async function ensureSchema() {
 
 function rowToArticle(row: any): Article {
   return {
-    id: String(row.id), slug: row.slug, title: row.title, dek: row.dek, body: row.body,
+    id: String(row.id), slug: row.slug, title: row.title, subtitle: row.subtitle || undefined, dek: row.dek, body: row.body,
     author: row.author, publishedAt: new Date(row.published_at).toISOString(),
     updatedAt: new Date(row.updated_at).toISOString(), status: row.status, section: row.section,
     tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
@@ -106,13 +108,13 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
   if (!sql) throw new Error('DATABASE_URL is not configured.');
   await ensureSchema();
   const rows = await sql`
-    insert into articles (slug, title, dek, body, author, published_at, status, section, tags,
+    insert into articles (slug, title, subtitle, dek, body, author, published_at, status, section, tags,
       cover_image, cover_alt, supporting_images, sources, featured, updated_at)
-    values (${input.slug}, ${input.title}, ${input.dek}, ${input.body}, ${input.author}, ${input.publishedAt},
+    values (${input.slug}, ${input.title}, ${input.subtitle ?? ''}, ${input.dek}, ${input.body}, ${input.author}, ${input.publishedAt},
       ${input.status}, ${input.section}, ${sql.json(input.tags)}, ${input.coverImage ?? null}, ${input.coverAlt ?? null},
       ${sql.json(input.supportingImages)}, ${sql.json(input.sources)}, ${input.featured ?? false}, now())
     on conflict (slug) do update set
-      title=excluded.title, dek=excluded.dek, body=excluded.body, author=excluded.author,
+      title=excluded.title, subtitle=excluded.subtitle, dek=excluded.dek, body=excluded.body, author=excluded.author,
       published_at=excluded.published_at, status=excluded.status, section=excluded.section, tags=excluded.tags,
       cover_image=excluded.cover_image, cover_alt=excluded.cover_alt, supporting_images=excluded.supporting_images,
       sources=excluded.sources, featured=excluded.featured, updated_at=now()
