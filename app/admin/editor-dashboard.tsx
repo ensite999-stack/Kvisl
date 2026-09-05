@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -18,7 +18,7 @@ type Draft = {
 
 const fresh = (): Draft => ({
   slug: '', title: '', dek: '', body: '<p></p>', author: 'Kvisl Editors',
-  publishedAt: new Date().toISOString().slice(0, 16), section: 'Essay', tagsText: '',
+  publishedAt: new Date().toISOString().slice(0, 16), section: '', tagsText: '',
   coverImage: '', coverAlt: '', supportingImagesText: '', sourcesText: '', featured: false
 });
 
@@ -46,10 +46,10 @@ function parseTags(value: string): string[] {
 
 const copy = {
   zh: {
-    admin: 'Kvisl 后台', untitled: '新文章', newArticle: '新建文章', signOut: '退出',
+    admin: 'Kvisl 后台', untitled: '文章编辑', newArticle: '新建文章', signOut: '退出',
     language: '语言', articles: '文章', total: '全部', published: '已发布', drafts: '草稿',
     title: '标题', titlePlaceholder: '输入文章标题', summary: '简介', summaryHelp: '用一两句话告诉读者这篇文章讲什么。',
-    author: '作者', date: '发布时间', category: '分类', tags: '标签', tagsHelp: '多个标签用逗号隔开。',
+    author: '作者', date: '发布时间', category: '分类', categoryPlaceholder: '例如：自然', tags: '标签', tagsHelp: '多个标签用逗号隔开。发布后会自动进入站内分类与标签列表。',
     tagsPlaceholder: '自然，文化，思想', cover: '封面图', uploadCover: '上传封面', replaceCover: '更换封面', removeCover: '移除封面',
     coverDescription: '封面图文字说明', coverDescriptionHelp: '简单描述图片内容，方便图片无法显示或读屏时理解。',
     body: '正文', bold: '粗体', italic: '斜体', heading: '小标题', smallerHeading: '次级标题', quote: '引用', list: '列表', link: '链接', image: '插入图片', undo: '撤销', redo: '重做',
@@ -62,10 +62,10 @@ const copy = {
     linkPrompt: '输入链接地址', noArticles: '还没有文章。'
   },
   en: {
-    admin: 'Kvisl Admin', untitled: 'New article', newArticle: 'New article', signOut: 'Sign out',
+    admin: 'Kvisl Admin', untitled: 'Article editor', newArticle: 'New article', signOut: 'Sign out',
     language: 'Language', articles: 'Articles', total: 'All', published: 'Published', drafts: 'Drafts',
     title: 'Title', titlePlaceholder: 'Type the article title', summary: 'Summary', summaryHelp: 'Describe what the article is about in one or two sentences.',
-    author: 'Author', date: 'Publish date', category: 'Category', tags: 'Tags', tagsHelp: 'Separate multiple tags with commas.',
+    author: 'Author', date: 'Publish date', category: 'Category', categoryPlaceholder: 'e.g. Nature', tags: 'Tags', tagsHelp: 'Separate multiple tags with commas. Published terms are added automatically to site search.',
     tagsPlaceholder: 'Nature, Culture, Ideas', cover: 'Cover image', uploadCover: 'Upload cover', replaceCover: 'Replace cover', removeCover: 'Remove cover',
     coverDescription: 'Cover image description', coverDescriptionHelp: 'Briefly describe the image for readers when it cannot be seen or loaded.',
     body: 'Article text', bold: 'Bold', italic: 'Italic', heading: 'Heading', smallerHeading: 'Smaller heading', quote: 'Quote', list: 'List', link: 'Link', image: 'Insert image', undo: 'Undo', redo: 'Redo',
@@ -85,6 +85,7 @@ export function EditorDashboard() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [language, setLanguage] = useState<Language>('zh');
+  const titleRef = useRef<HTMLInputElement>(null);
   const t = copy[language];
 
   const editor = useEditor({
@@ -121,7 +122,11 @@ export function EditorDashboard() {
   }
 
   function newArticle() {
-    const next = fresh(); setDraft(next); editor?.commands.setContent(next.body); setMessage('');
+    const next = fresh();
+    setDraft(next);
+    editor?.commands.setContent(next.body);
+    setMessage('');
+    requestAnimationFrame(() => titleRef.current?.focus());
   }
 
   async function upload(file: File) {
@@ -203,7 +208,7 @@ export function EditorDashboard() {
           <button type="button" aria-pressed={language === 'zh'} onClick={() => changeLanguage('zh')}>中文</button>
           <button type="button" aria-pressed={language === 'en'} onClick={() => changeLanguage('en')}>English</button>
         </div>
-        <button type="button" onClick={newArticle}>{t.newArticle}</button>
+        {draft.slug && <button type="button" onClick={newArticle}>{t.newArticle}</button>}
         <button type="button" onClick={logout}>{t.signOut}</button>
       </div>
     </div>
@@ -220,17 +225,17 @@ export function EditorDashboard() {
         {articles.length === 0 && <p style={{ color: 'var(--muted)', fontSize: 13 }}>{t.noArticles}</p>}
         {articles.map((a) =>
           <button key={a.slug} type="button" className={draft.slug === a.slug ? 'active' : ''} onClick={() => select(a)}>
-            <span>{a.title}</span><small>{statusLabel(a.status)} · {a.section}</small>
+            <span>{a.title}</span><small>{statusLabel(a.status)} · {a.section || '—'}</small>
           </button>)}
       </aside>
 
       <section className="editor-panel">
         <div className="field-grid">
-          <label className="field full"><span>{t.title}</span><input className="title-input" value={draft.title} placeholder={t.titlePlaceholder} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value, slug: d.slug || slugify(e.target.value) }))} /></label>
+          <label className="field full"><span>{t.title}</span><input ref={titleRef} className="title-input" value={draft.title} placeholder={t.titlePlaceholder} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))} /></label>
           <label className="field full"><span>{t.summary}</span><textarea rows={3} value={draft.dek} onChange={(e) => setDraft((d) => ({ ...d, dek: e.target.value }))} /><small>{t.summaryHelp}</small></label>
           <label className="field"><span>{t.author}</span><input value={draft.author} onChange={(e) => setDraft((d) => ({ ...d, author: e.target.value }))} /></label>
           <label className="field"><span>{t.date}</span><input type="datetime-local" value={draft.publishedAt} onChange={(e) => setDraft((d) => ({ ...d, publishedAt: e.target.value }))} /></label>
-          <label className="field"><span>{t.category}</span><input value={draft.section} onChange={(e) => setDraft((d) => ({ ...d, section: e.target.value }))} /></label>
+          <label className="field"><span>{t.category}</span><input value={draft.section} placeholder={t.categoryPlaceholder} onChange={(e) => setDraft((d) => ({ ...d, section: e.target.value }))} /></label>
           <label className="field"><span>{t.tags}</span><input value={draft.tagsText} placeholder={t.tagsPlaceholder} onChange={(e) => setDraft((d) => ({ ...d, tagsText: e.target.value }))} /><small>{t.tagsHelp}</small></label>
 
           <div className="field full">
