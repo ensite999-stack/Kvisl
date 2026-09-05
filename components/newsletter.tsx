@@ -35,7 +35,7 @@ export function Newsletter() {
   }
 
   return (
-    <form className="newsletter" onSubmit={submit} aria-describedby="newsletter-note newsletter-status" aria-busy={pending}>
+    <form id="newsletter" className="newsletter" onSubmit={submit} aria-describedby="newsletter-note newsletter-status" aria-busy={pending}>
       <div className="newsletter-copy">
         <label htmlFor="newsletter-email">Subscribe to our newsletter</label>
         <p><span className="notranslate" translate="no">Kvisl</span> latest news.</p>
