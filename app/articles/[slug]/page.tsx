@@ -14,14 +14,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article || article.status !== 'published') return {};
+  const description = article.dek || article.subtitle || undefined;
   return {
     title: article.title,
-    description: article.dek,
+    description,
     alternates: { canonical: `/articles/${article.slug}` },
     openGraph: {
       type: 'article',
       title: article.title,
-      description: article.dek,
+      description,
       url: `/articles/${article.slug}`,
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt,
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: article.title,
-      description: article.dek,
+      description,
       images: article.coverImage ? [article.coverImage] : undefined
     }
   };
@@ -51,7 +52,8 @@ export default async function ArticlePage({ params }: Props) {
         '@context': 'https://schema.org',
         '@type': 'Article',
         headline: article.title,
-        description: article.dek,
+        alternativeHeadline: article.subtitle || undefined,
+        description: article.dek || article.subtitle || undefined,
         datePublished: article.publishedAt,
         dateModified: article.updatedAt || article.publishedAt,
         mainEntityOfPage: articleUrl,
@@ -63,7 +65,7 @@ export default async function ArticlePage({ params }: Props) {
       <header className="essay-header">
         <p className="eyebrow">{article.section}</p>
         <h1>{article.title}</h1>
-        <p className="essay-dek">{article.dek}</p>
+        {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
         <div className="essay-meta">
           <span>By {article.author}</span>
           <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
