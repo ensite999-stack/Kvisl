@@ -1,18 +1,29 @@
-.menu-panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 44px;
-  padding-bottom: 8px;
-  margin-bottom: 2px;
-  border-bottom: 1px solid var(--line);
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: .14em;
-  text-transform: uppercase;
+.menu-button span {
+  transition: transform .14s ease, opacity .12s ease, width .14s ease;
+  transform-origin: center;
 }
 
-.panel-close-button,
+.menu-button.is-open {
+  position: relative;
+}
+
+.menu-button.is-open span {
+  position: absolute;
+  width: 24px !important;
+}
+
+.menu-button.is-open span:nth-child(1) {
+  transform: rotate(45deg);
+}
+
+.menu-button.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-button.is-open span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
 .secondary-close {
   width: 44px;
   height: 44px;
@@ -22,33 +33,26 @@
   place-items: center;
   padding: 0;
   color: var(--text);
-  background: transparent;
-  border: 0;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  border: 1px solid var(--strong-line);
   border-radius: 0;
   cursor: pointer;
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
+  position: fixed;
+  top: 78px;
+  right: 20px;
+  z-index: 70;
+  backdrop-filter: blur(8px);
 }
 
-.panel-close-button svg,
 .secondary-close svg {
   width: 24px;
   height: 24px;
 }
 
-.panel-close-button:hover,
 .secondary-close:hover {
   opacity: .58;
-}
-
-.secondary-close {
-  position: fixed;
-  top: 78px;
-  right: 20px;
-  z-index: 70;
-  background: color-mix(in srgb, var(--bg) 94%, transparent);
-  border: 1px solid var(--strong-line);
-  backdrop-filter: blur(8px);
 }
 
 @media (max-width: 800px) {
@@ -64,5 +68,11 @@
     border-color: CanvasText;
     color: CanvasText;
     backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-button span {
+    transition: none;
   }
 }
