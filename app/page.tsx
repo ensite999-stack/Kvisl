@@ -12,7 +12,7 @@ export default async function HomePage() {
   return (
     <div className="home kvisl-home">
       {lead && (
-        <section className="lead-story lead-story-first kvisl-lead" aria-labelledby="lead-story-title">
+        <section className={`lead-story lead-story-first kvisl-lead${lead.coverImage ? ' has-cover' : ''}`} aria-labelledby="lead-story-title">
           <a href={`/articles/${lead.slug}`} className="lead-link">
             <div className="lead-image">
               {lead.coverImage ? (
