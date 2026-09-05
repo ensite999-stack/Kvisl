@@ -30,11 +30,11 @@ export function Header() {
   const isHome = pathname === '/';
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18);
+    const onScroll = () => setScrolled(window.scrollY > (isHome ? 96 : 18));
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [isHome]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
