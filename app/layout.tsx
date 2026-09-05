@@ -12,8 +12,7 @@ import './globals.css';
 import './aeon-refresh.css';
 import './kvisl-v2.css';
 import './close-controls.css';
-import './masthead.css';
-import './aeon-header.css';
+import './home.css';
 
 const motto = 'Sparking Thought, Growing Wild';
 const description = `${motto}. Kvisl is an independent magazine exploring nature, culture and human thought through essays, deep reading and quiet reflection.`;
