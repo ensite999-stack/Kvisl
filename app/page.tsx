@@ -10,9 +10,9 @@ export default async function HomePage() {
   const rest = articles.slice(1);
 
   return (
-    <div className="home aeon-home">
+    <div className="home kvisl-home">
       {lead && (
-        <section className="lead-story lead-story-first" aria-labelledby="lead-story-title">
+        <section className="lead-story lead-story-first kvisl-lead" aria-labelledby="lead-story-title">
           <a href={`/articles/${lead.slug}`} className="lead-link">
             <div className="lead-image">
               {lead.coverImage ? (
