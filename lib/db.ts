@@ -1,6 +1,5 @@
 import postgres from 'postgres';
 import type { Article, ArticleInput, ArticleSource, NewsletterFrequency, NewsletterSubscriber } from './types';
-import { sampleArticles } from './sample-content';
 
 let client: ReturnType<typeof postgres> | null = null;
 let schemaPromise: Promise<void> | null = null;
@@ -70,42 +69,33 @@ function rowToArticle(row: any): Article {
   };
 }
 
-function fallback(limit: number) {
-  return sampleArticles
-    .map((article) => ({ ...article, tags: article.tags ?? [] }))
-    .sort((a, b) => +new Date(b.publishedAt) - +new Date(a.publishedAt))
-    .slice(0, limit);
-}
-
 export async function getPublishedArticles(limit = 30): Promise<Article[]> {
   const sql = getClient();
-  if (!sql) return fallback(limit);
+  if (!sql) return [];
   try {
     await ensureSchema();
     const rows = await sql`select * from articles where status = 'published' order by published_at desc limit ${limit}`;
-    if (!rows.length) return fallback(limit);
     return rows.map(rowToArticle);
   } catch {
-    return fallback(limit);
+    return [];
   }
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   const sql = getClient();
-  if (!sql) return fallback(100).find((article) => article.slug === slug) ?? null;
+  if (!sql) return null;
   try {
     await ensureSchema();
     const rows = await sql`select * from articles where slug = ${slug} limit 1`;
-    if (rows[0]) return rowToArticle(rows[0]);
-    return fallback(100).find((article) => article.slug === slug) ?? null;
+    return rows[0] ? rowToArticle(rows[0]) : null;
   } catch {
-    return fallback(100).find((article) => article.slug === slug) ?? null;
+    return null;
   }
 }
 
 export async function getAllArticles(): Promise<Article[]> {
   const sql = getClient();
-  if (!sql) return fallback(100);
+  if (!sql) return [];
   await ensureSchema();
   const rows = await sql`select * from articles order by updated_at desc`;
   return rows.map(rowToArticle);
