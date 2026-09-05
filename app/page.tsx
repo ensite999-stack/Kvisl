@@ -1,46 +1,44 @@
-import { ArticleCard } from '@/components/article-card';
 import { getPublishedArticles } from '@/lib/db';
-import { formatDate } from '@/lib/utils';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const articles = await getPublishedArticles(24);
-  const lead = articles[0];
-  const rest = articles.slice(1);
+  const articles = await getPublishedArticles(40);
 
   return (
     <div className="home kvisl-home">
-      {lead && (
-        <section className={`lead-story lead-story-first kvisl-lead${lead.coverImage ? ' has-cover' : ''}`} aria-labelledby="lead-story-title">
-          <a href={`/articles/${lead.slug}`} className="lead-link">
-            <div className="lead-image">
-              {lead.coverImage ? (
-                <img src={lead.coverImage} alt={lead.coverAlt || ''} />
-              ) : (
-                <div className="lead-placeholder" aria-hidden="true" />
-              )}
-            </div>
-            <div className="lead-copy">
-              <div className="lead-taxonomy">
-                <p className="eyebrow">{lead.section}</p>
-                {lead.tags.length > 0 && <p className="lead-tags">{lead.tags.join(' · ')}</p>}
-              </div>
-              <h1 id="lead-story-title">{lead.title}</h1>
-              <p className="lead-dek">{lead.dek}</p>
-              <p className="byline"><span>{formatDate(lead.publishedAt)}</span><span>By {lead.author}</span></p>
-            </div>
-          </a>
+      {articles.length === 0 ? (
+        <section className="home-empty" aria-label="No published articles">
+          <p>No articles published yet.</p>
         </section>
-      )}
+      ) : (
+        <div className="story-feed">
+          {articles.map((article, index) => {
+            const taxonomy = [article.section, ...(article.tags || [])].filter(Boolean);
+            const Heading = index === 0 ? 'h1' : 'h2';
 
-      {rest.length > 0 && (
-        <section className="latest" aria-labelledby="latest-title">
-          <div className="section-heading"><h2 id="latest-title">Latest</h2></div>
-          <div className="article-grid">
-            {rest.map((article) => <ArticleCard key={article.slug} article={article} />)}
-          </div>
-        </section>
+            return (
+              <article className="feed-story" key={article.slug}>
+                <a className="feed-story-link" href={`/articles/${article.slug}`}>
+                  {article.coverImage && (
+                    <div className="feed-image">
+                      <img src={article.coverImage} alt={article.coverAlt || ''} />
+                    </div>
+                  )}
+
+                  <div className="feed-copy">
+                    {taxonomy.length > 0 && (
+                      <p className="feed-taxonomy">{taxonomy.join(' / ')}</p>
+                    )}
+                    <Heading>{article.title}</Heading>
+                    {article.dek && <p className="feed-dek">{article.dek}</p>}
+                    {article.author && <p className="feed-author">{article.author}</p>}
+                  </div>
+                </a>
+              </article>
+            );
+          })}
+        </div>
       )}
     </div>
   );
