@@ -34,6 +34,7 @@ function parseArticle(body: any): ArticleInput {
   return {
     slug,
     title: title.slice(0, 220),
+    subtitle: body?.subtitle ? String(body.subtitle).trim().slice(0, 320) : undefined,
     dek: String(body?.dek || '').trim().slice(0, 600),
     body: sanitizeArticleHtml(String(body?.body || '')),
     author: String(body?.author || 'Kvisl Editors').trim().slice(0, 120),
