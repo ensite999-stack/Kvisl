@@ -1,5 +1,5 @@
-:root{--bg:#f2f1ec;--surface:#e9e7e0;--text:#171714;--muted:#6e6b64;--line:#c8c5bd;--strong-line:#44413b}
-html[data-theme="dark"]{--bg:#121210;--surface:#1b1a17;--text:#f1eee7;--muted:#aaa69d;--line:#3b3933;--strong-line:#d7d2c8}
+:root{--bg:#f5f5f7;--surface:#ffffff;--text:#1d1d1f;--muted:#6e6e73;--line:#d2d2d7;--strong-line:#1d1d1f}
+html[data-theme="dark"]{--bg:#000000;--surface:#1d1d1f;--text:#f5f5f7;--muted:#a1a1a6;--line:#424245;--strong-line:#f5f5f7}
 html[data-theme="comfort"]{--bg:#e9e2d0;--surface:#ddd4bd;--text:#2b281f;--muted:#6a6353;--line:#b9ad94;--strong-line:#4d483b}
 html{scroll-behavior:auto}
 html,body,.static-page,.static-hero,.prose,.search-page{background:var(--bg);color:var(--text)}
@@ -19,6 +19,6 @@ button,a,input{touch-action:manipulation}
 .notranslate{unicode-bidi:isolate}
 @media(max-width:800px){.header-inner{padding:7px 14px}.header-panel{right:14px;width:calc(100vw - 28px)}.home,.aeon-home{padding:0 14px}.lead-story-first{min-height:0}.lead-story-first .lead-link{display:block;min-height:0}.lead-story-first .lead-image{min-height:58vh}.lead-story-first .lead-copy{border-left:0;border-top:1px solid var(--strong-line);padding:24px 4px 30px}.lead-story-first .lead-copy h1{font-size:clamp(38px,12vw,58px)}.site-footer{padding-left:14px;padding-right:14px}.newsletter{width:100%}.newsletter-row{grid-template-columns:minmax(0,1fr) 124px}.newsletter-row button{width:124px;min-width:124px;padding-left:8px;padding-right:8px}}
 @media(max-width:360px){.newsletter-row{grid-template-columns:minmax(0,1fr) 112px}.newsletter-row button{width:112px;min-width:112px;font-size:14px}.newsletter-frequency{gap:14px}}
-@media(prefers-contrast:more){:root{--line:#7a776f;--strong-line:#171714}.newsletter-frequency input[type="radio"],.newsletter-row{border-width:2px}}
+@media(prefers-contrast:more){:root{--line:#7a776f;--strong-line:#1d1d1f}.newsletter-frequency input[type="radio"],.newsletter-row{border-width:2px}}
 @media(forced-colors:active){.newsletter-frequency input[type="radio"]{forced-color-adjust:auto;border-color:CanvasText}.newsletter-frequency input[type="radio"]::before{background:CanvasText}.newsletter-row button{forced-color-adjust:auto}.site-header.is-scrolled{backdrop-filter:none}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
