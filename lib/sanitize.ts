@@ -3,12 +3,18 @@ import sanitizeHtml from 'sanitize-html';
 export function sanitizeArticleHtml(html: string) {
   return sanitizeHtml(html, {
     allowedTags: [
-      'p', 'br', 'strong', 'em', 'u', 's', 'blockquote', 'h2', 'h3', 'h4',
+      'p', 'br', 'span', 'strong', 'em', 'u', 's', 'blockquote', 'h2', 'h3', 'h4',
       'ul', 'ol', 'li', 'a', 'img', 'figure', 'figcaption', 'hr', 'code', 'pre'
     ],
     allowedAttributes: {
       a: ['href', 'target', 'rel'],
-      img: ['src', 'alt', 'title', 'loading']
+      img: ['src', 'alt', 'title', 'loading'],
+      span: ['style']
+    },
+    allowedStyles: {
+      span: {
+        color: [/^#[0-9a-fA-F]{3,8}$/]
+      }
     },
     allowedSchemes: ['http', 'https', 'mailto'],
     transformTags: {

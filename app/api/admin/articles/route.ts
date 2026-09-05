@@ -44,6 +44,7 @@ function parseArticle(body: any): ArticleInput {
     tags: normaliseTags(body?.tags),
     coverImage: body?.coverImage ? String(body.coverImage).trim() : undefined,
     coverAlt: body?.coverAlt ? String(body.coverAlt).trim().slice(0, 300) : undefined,
+    coverSource: body?.coverSource ? String(body.coverSource).trim().slice(0, 500) : undefined,
     supportingImages: Array.isArray(body?.supportingImages) ? body.supportingImages.map(String).filter(Boolean).slice(0, 30) : [],
     sources: normaliseSources(body?.sources),
     featured: Boolean(body?.featured)

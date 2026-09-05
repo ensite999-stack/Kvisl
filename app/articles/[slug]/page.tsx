@@ -75,6 +75,7 @@ export default async function ArticlePage({ params }: Props) {
       {article.coverImage && (
         <figure className="essay-cover">
           <img src={article.coverImage} alt={article.coverAlt || ''} />
+          {article.coverSource && <figcaption>{article.coverSource}</figcaption>}
         </figure>
       )}
 

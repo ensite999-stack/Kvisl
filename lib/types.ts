@@ -21,6 +21,7 @@ export type Article = {
   tags: string[];
   coverImage?: string;
   coverAlt?: string;
+  coverSource?: string;
   supportingImages: string[];
   sources: ArticleSource[];
   featured?: boolean;
