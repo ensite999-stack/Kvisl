@@ -18,7 +18,7 @@ export default async function HomePage() {
               {lead.coverImage ? (
                 <img src={lead.coverImage} alt={lead.coverAlt || ''} />
               ) : (
-                <div className="lead-placeholder" aria-hidden="true"><img src="/kvisl-wordmark.svg" alt="" /></div>
+                <div className="lead-placeholder" aria-hidden="true" />
               )}
             </div>
             <div className="lead-copy">
