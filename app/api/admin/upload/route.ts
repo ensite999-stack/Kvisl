@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         if (!(await isAdminAuthenticated())) throw new Error('Unauthorized.');
         return {
           allowedContentTypes,
-          maximumSizeInBytes: 12 * 1024 * 1024,
+          maximumSizeInBytes: 50 * 1024 * 1024,
           addRandomSuffix: true
         };
       },
