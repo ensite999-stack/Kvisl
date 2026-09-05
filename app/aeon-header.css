@@ -1,0 +1,130 @@
+.header-inner{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:16px;
+  max-width:none;
+  margin:0;
+  padding:8px 20px;
+}
+
+.header-left-actions{
+  justify-self:start;
+  display:inline-flex;
+  align-items:center;
+  gap:0;
+}
+
+.header-left-actions .menu-button,
+.header-left-actions .search-button{
+  flex:0 0 44px;
+}
+
+.wordmark-link{
+  justify-self:center;
+  margin:0;
+}
+
+.header-subscribe{
+  justify-self:end;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  padding:0 2px;
+  font-size:12px;
+  line-height:1;
+  font-weight:600;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  text-decoration:none;
+}
+
+.header-subscribe:hover,
+.header-subscribe:focus-visible{
+  opacity:.58;
+}
+
+.header-panel{
+  left:20px;
+  right:auto;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .header-inner{
+  grid-template-columns:1fr 1fr;
+  grid-template-areas:
+    "controls subscribe"
+    "brand brand";
+  min-height:clamp(205px,23vw,330px);
+  padding:10px 20px 14px;
+  row-gap:8px;
+  align-items:center;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .header-left-actions{
+  grid-area:controls;
+  align-self:start;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .header-subscribe{
+  grid-area:subscribe;
+  align-self:start;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .wordmark-link{
+  grid-area:brand;
+  width:calc(100vw - 40px);
+  max-width:1520px;
+  justify-self:center;
+  align-self:end;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .compact-wordmark{
+  display:none;
+}
+
+.site-header.home-masthead:not(.is-scrolled) .masthead-wordmark-art{
+  display:block;
+  width:100%;
+  aspect-ratio:1536 / 316;
+  background:var(--text);
+  -webkit-mask:url('/kvisl-wordmark.svg') center bottom / contain no-repeat;
+  mask:url('/kvisl-wordmark.svg') center bottom / contain no-repeat;
+}
+
+.site-header.home-masthead.is-scrolled .masthead-wordmark-art{
+  display:none;
+}
+
+.site-header.home-masthead.is-scrolled .compact-wordmark{
+  display:block;
+}
+
+#newsletter{
+  scroll-margin-top:88px;
+}
+
+@media(max-width:800px){
+  .header-inner{
+    padding:7px 14px;
+  }
+
+  .header-panel{
+    left:14px;
+    right:auto;
+  }
+
+  .header-subscribe{
+    font-size:11px;
+    letter-spacing:.07em;
+  }
+
+  .site-header.home-masthead:not(.is-scrolled) .header-inner{
+    min-height:clamp(150px,40vw,205px);
+    padding:7px 14px 10px;
+  }
+
+  .site-header.home-masthead:not(.is-scrolled) .wordmark-link{
+    width:calc(100vw - 28px);
+  }
+}
