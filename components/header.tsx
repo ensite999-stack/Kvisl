@@ -56,21 +56,7 @@ export function Header() {
     <header className={`site-header${isHome ? ' home-masthead' : ''}${scrolled || panel ? ' is-scrolled' : ''}`}>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="header-inner">
-        <a className="wordmark-link notranslate" translate="no" href="/" aria-label="Kvisl home">
-          {isHome && <span className="masthead-wordmark-art" aria-hidden="true" />}
-          <img className={`wordmark${isHome ? ' compact-wordmark' : ''}`} src="/kvisl-wordmark.svg" alt="Kvisl" />
-        </a>
-
-        <div className="header-actions">
-          <button
-            className="search-button"
-            type="button"
-            aria-label="Search Kvisl"
-            aria-expanded={panel === 'search'}
-            onClick={() => setPanel(panel === 'search' ? null : 'search')}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="m15.4 15.4 4.4 4.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" /></svg>
-          </button>
+        <div className="header-left-actions">
           <button
             className={`menu-button${menuOpen ? ' is-open' : ''}`}
             type="button"
@@ -80,7 +66,23 @@ export function Header() {
           >
             <span /><span /><span />
           </button>
+          <button
+            className="search-button"
+            type="button"
+            aria-label="Search Kvisl"
+            aria-expanded={panel === 'search'}
+            onClick={() => setPanel(panel === 'search' ? null : 'search')}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="m15.4 15.4 4.4 4.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" /></svg>
+          </button>
         </div>
+
+        <a className="wordmark-link notranslate" translate="no" href="/" aria-label="Kvisl home">
+          {isHome && <span className="masthead-wordmark-art" aria-hidden="true" />}
+          <img className={`wordmark${isHome ? ' compact-wordmark' : ''}`} src="/kvisl-wordmark.svg" alt="Kvisl" />
+        </a>
+
+        <a className="header-subscribe" href={isHome ? '#newsletter' : '/#newsletter'}>Subscribe</a>
       </div>
 
       {panel === 'search' && (
