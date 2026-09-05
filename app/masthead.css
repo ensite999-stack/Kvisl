@@ -4,16 +4,17 @@
 
 .site-header.home-masthead:not(.is-scrolled) .header-inner{
   position:relative;
-  min-height:clamp(150px,18vw,250px);
-  max-width:1400px;
+  min-height:clamp(190px,22vw,320px);
+  max-width:none;
   margin:0 auto;
-  padding:18px 20px 16px;
+  padding:18px 20px 14px;
   align-items:flex-end;
 }
 
 .site-header.home-masthead:not(.is-scrolled) .wordmark-link{
-  width:min(1180px,calc(100vw - 40px));
-  max-width:none;
+  width:calc(100vw - 40px);
+  max-width:1520px;
+  margin:0 auto;
   display:block;
   line-height:0;
 }
@@ -25,8 +26,8 @@
   width:100%;
   aspect-ratio:1536 / 316;
   background:var(--text);
-  -webkit-mask:url('/kvisl-wordmark.svg') left bottom / contain no-repeat;
-  mask:url('/kvisl-wordmark.svg') left bottom / contain no-repeat;
+  -webkit-mask:url('/kvisl-wordmark.svg') center bottom / contain no-repeat;
+  mask:url('/kvisl-wordmark.svg') center bottom / contain no-repeat;
 }
 
 .site-header.home-masthead:not(.is-scrolled) .header-actions{
@@ -40,8 +41,8 @@
 
 @media(max-width:800px){
   .site-header.home-masthead:not(.is-scrolled) .header-inner{
-    min-height:clamp(126px,34vw,175px);
-    padding:14px 14px 12px;
+    min-height:clamp(138px,37vw,190px);
+    padding:12px 14px 10px;
   }
 
   .site-header.home-masthead:not(.is-scrolled) .wordmark-link{
@@ -49,7 +50,7 @@
   }
 
   .site-header.home-masthead:not(.is-scrolled) .header-actions{
-    top:8px;
+    top:7px;
     right:14px;
   }
 }
