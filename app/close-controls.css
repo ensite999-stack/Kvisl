@@ -1,0 +1,68 @@
+.menu-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.panel-close-button,
+.secondary-close {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.panel-close-button svg,
+.secondary-close svg {
+  width: 24px;
+  height: 24px;
+}
+
+.panel-close-button:hover,
+.secondary-close:hover {
+  opacity: .58;
+}
+
+.secondary-close {
+  position: fixed;
+  top: 78px;
+  right: 20px;
+  z-index: 70;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  border: 1px solid var(--strong-line);
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 800px) {
+  .secondary-close {
+    top: 74px;
+    right: 14px;
+  }
+}
+
+@media (forced-colors: active) {
+  .secondary-close {
+    background: Canvas;
+    border-color: CanvasText;
+    color: CanvasText;
+    backdrop-filter: none;
+  }
+}
