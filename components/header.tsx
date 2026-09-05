@@ -1,6 +1,5 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { applyTheme, type ThemeName } from './theme-provider';
 import { InstagramIcon } from './instagram-icon';
@@ -23,18 +22,16 @@ const themes: { name: ThemeName; label: string }[] = [
 type Panel = 'menu' | 'search' | null;
 
 export function Header() {
-  const pathname = usePathname();
   const [panel, setPanel] = useState<Panel>(null);
   const [scrolled, setScrolled] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
-  const isHome = pathname === '/';
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > (isHome ? 96 : 18));
+    const onScroll = () => setScrolled(window.scrollY > 18);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [isHome]);
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -53,19 +50,14 @@ export function Header() {
   const menuOpen = panel === 'menu';
 
   return (
-    <header className={`site-header${isHome ? ' home-masthead' : ''}${scrolled || panel ? ' is-scrolled' : ''}`}>
+    <header className={`site-header${scrolled || panel ? ' is-scrolled' : ''}`}>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="header-inner">
-        <div className="header-left-actions">
-          <button
-            className={`menu-button${menuOpen ? ' is-open' : ''}`}
-            type="button"
-            aria-label={menuOpen ? 'Close menu' : 'Menu'}
-            aria-expanded={menuOpen}
-            onClick={() => setPanel(menuOpen ? null : 'menu')}
-          >
-            <span /><span /><span />
-          </button>
+        <a className="wordmark-link notranslate" translate="no" href="/" aria-label="Kvisl home">
+          <img className="wordmark" src="/kvisl-wordmark.svg" alt="Kvisl" />
+        </a>
+
+        <div className="header-actions">
           <button
             className="search-button"
             type="button"
@@ -75,14 +67,16 @@ export function Header() {
           >
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.2" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="m15.4 15.4 4.4 4.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" /></svg>
           </button>
+          <button
+            className={`menu-button${menuOpen ? ' is-open' : ''}`}
+            type="button"
+            aria-label={menuOpen ? 'Close menu' : 'Menu'}
+            aria-expanded={menuOpen}
+            onClick={() => setPanel(menuOpen ? null : 'menu')}
+          >
+            <span /><span /><span />
+          </button>
         </div>
-
-        <a className="wordmark-link notranslate" translate="no" href="/" aria-label="Kvisl home">
-          {isHome && <span className="masthead-wordmark-art" aria-hidden="true" />}
-          <img className={`wordmark${isHome ? ' compact-wordmark' : ''}`} src="/kvisl-wordmark.svg" alt="Kvisl" />
-        </a>
-
-        <a className="header-subscribe" href={isHome ? '#newsletter' : '/#newsletter'}>Subscribe</a>
       </div>
 
       {panel === 'search' && (
