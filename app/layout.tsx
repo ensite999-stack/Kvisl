@@ -5,6 +5,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { ThemeProvider } from '@/components/theme-provider';
 import { JsonLd } from '@/components/json-ld';
+import { BrowserTitle } from '@/components/browser-title';
 import { absoluteUrl } from '@/lib/utils';
 import './globals.css';
 import './aeon-refresh.css';
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider />
+        <BrowserTitle />
         <JsonLd data={[
           { '@context': 'https://schema.org', '@type': 'Organization', name: 'Kvisl', url: absoluteUrl('/'), slogan: motto },
           { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kvisl', url: absoluteUrl('/'), description }
