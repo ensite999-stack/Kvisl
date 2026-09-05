@@ -86,15 +86,39 @@ function parseTags(value: string): string[] {
   return value.split(/[,，\n]/).map((tag) => tag.trim()).filter(Boolean);
 }
 
+function cleanImageUrl(value: string) {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
+function sourceFromUrl(value: string) {
+  try {
+    const host = new URL(value).hostname.replace(/^www\./, '').toLowerCase();
+    if (host.includes('unsplash.com')) return 'Unsplash';
+    if (host.includes('pexels.com')) return 'Pexels';
+    if (host.includes('pixabay.com')) return 'Pixabay';
+    if (host.includes('wikimedia.org') || host.includes('wikipedia.org')) return 'Wikimedia Commons';
+    if (host.includes('flickr.com') || host.includes('staticflickr.com')) return 'Flickr';
+    return host;
+  } catch {
+    return '';
+  }
+}
+
 const copy = {
   zh: {
     admin: 'Kvisl 后台', untitled: '文章编辑', newArticle: '新建文章', signOut: '退出', language: '语言', articles: '文章', total: '全部', published: '已发布', drafts: '草稿',
     title: '标题', titlePlaceholder: '输入文章标题', subtitle: '副标题（可选）', subtitlePlaceholder: '输入副标题', subtitleHelp: '显示在文章标题下方；不填写则不显示。', summary: '简介', summaryHelp: '用一两句话告诉读者这篇文章讲什么。',
     author: '作者', date: '发布时间', category: '分类', categoryPlaceholder: '例如：自然', tags: '标签', tagsHelp: '多个标签用逗号隔开。发布后会自动进入站内分类与标签列表。', tagsPlaceholder: '自然，文化，思想',
     cover: '封面图', uploadCover: '上传封面', replaceCover: '更换封面', removeCover: '移除封面', coverDescription: '封面图文字说明', coverDescriptionHelp: '简单描述图片内容，方便图片无法显示或读屏时理解。', imageSource: '图片来源说明（可选）', coverSourceHelp: '例如摄影者、机构或图片出处，会显示在封面图下方。',
+    imageUrl: '图片链接', imageUrlHelp: '可直接粘贴图片文件地址，不占用 Kvisl 的 Blob 存储；系统会自动填入常见图片站点来源。', useImageUrl: '使用图片链接', insertImageUrl: '插入链接图片', invalidImageUrl: '图片链接无效，请使用 http 或 https 图片地址。', linkedImageReady: '图片链接已使用，不需要上传。', linkedImageInserted: '链接图片已插入正文。',
     body: '正文', compactBody: '收起正文', expandBody: '展开正文', bold: '粗体', italic: '斜体', heading: '小标题', smallerHeading: '次级标题', quote: '引用', list: '列表', link: '链接', undo: '撤销', redo: '重做',
-    textColor: '文字颜色', selectedColor: '选中文字', lineColor: '当前行颜色', paragraphColor: '整段颜色', clearColor: '清除颜色', imageLine: '插入到第几行', imageLineHelp: '按正文中的段落、标题、列表或图片顺序计算。', inlineSourceHelp: '填写后会按原样插在图片下一行。', insertImage: '选择并插入图片',
-    uploading: '正在上传', uploadSuccess: '上传成功，图片已显示。', uploadFailed: '图片上传失败。请确认图片不超过 12 MB，并重试。', uploadSlow: '如果进度长时间不动，通常是当前网络或 VPN 的上传速度较慢。', coverUploaded: '封面已上传。', imageInserted: '图片已插入正文。',
+    textColor: '文字颜色', selectedColor: '选中文字', lineColor: '当前行颜色', paragraphColor: '整段颜色', clearColor: '清除颜色', imageLine: '插入到第几行', imageLineHelp: '按正文中的段落、标题、列表或图片顺序计算。', inlineSourceHelp: '填写后会按原样插在图片下一行；不填写时会根据图片链接自动识别来源站点。', insertImage: '选择并插入图片',
+    uploading: '正在上传', uploadSuccess: '上传成功，图片已显示。', uploadFailed: '图片上传失败。当前允许单张图片最大 50 MB；如果一直停在 0%，可直接使用图片链接。', uploadSlow: '0% 通常表示浏览器还在连接 Blob；移动网络或 VPN 可能让直传连接变慢。', coverUploaded: '封面已上传。', imageInserted: '图片已插入正文。',
     sources: '资料来源（可选）', sourcesHelp: '每行一条：名称｜链接｜备注。只有名称也可以。', sourcesPlaceholder: '资料名称｜https://example.com｜可选备注', saveDraft: '存为草稿', publish: '发布', delete: '删除', draftStatus: '草稿', publishedStatus: '已发布',
     loadFailed: '文章加载失败，请稍后再试。', addTitle: '请先填写标题。', saveFailed: '保存失败，请稍后再试。', publishedMessage: '文章已发布。', draftSaved: '草稿已保存。', deleteConfirm: '确定删除这篇文章吗？删除后无法恢复。', deleteFailed: '删除失败，请稍后再试。', deleted: '文章已删除。', linkPrompt: '输入链接地址', noArticles: '还没有文章。', backToTop: '返回顶部'
   },
@@ -103,9 +127,10 @@ const copy = {
     title: 'Title', titlePlaceholder: 'Type the article title', subtitle: 'Subtitle (optional)', subtitlePlaceholder: 'Type the subtitle', subtitleHelp: 'Shown directly below the article title. Leave blank to hide it.', summary: 'Summary', summaryHelp: 'Describe what the article is about in one or two sentences.',
     author: 'Author', date: 'Publish date', category: 'Category', categoryPlaceholder: 'e.g. Nature', tags: 'Tags', tagsHelp: 'Separate multiple tags with commas. Published terms are added automatically to site search.', tagsPlaceholder: 'Nature, Culture, Ideas',
     cover: 'Cover image', uploadCover: 'Upload cover', replaceCover: 'Replace cover', removeCover: 'Remove cover', coverDescription: 'Cover image description', coverDescriptionHelp: 'Briefly describe the image for readers when it cannot be seen or loaded.', imageSource: 'Image source / credit (optional)', coverSourceHelp: 'Photographer, institution or image source. It is shown below the cover image.',
+    imageUrl: 'Image URL', imageUrlHelp: 'Paste a direct image-file URL to use it without consuming Kvisl Blob storage. Common image providers are credited automatically.', useImageUrl: 'Use image URL', insertImageUrl: 'Insert linked image', invalidImageUrl: 'Invalid image URL. Use an http or https image address.', linkedImageReady: 'Image URL is in use; no upload is needed.', linkedImageInserted: 'Linked image inserted into the article.',
     body: 'Article text', compactBody: 'Compact article text', expandBody: 'Expand article text', bold: 'Bold', italic: 'Italic', heading: 'Heading', smallerHeading: 'Smaller heading', quote: 'Quote', list: 'List', link: 'Link', undo: 'Undo', redo: 'Redo',
-    textColor: 'Text color', selectedColor: 'Selected text', lineColor: 'Current line', paragraphColor: 'Whole paragraph', clearColor: 'Clear color', imageLine: 'Insert at line', imageLineHelp: 'Lines are counted by paragraphs, headings, lists and images in the editor.', inlineSourceHelp: 'When supplied, this text is inserted exactly as written on the line below the image.', insertImage: 'Choose and insert image',
-    uploading: 'Uploading', uploadSuccess: 'Upload succeeded and the image is visible.', uploadFailed: 'Image upload failed. Check that the file is under 12 MB and try again.', uploadSlow: 'If progress stops for a long time, the current network or VPN upload speed is usually the cause.', coverUploaded: 'Cover uploaded.', imageInserted: 'Image inserted into the article.',
+    textColor: 'Text color', selectedColor: 'Selected text', lineColor: 'Current line', paragraphColor: 'Whole paragraph', clearColor: 'Clear color', imageLine: 'Insert at line', imageLineHelp: 'Lines are counted by paragraphs, headings, lists and images in the editor.', inlineSourceHelp: 'When supplied, this text is inserted below the image. When blank, the image host is used as the source automatically.', insertImage: 'Choose and insert image',
+    uploading: 'Uploading', uploadSuccess: 'Upload succeeded and the image is visible.', uploadFailed: 'Image upload failed. Images up to 50 MB are allowed. If it stays at 0%, use an image URL instead.', uploadSlow: '0% usually means the browser is still connecting to Blob; mobile networks or VPNs can slow that direct connection.', coverUploaded: 'Cover uploaded.', imageInserted: 'Image inserted into the article.',
     sources: 'Sources (optional)', sourcesHelp: 'One per line: name | link | note. A name by itself is also fine.', sourcesPlaceholder: 'Source name | https://example.com | optional note', saveDraft: 'Save draft', publish: 'Publish', delete: 'Delete', draftStatus: 'Draft', publishedStatus: 'Published',
     loadFailed: 'Could not load the articles. Please try again.', addTitle: 'Add a title first.', saveFailed: 'Could not save. Please try again.', publishedMessage: 'Article published.', draftSaved: 'Draft saved.', deleteConfirm: 'Delete this article? This cannot be undone.', deleteFailed: 'Could not delete the article. Please try again.', deleted: 'Article deleted.', linkPrompt: 'Enter the link address', noArticles: 'No articles yet.', backToTop: 'Back to top'
   }
@@ -121,6 +146,8 @@ export function EditorDashboard() {
   const [textColor, setTextColor] = useState('#1d1d1f');
   const [imageLine, setImageLine] = useState('1');
   const [inlineSource, setInlineSource] = useState('');
+  const [coverImageUrl, setCoverImageUrl] = useState('');
+  const [inlineImageUrl, setInlineImageUrl] = useState('');
   const [coverUploadStatus, setCoverUploadStatus] = useState<UploadStatus>('idle');
   const [inlineUploadStatus, setInlineUploadStatus] = useState<UploadStatus>('idle');
   const [coverUploadProgress, setCoverUploadProgress] = useState(0);
@@ -165,6 +192,8 @@ export function EditorDashboard() {
     setInlineUploadProgress(0);
     setInlinePreview('');
     setInlineSource('');
+    setCoverImageUrl('');
+    setInlineImageUrl('');
     setImageLine('1');
   }
 
@@ -189,15 +218,15 @@ export function EditorDashboard() {
 
   async function upload(file: File, onProgress: (value: number) => void) {
     const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']);
-    if (!allowed.has(file.type) || file.size > 12 * 1024 * 1024) throw new Error(t.uploadFailed);
+    if (!allowed.has(file.type) || file.size > 50 * 1024 * 1024) throw new Error(t.uploadFailed);
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-').slice(-120) || 'image';
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 3 * 60 * 1000);
+    const timeout = window.setTimeout(() => controller.abort(), 5 * 60 * 1000);
     try {
       const blob = await uploadBlob(`editorial/${Date.now()}-${safeName}`, file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload',
-        multipart: file.size > 1024 * 1024,
+        multipart: file.size > 10 * 1024 * 1024,
         abortSignal: controller.signal,
         onUploadProgress: (progress) => onProgress(Math.max(0, Math.min(100, Math.round(progress.percentage))))
       });
@@ -217,6 +246,7 @@ export function EditorDashboard() {
     try {
       const url = await upload(file, setCoverUploadProgress);
       setDraft((current) => ({ ...current, coverImage: url }));
+      setCoverImageUrl('');
       setCoverUploadStatus('success');
       setMessage(t.coverUploaded);
     } catch {
@@ -228,6 +258,16 @@ export function EditorDashboard() {
     }
   }
 
+  function useCoverUrl() {
+    const url = cleanImageUrl(coverImageUrl);
+    if (!url) return setMessage(t.invalidImageUrl);
+    const source = draft.coverSource.trim() || sourceFromUrl(url);
+    setDraft((current) => ({ ...current, coverImage: url, coverSource: source }));
+    setCoverUploadStatus('success');
+    setCoverUploadProgress(100);
+    setMessage(t.linkedImageReady);
+  }
+
   function blockInsertPosition(line: number) {
     if (!editor) return 0;
     const doc = editor.state.doc;
@@ -235,6 +275,20 @@ export function EditorDashboard() {
     let position = 0;
     for (let index = 0; index < targetIndex; index += 1) position += doc.child(index).nodeSize;
     return position;
+  }
+
+  function insertInlineUrl() {
+    if (!editor) return;
+    const url = cleanImageUrl(inlineImageUrl);
+    if (!url) return setMessage(t.invalidImageUrl);
+    const source = inlineSource.trim() || sourceFromUrl(url);
+    const content: any[] = [{ type: 'image', attrs: { src: url, alt: '' } }];
+    if (source) content.push({ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'italic' }], text: source }] });
+    editor.chain().focus().insertContentAt(blockInsertPosition(Number(imageLine) || 1), content).run();
+    setInlinePreview(url);
+    setInlineUploadStatus('success');
+    setInlineUploadProgress(100);
+    setMessage(t.linkedImageInserted);
   }
 
   async function uploadInline(event: ChangeEvent<HTMLInputElement>) {
@@ -250,6 +304,7 @@ export function EditorDashboard() {
       if (source) content.push({ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'italic' }], text: source }] });
       editor.chain().focus().insertContentAt(blockInsertPosition(Number(imageLine) || 1), content).run();
       setInlinePreview(url);
+      setInlineImageUrl('');
       setInlineUploadStatus('success');
       setMessage(t.imageInserted);
     } catch {
@@ -366,6 +421,18 @@ export function EditorDashboard() {
   const uploadText = (status: UploadStatus, progress: number) => status === 'uploading' ? `${t.uploading} ${progress}%` : status === 'success' ? t.uploadSuccess : status === 'error' ? t.uploadFailed : '';
   const lineMax = (editor?.state.doc.childCount || 0) + 1;
 
+  const formatButtons = <>
+    <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()}>{t.bold}</button>
+    <button type="button" onClick={() => editor?.chain().focus().toggleItalic().run()}>{t.italic}</button>
+    <button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}>{t.heading}</button>
+    <button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}>{t.smallerHeading}</button>
+    <button type="button" onClick={() => editor?.chain().focus().toggleBlockquote().run()}>{t.quote}</button>
+    <button type="button" onClick={() => editor?.chain().focus().toggleBulletList().run()}>{t.list}</button>
+    <button type="button" onClick={setLink}>{t.link}</button>
+    <button type="button" onClick={() => editor?.chain().focus().undo().run()}>{t.undo}</button>
+    <button type="button" onClick={() => editor?.chain().focus().redo().run()}>{t.redo}</button>
+  </>;
+
   return <div className="editor-dashboard">
     <div className="editor-topbar">
       <div><p className="eyebrow">{t.admin}</p><h1>{draft.title || t.untitled}</h1></div>
@@ -404,12 +471,17 @@ export function EditorDashboard() {
 
           <div className="field full">
             <span>{t.cover}</span>
-            {draft.coverImage && <img className="admin-image-preview" src={draft.coverImage} alt={draft.coverAlt || ''} />}
+            {draft.coverImage && <img className="admin-image-preview" src={draft.coverImage} alt={draft.coverAlt || ''} onError={() => setMessage(t.invalidImageUrl)} />}
+            <div className="admin-url-row">
+              <input value={coverImageUrl} inputMode="url" placeholder="https://…" aria-label={t.imageUrl} onChange={(event) => setCoverImageUrl(event.target.value)} />
+              <button type="button" className="text-button" onClick={useCoverUrl}>{t.useImageUrl}</button>
+            </div>
+            <small>{t.imageUrlHelp}</small>
             <div className="admin-inline-controls">
               <label className="upload-button">{draft.coverImage ? t.replaceCover : t.uploadCover}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadCover} /></label>
               {draft.coverImage && <button type="button" className="text-button" onClick={() => { setDraft((current) => ({ ...current, coverImage: '', coverAlt: '', coverSource: '' })); setCoverUploadStatus('idle'); }}>{t.removeCover}</button>}
             </div>
-            {coverUploadStatus !== 'idle' && <><p className={`upload-status ${coverUploadStatus}`}>{uploadText(coverUploadStatus, coverUploadProgress)}</p>{coverUploadStatus === 'uploading' && <progress className="upload-progress" max="100" value={coverUploadProgress} aria-label={uploadText(coverUploadStatus, coverUploadProgress)} />}{coverUploadStatus === 'uploading' && coverUploadProgress > 0 && coverUploadProgress < 100 && <small className="upload-help">{t.uploadSlow}</small>}</>}
+            {coverUploadStatus !== 'idle' && <><p className={`upload-status ${coverUploadStatus}`}>{uploadText(coverUploadStatus, coverUploadProgress)}</p>{coverUploadStatus === 'uploading' && <progress className="upload-progress" max="100" value={coverUploadProgress} aria-label={uploadText(coverUploadStatus, coverUploadProgress)} />}{coverUploadStatus === 'uploading' && <small className="upload-help">{t.uploadSlow}</small>}</>}
           </div>
           <label className="field full"><span>{t.coverDescription}</span><input value={draft.coverAlt} onChange={(event) => setDraft((current) => ({ ...current, coverAlt: event.target.value }))} /><small>{t.coverDescriptionHelp}</small></label>
           <label className="field full"><span>{t.imageSource}</span><input value={draft.coverSource} onChange={(event) => setDraft((current) => ({ ...current, coverSource: event.target.value }))} /><small>{t.coverSourceHelp}</small></label>
@@ -421,17 +493,7 @@ export function EditorDashboard() {
             <button className="text-button" type="button" aria-expanded={bodyExpanded} onClick={() => setBodyExpanded((expanded) => !expanded)}>{bodyExpanded ? t.compactBody : t.expandBody}</button>
           </div>
           <div className={`editor-body-area ${bodyExpanded ? 'is-expanded' : 'is-compact'}`}>
-            <div className="toolbar" aria-label={t.body}>
-              <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()}>{t.bold}</button>
-              <button type="button" onClick={() => editor?.chain().focus().toggleItalic().run()}>{t.italic}</button>
-              <button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}>{t.heading}</button>
-              <button type="button" onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}>{t.smallerHeading}</button>
-              <button type="button" onClick={() => editor?.chain().focus().toggleBlockquote().run()}>{t.quote}</button>
-              <button type="button" onClick={() => editor?.chain().focus().toggleBulletList().run()}>{t.list}</button>
-              <button type="button" onClick={setLink}>{t.link}</button>
-              <button type="button" onClick={() => editor?.chain().focus().undo().run()}>{t.undo}</button>
-              <button type="button" onClick={() => editor?.chain().focus().redo().run()}>{t.redo}</button>
-            </div>
+            <div className="toolbar" aria-label={t.body}>{formatButtons}</div>
 
             <EditorContent editor={editor} className="tiptap-shell" />
 
@@ -446,12 +508,14 @@ export function EditorDashboard() {
             <div className="inline-image-tools">
               <label><span>{t.imageLine}</span><input type="number" min="1" max={lineMax} value={imageLine} onChange={(event) => setImageLine(event.target.value)} /></label>
               <label className="inline-source-field"><span>{t.imageSource}</span><input value={inlineSource} onChange={(event) => setInlineSource(event.target.value)} /></label>
+              <label className="inline-source-field"><span>{t.imageUrl}</span><input value={inlineImageUrl} inputMode="url" placeholder="https://…" onChange={(event) => setInlineImageUrl(event.target.value)} /></label>
+              <button type="button" className="text-button" onClick={insertInlineUrl}>{t.insertImageUrl}</button>
               <label className="upload-button">{t.insertImage}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadInline} /></label>
               <small>{t.imageLineHelp} {t.inlineSourceHelp}</small>
               {inlineUploadStatus !== 'idle' && <p className={`upload-status ${inlineUploadStatus}`}>{uploadText(inlineUploadStatus, inlineUploadProgress)}</p>}
               {inlineUploadStatus === 'uploading' && <progress className="upload-progress" max="100" value={inlineUploadProgress} aria-label={uploadText(inlineUploadStatus, inlineUploadProgress)} />}
-              {inlineUploadStatus === 'uploading' && inlineUploadProgress > 0 && inlineUploadProgress < 100 && <small className="upload-help">{t.uploadSlow}</small>}
-              {inlinePreview && <img className="admin-inline-preview" src={inlinePreview} alt="" />}
+              {inlineUploadStatus === 'uploading' && <small className="upload-help">{t.uploadSlow}</small>}
+              {inlinePreview && <img className="admin-inline-preview" src={inlinePreview} alt="" onError={() => setMessage(t.invalidImageUrl)} />}
             </div>
           </div>
         </div>
