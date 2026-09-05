@@ -21,6 +21,14 @@ const themes: { name: ThemeName; label: string }[] = [
 
 type Panel = 'menu' | 'search' | null;
 
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="square" />
+    </svg>
+  );
+}
+
 export function Header() {
   const [panel, setPanel] = useState<Panel>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -89,6 +97,12 @@ export function Header() {
 
       {panel === 'menu' && (
         <div className="header-panel menu-panel" role="dialog" aria-label="Site menu">
+          <div className="menu-panel-head">
+            <span>Menu</span>
+            <button className="panel-close-button" type="button" aria-label="Close menu" onClick={() => setPanel(null)}>
+              <CloseIcon />
+            </button>
+          </div>
           <nav className="menu-nav" aria-label="Primary">
             {navigation.map(([href, label]) => (
               <a key={href} href={href} onClick={() => setPanel(null)}>{label}</a>
