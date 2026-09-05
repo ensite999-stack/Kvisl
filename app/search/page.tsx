@@ -39,7 +39,7 @@ export default async function SearchPage({
 
   const results = term
     ? articles.filter((article) =>
-        [article.title, article.dek, article.author, article.section, ...(article.tags || [])]
+        [article.title, article.subtitle, article.dek, article.author, article.section, ...(article.tags || [])]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(needle))
       )
@@ -99,7 +99,7 @@ export default async function SearchPage({
             )}
           </>
         ) : (
-          <p className="search-empty">Search by title, author, category or tag, or choose one above.</p>
+          <p className="search-empty">Search by title, subtitle, author, category or tag, or choose one above.</p>
         )}
       </section>
     </div>
