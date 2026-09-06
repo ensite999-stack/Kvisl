@@ -1,7 +1,7 @@
 import 'server-only';
 import {
   cleanHttpUrl,
-  isLikelyDirectImageUrl,
+  isDirectPexelsImageUrl,
   providerImagePage,
   sourceNameFromUrl,
   type ImageProvider
@@ -69,15 +69,17 @@ export async function resolveImageUrl(value: string): Promise<ResolvedImage> {
   const clean = cleanHttpUrl(value);
   if (!clean) throw new MediaResolutionError('INVALID_URL', 'Use a valid http or https URL.');
 
-  if (isLikelyDirectImageUrl(clean)) {
-    return { url: clean, source: sourceNameFromUrl(clean) };
+  // Direct Pexels CDN links are stored and rendered as-is. No proxy, download,
+  // Blob upload, or Pexels API call is involved in this path.
+  if (isDirectPexelsImageUrl(clean)) {
+    return { url: clean, source: sourceNameFromUrl(clean), provider: 'pexels' };
   }
 
   const page = providerImagePage(clean);
   if (!page) {
     throw new MediaResolutionError(
       'DIRECT_IMAGE_REQUIRED',
-      'Use a Pexels photo-page URL, an images.pexels.com URL, or upload a Pexels image file.'
+      'Use an images.pexels.com image URL or a Pexels photo-page URL.'
     );
   }
 
