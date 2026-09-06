@@ -50,6 +50,14 @@ export function isDirectPexelsImageUrl(value: string) {
   return new URL(clean).hostname.toLowerCase() === 'images.pexels.com';
 }
 
+export function pexelsPhotoIdFromImageUrl(value: string) {
+  const clean = cleanHttpUrl(value);
+  if (!clean) return '';
+  const url = new URL(clean);
+  if (url.hostname.toLowerCase() !== 'images.pexels.com') return '';
+  return url.pathname.match(/\/photos\/(\d+)(?:\/|$)/)?.[1] || '';
+}
+
 export function isLikelyDirectImageUrl(value: string) {
   const clean = cleanHttpUrl(value);
   if (!clean) return false;
