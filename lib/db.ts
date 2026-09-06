@@ -58,6 +58,7 @@ async function ensureSchema() {
       await sql`alter table newsletter_subscribers add column if not exists unsubscribed_at timestamptz`;
       await sql`create index if not exists articles_status_date_idx on articles(status, published_at desc)`;
       await sql`create index if not exists articles_active_status_date_idx on articles(status, published_at desc) where deleted_at is null`;
+      await sql`create index if not exists articles_featured_idx on articles(featured, published_at desc) where deleted_at is null`;
       await sql`create index if not exists newsletter_frequency_idx on newsletter_subscribers(frequency, unsubscribed_at)`;
     })();
   }
@@ -77,6 +78,17 @@ function rowToArticle(row: any): Article {
   };
 }
 
+async function clearOtherFeaturedArticles(sql: ReturnType<typeof postgres>, keepSlug?: string) {
+  if (keepSlug) {
+    await sql`
+      update articles set featured=false
+      where featured=true and status='published' and deleted_at is null and slug<>${keepSlug}
+    `;
+    return;
+  }
+  await sql`update articles set featured=false where featured=true and status='published' and deleted_at is null`;
+}
+
 export async function getPublishedArticles(limit = 30): Promise<Article[]> {
   const sql = getClient();
   if (!sql) return [];
@@ -85,7 +97,7 @@ export async function getPublishedArticles(limit = 30): Promise<Article[]> {
     const rows = await sql`
       select * from articles
       where status = 'published' and deleted_at is null
-      order by published_at desc
+      order by featured desc, published_at desc
       limit ${limit}
     `;
     return rows.map(rowToArticle);
@@ -114,6 +126,7 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
   const sql = getClient();
   if (!sql) throw new Error('DATABASE_URL is not configured.');
   await ensureSchema();
+  if (input.featured && input.status === 'published') await clearOtherFeaturedArticles(sql, input.slug);
   const rows = await sql`
     insert into articles (slug, title, subtitle, dek, body, author, published_at, status, section, tags,
       cover_image, cover_alt, cover_source, cover_source_url, supporting_images, sources, featured, updated_at, deleted_at)
@@ -135,6 +148,7 @@ export async function updateArticle(originalSlug: string, input: ArticleInput): 
   const sql = getClient();
   if (!sql) throw new Error('DATABASE_URL is not configured.');
   await ensureSchema();
+  if (input.featured && input.status === 'published') await clearOtherFeaturedArticles(sql, originalSlug);
 
   const rows = await sql`
     update articles set
@@ -149,6 +163,32 @@ export async function updateArticle(originalSlug: string, input: ArticleInput): 
   `;
 
   if (!rows[0]) throw new Error('Article not found.');
+  if (input.featured && input.status === 'published' && input.slug !== originalSlug) {
+    await clearOtherFeaturedArticles(sql, input.slug);
+  }
+  return rowToArticle(rows[0]);
+}
+
+export async function setArticleFeatured(slug: string, featured: boolean): Promise<Article> {
+  const sql = getClient();
+  if (!sql) throw new Error('DATABASE_URL is not configured.');
+  await ensureSchema();
+
+  const existing = await sql`
+    select * from articles
+    where slug=${slug} and status='published' and deleted_at is null
+    limit 1
+  `;
+  if (!existing[0]) throw new Error('Published article not found.');
+
+  if (featured) await clearOtherFeaturedArticles(sql, slug);
+  const rows = await sql`
+    update articles
+    set featured=${featured}, updated_at=now()
+    where slug=${slug} and status='published' and deleted_at is null
+    returning *
+  `;
+  if (!rows[0]) throw new Error('Published article not found.');
   return rowToArticle(rows[0]);
 }
 
@@ -158,7 +198,7 @@ export async function removeArticle(slug: string) {
   await ensureSchema();
   const rows = await sql`
     update articles
-    set deleted_at=now(), updated_at=now()
+    set deleted_at=now(), featured=false, updated_at=now()
     where slug=${slug} and deleted_at is null
     returning slug
   `;
