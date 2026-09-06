@@ -50,7 +50,7 @@ export default async function ArticlePage({ params }: Props) {
   const coverImage = publicImageUrl(article.coverImage);
 
   return (
-    <article className={`essay${coverImage ? ' has-cover' : ''}`}>
+    <article className="essay">
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'Article',
@@ -66,16 +66,15 @@ export default async function ArticlePage({ params }: Props) {
         articleSection: article.section,
         keywords: article.tags.length ? article.tags.join(', ') : undefined
       }} />
-      {coverImage ? (
-        <figure className="essay-hero">
-          <div className="essay-hero-stage">
-            <img src={coverImage} alt={article.coverAlt || ''} />
-            <span className="essay-hero-shade" aria-hidden="true" />
-            <header className="essay-header essay-header-on-cover">
-              <h1>{article.title}</h1>
-              {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
-            </header>
-          </div>
+
+      <header className="essay-header essay-header-editorial">
+        <h1>{article.title}</h1>
+        {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
+      </header>
+
+      {coverImage && (
+        <figure className="essay-cover">
+          <img src={coverImage} alt={article.coverAlt || ''} />
           {article.coverSource && (
             <figcaption>
               {article.coverSourceUrl
@@ -84,11 +83,6 @@ export default async function ArticlePage({ params }: Props) {
             </figcaption>
           )}
         </figure>
-      ) : (
-        <header className="essay-header essay-header-plain">
-          <h1>{article.title}</h1>
-          {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
-        </header>
       )}
 
       <div className="essay-layout">
@@ -104,7 +98,10 @@ export default async function ArticlePage({ params }: Props) {
 
       {article.supportingImages.length > 0 && (
         <section className="supporting-images" aria-label="Supporting images">
-          {article.supportingImages.map((image, index) => <img key={image} src={publicImageUrl(image)} alt={`Supporting image ${index + 1} for ${article.title}`} loading="lazy" />)}
+          {article.supportingImages.map((image, index) => {
+            const src = publicImageUrl(image);
+            return src ? <img key={image} src={src} alt={`Supporting image ${index + 1} for ${article.title}`} loading="lazy" /> : null;
+          })}
         </section>
       )}
 
