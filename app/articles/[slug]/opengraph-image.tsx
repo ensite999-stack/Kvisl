@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 import { getArticleBySlug } from '@/lib/db';
-import { publicImageUrl } from '@/lib/media-url';
 import { SITE_MOTTO, SITE_NAME } from '@/lib/site-meta';
 
 export const alt = 'Kvisl article preview';
@@ -29,7 +28,6 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ slu
   const description = article
     ? article.dek || article.subtitle || plainTextExcerpt(article.body)
     : SITE_MOTTO;
-  const coverImage = article ? publicImageUrl(article.coverImage) : undefined;
 
   return new ImageResponse(
     (
@@ -39,94 +37,52 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ slu
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          position: 'relative',
+          justifyContent: 'space-between',
           background: '#f4f1ea',
           color: '#111111',
           fontFamily: 'Arial, Helvetica, sans-serif',
-          overflow: 'hidden'
+          padding: '48px 56px 50px'
         }}
       >
-        {coverImage ? (
-          <img
-            src={coverImage}
-            alt=""
-            width={1200}
-            height={630}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
-            }}
-          />
-        ) : null}
-
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
             display: 'flex',
-            background: coverImage
-              ? 'linear-gradient(180deg, rgba(0,0,0,0.02) 28%, rgba(0,0,0,0.82) 100%)'
-              : '#f4f1ea'
-          }}
-        />
-
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            width: '100%',
-            height: '100%',
-            padding: '48px 56px 50px'
+            alignItems: 'center',
+            fontSize: 25,
+            fontWeight: 700,
+            letterSpacing: '-0.02em'
           }}
         >
+          {SITE_NAME}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 1040 }}>
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
-              fontSize: 25,
+              fontSize: title.length > 62 ? 48 : 58,
+              lineHeight: 1.02,
               fontWeight: 700,
-              letterSpacing: '-0.02em',
-              color: coverImage ? '#ffffff' : '#111111'
+              letterSpacing: '-0.035em',
+              marginBottom: 18
             }}
           >
-            {SITE_NAME}
+            {title}
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 1040 }}>
+          {description ? (
             <div
               style={{
                 display: 'flex',
-                fontSize: title.length > 62 ? 48 : 58,
-                lineHeight: 1.02,
-                fontWeight: 700,
-                letterSpacing: '-0.035em',
-                color: coverImage ? '#ffffff' : '#111111',
-                marginBottom: 18
+                maxWidth: 980,
+                fontSize: 24,
+                lineHeight: 1.32,
+                fontWeight: 400,
+                color: '#4d4d4d'
               }}
             >
-              {title}
+              {description}
             </div>
-            {description ? (
-              <div
-                style={{
-                  display: 'flex',
-                  maxWidth: 980,
-                  fontSize: 24,
-                  lineHeight: 1.32,
-                  fontWeight: 400,
-                  color: coverImage ? 'rgba(255,255,255,0.9)' : '#4d4d4d'
-                }}
-              >
-                {description}
-              </div>
-            ) : null}
-          </div>
+          ) : null}
         </div>
       </div>
     ),
