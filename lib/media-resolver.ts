@@ -2,6 +2,7 @@ import 'server-only';
 import {
   cleanHttpUrl,
   isDirectPexelsImageUrl,
+  pexelsPhotoIdFromImageUrl,
   providerImagePage,
   sourceNameFromUrl,
   type ImageProvider
@@ -34,7 +35,7 @@ export function mediaConfiguration() {
   };
 }
 
-async function resolvePexels(id: string): Promise<ResolvedImage> {
+async function resolvePexels(id: string, preferredUrl?: string): Promise<ResolvedImage> {
   const key = process.env.PEXELS_API_KEY;
   if (!key) {
     throw new MediaResolutionError(
@@ -53,7 +54,8 @@ async function resolvePexels(id: string): Promise<ResolvedImage> {
   }
 
   const image = await response.json();
-  const url = cleanHttpUrl(image?.src?.large2x || image?.src?.large || image?.src?.original || '');
+  const apiUrl = cleanHttpUrl(image?.src?.large2x || image?.src?.large || image?.src?.original || '');
+  const url = preferredUrl || apiUrl;
   if (!url) throw new MediaResolutionError('PROVIDER_ERROR', 'Pexels did not return an image URL.', 'pexels');
 
   const photographer = String(image?.photographer || '').trim();
@@ -69,9 +71,15 @@ export async function resolveImageUrl(value: string): Promise<ResolvedImage> {
   const clean = cleanHttpUrl(value);
   if (!clean) throw new MediaResolutionError('INVALID_URL', 'Use a valid http or https URL.');
 
-  // Direct Pexels CDN links are stored and rendered as-is. No proxy, download,
-  // Blob upload, or Pexels API call is involved in this path.
   if (isDirectPexelsImageUrl(clean)) {
+    const id = pexelsPhotoIdFromImageUrl(clean);
+    if (id && process.env.PEXELS_API_KEY) {
+      try {
+        return await resolvePexels(id, clean);
+      } catch {
+        // A valid direct image should remain usable even if the credit lookup is temporarily unavailable.
+      }
+    }
     return { url: clean, source: sourceNameFromUrl(clean), provider: 'pexels' };
   }
 
