@@ -1,45 +1,66 @@
-import { createHash, randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
-import { saveNewsletterConfirmationRequest } from '@/lib/newsletter-confirmation';
+import { subscribeEmail } from '@/lib/db';
+import {
+  brandedEmailHtml,
+  brandedEmailText,
+  KVISL_LIST_ID,
+  KVISL_NEWSLETTER_FROM,
+  KVISL_REPLY_TO
+} from '@/lib/email-brand';
+import { unsubscribeToken } from '@/lib/newsletter-digest';
 import type { NewsletterFrequency } from '@/lib/types';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const confirmationLifetimeMs = 24 * 60 * 60 * 1000;
 
-function confirmationEmailHtml(confirmUrl: string) {
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="IE=edge"></head><body style="margin:0;background-color:#ffffff;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#ffffff" style="background-color:#ffffff;padding-top:40px;padding-right:20px;padding-bottom:40px;padding-left:20px;"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;margin-left:auto;margin-right:auto;"><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#111111;letter-spacing:2px;padding-bottom:28px;">KVISL</td></tr><tr><td style="font-family:Georgia,'Times New Roman',serif;font-size:32px;line-height:39px;color:#111111;padding-bottom:16px;">Confirm your subscription</td></tr><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:25px;color:#333333;padding-bottom:24px;">We received a request to subscribe this email address to Kvisl.</td></tr><tr><td style="padding-bottom:24px;"><table cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="#111111" style="background-color:#111111;"><a href="${confirmUrl}" style="display:inline-block;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:20px;color:#ffffff;text-decoration:none;padding-top:12px;padding-right:18px;padding-bottom:12px;padding-left:18px;">Confirm subscription</a></td></tr></table></td></tr><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#666666;padding-bottom:8px;">This link expires in 24 hours.</td></tr><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#666666;">If you did not request this, you can ignore this email.</td></tr></table></td></tr></table></body></html>`;
+function unsubscribeUrls(email: string) {
+  const token = unsubscribeToken(email);
+  if (!token) return null;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com').replace(/\/$/, '');
+  const params = new URLSearchParams({ email, token });
+  return {
+    visible: `${siteUrl}/newsletter/unsubscribe?${params.toString()}`,
+    oneClick: `${siteUrl}/api/newsletter/unsubscribe?${params.toString()}`
+  };
 }
 
-async function sendConfirmationEmail(email: string, confirmUrl: string): Promise<boolean> {
+async function sendSubscriptionReceipt(email: string, frequency: NewsletterFrequency): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false;
+  const unsubscribe = unsubscribeUrls(email);
+  if (!apiKey || !unsubscribe) return false;
 
-  const text = [
-    'Confirm your Kvisl subscription',
-    '',
-    'We received a request to subscribe this email address to Kvisl.',
-    '',
-    `Confirm subscription: ${confirmUrl}`,
-    '',
-    'This link expires in 24 hours.',
-    'If you did not request this, you can ignore this email.'
-  ].join('\n');
+  const cadence = frequency === 'daily' ? 'daily' : 'weekly';
+  const bodyHtml = `<p style="margin-top:0;margin-right:0;margin-bottom:16px;margin-left:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:25px;color:#333333;">Your Kvisl newsletter subscription is active.</p><table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#666666;padding-top:10px;padding-right:0;padding-bottom:10px;padding-left:0;border-top-width:1px;border-top-style:solid;border-top-color:#e5e5e5;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:#e5e5e5;">Delivery frequency: <strong style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#333333;font-weight:600;">${cadence}</strong></td></tr></table><p style="margin-top:16px;margin-right:0;margin-bottom:0;margin-left:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:21px;color:#666666;">No further action is required. You can unsubscribe at any time using the link below.</p>`;
+  const text = brandedEmailText(
+    `Kvisl subscription active\n\nYour Kvisl newsletter subscription is active.\nDelivery frequency: ${cadence}\n\nNo further action is required.`,
+    unsubscribe.visible
+  );
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
     body: JSON.stringify({
-      from: 'Kvisl <hello@kvisl.com>',
+      from: KVISL_NEWSLETTER_FROM,
       to: [email],
-      reply_to: 'distributary@kvisl.com',
-      subject: 'Confirm your Kvisl subscription',
+      reply_to: KVISL_REPLY_TO,
+      subject: 'Kvisl subscription active',
       text,
-      html: confirmationEmailHtml(confirmUrl)
+      html: brandedEmailHtml({
+        preheader: 'Your Kvisl newsletter subscription is active.',
+        eyebrow: 'Subscription',
+        title: 'Subscription active',
+        bodyHtml,
+        unsubscribeUrl: unsubscribe.visible
+      }),
+      headers: {
+        'List-ID': KVISL_LIST_ID,
+        'List-Unsubscribe': `<${unsubscribe.oneClick}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+      }
     })
   });
 
   if (!response.ok) {
-    console.error('Newsletter confirmation email failed', response.status, await response.text());
+    console.error('Subscription receipt email failed', response.status, await response.text());
     return false;
   }
   return true;
@@ -52,37 +73,26 @@ export async function POST(request: Request) {
     const honeypot = String(body?.website || '').trim();
     const frequency: NewsletterFrequency = body?.frequency === 'daily' ? 'daily' : 'weekly';
 
-    if (honeypot) return NextResponse.json({ message: 'Confirmation email sent.' });
+    if (honeypot) return NextResponse.json({ message: 'Subscribed.', emailSent: false });
     if (!emailPattern.test(email) || email.length > 254) {
       return NextResponse.json({ message: 'Enter a valid email address.' }, { status: 400 });
     }
 
-    const token = randomBytes(32).toString('base64url');
-    const tokenHash = createHash('sha256').update(token).digest('hex');
-    const expiresAt = new Date(Date.now() + confirmationLifetimeMs);
-    await saveNewsletterConfirmationRequest(email, frequency, tokenHash, expiresAt);
-
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com';
-    const confirmUrl = new URL('/api/newsletter/confirm', siteUrl);
-    confirmUrl.searchParams.set('token', token);
-
-    const emailSent = await sendConfirmationEmail(email, confirmUrl.toString()).catch((error) => {
-      console.error('Newsletter confirmation email error', error);
+    await subscribeEmail(email, frequency);
+    const emailSent = await sendSubscriptionReceipt(email, frequency).catch((error) => {
+      console.error('Subscription receipt email error', error);
       return false;
     });
 
-    if (!emailSent) {
-      return NextResponse.json(
-        { message: 'We could not send the confirmation email. Please try again.' },
-        { status: 503 }
-      );
-    }
-
-    return NextResponse.json({ message: 'Confirmation email sent.', confirmationRequired: true });
+    return NextResponse.json({
+      message: `Subscribed to the ${frequency} Kvisl newsletter.`,
+      emailSent,
+      confirmationRequired: false
+    });
   } catch (error) {
     const message = error instanceof Error && error.message.includes('DATABASE_URL')
       ? 'Subscriptions are not configured yet.'
-      : 'Unable to start the subscription right now.';
+      : 'Unable to subscribe right now.';
     return NextResponse.json({ message }, { status: 503 });
   }
 }

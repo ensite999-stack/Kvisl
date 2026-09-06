@@ -1,9 +1,17 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { getNewsletterSubscribers, getPublishedArticles, unsubscribeEmail } from './db';
+import {
+  brandedEmailHtml,
+  brandedEmailText,
+  escapeEmailHtml,
+  KVISL_LIST_ID,
+  KVISL_NEWSLETTER_FROM,
+  KVISL_REPLY_TO
+} from './email-brand';
 import type { NewsletterFrequency } from './types';
 import { formatDate } from './utils';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com';
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com').replace(/\/$/, '');
 
 function secret() {
   return process.env.NEWSLETTER_SIGNING_SECRET || process.env.ADMIN_SESSION_SECRET || process.env.CRON_SECRET || '';
@@ -25,8 +33,12 @@ export async function unsubscribeNewsletter(email: string) {
   await unsubscribeEmail(email);
 }
 
-function emailHtml(title: string, dek: string, author: string, date: string, url: string, unsubscribeUrl: string, edition: string) {
-  return `<!doctype html><html><body style="margin:0;background:#f2f1ec;color:#171714"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:38px 20px;background:#f2f1ec"><table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto"><tr><td style="font:13px Arial,Helvetica,sans-serif;letter-spacing:2px;padding-bottom:32px">KVISL</td></tr><tr><td style="font:11px Arial,Helvetica,sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#706d65;padding-bottom:11px">${edition}</td></tr><tr><td style="font:38px Georgia,'Times New Roman',serif;line-height:1.12;padding-bottom:14px">${title}</td></tr><tr><td style="font:18px Georgia,'Times New Roman',serif;line-height:1.55;color:#3e3c37;padding-bottom:18px">${dek}</td></tr><tr><td style="font:12px Arial,Helvetica,sans-serif;color:#706d65;padding-bottom:26px">By ${author} · ${date}</td></tr><tr><td style="padding-bottom:34px"><a href="${url}" style="display:inline-block;background:#171714;color:#f2f1ec;text-decoration:none;font:12px Arial,Helvetica,sans-serif;padding:12px 18px">Read on Kvisl</a></td></tr><tr><td style="border-top:1px solid #c8c5bd;padding-top:16px;font:11px Arial,Helvetica,sans-serif;line-height:1.5;color:#706d65">You subscribed to Kvisl. <a href="${unsubscribeUrl}" style="color:#706d65">Unsubscribe</a>.</td></tr></table></td></tr></table></body></html>`;
+function unsubscribeUrls(email: string, token: string) {
+  const params = new URLSearchParams({ email, token });
+  return {
+    visible: `${siteUrl}/newsletter/unsubscribe?${params.toString()}`,
+    oneClick: `${siteUrl}/api/newsletter/unsubscribe?${params.toString()}`
+  };
 }
 
 export async function sendNewsletterDigest(frequency: NewsletterFrequency) {
@@ -37,26 +49,46 @@ export async function sendNewsletterDigest(frequency: NewsletterFrequency) {
   const [article] = await getPublishedArticles(1);
   if (!article) return { sent: 0 };
 
-  const edition = frequency === 'daily' ? 'Kvisl daily' : 'Kvisl weekly';
-  const subject = `${edition}: ${article.title}`;
-  const articleUrl = `${siteUrl.replace(/\/$/, '')}/articles/${article.slug}`;
+  const edition = frequency === 'daily' ? 'Kvisl Daily' : 'Kvisl Weekly';
+  const subject = `${edition} — ${article.title}`;
+  const articleUrl = `${siteUrl}/articles/${article.slug}`;
+  const safeDek = escapeEmailHtml(article.dek);
+  const safeAuthor = escapeEmailHtml(article.author);
+  const safeDate = escapeEmailHtml(formatDate(article.publishedAt));
+  const safeArticleUrl = escapeEmailHtml(articleUrl);
   let sent = 0;
 
   for (const subscriber of subscribers) {
     const token = unsubscribeToken(subscriber.email);
     if (!token) throw new Error('Newsletter signing secret is not configured.');
-    const unsubscribeUrl = `${siteUrl.replace(/\/$/, '')}/newsletter/unsubscribe?email=${encodeURIComponent(subscriber.email)}&token=${token}`;
+    const unsubscribe = unsubscribeUrls(subscriber.email, token);
+    const bodyHtml = `<p style="margin-top:0;margin-right:0;margin-bottom:18px;margin-left:0;font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:29px;color:#3b3b3b;">${safeDek}</p><p style="margin-top:0;margin-right:0;margin-bottom:26px;margin-left:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:19px;color:#707070;">By ${safeAuthor} · ${safeDate}</p><table cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td bgcolor="#111111" style="background-color:#111111;"><a href="${safeArticleUrl}" style="display:inline-block;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#ffffff;text-decoration:none;padding-top:12px;padding-right:18px;padding-bottom:12px;padding-left:18px;">Read the essay</a></td></tr></table>`;
+    const text = brandedEmailText(
+      `${edition}\n\n${article.title}\n${article.dek}\n\nBy ${article.author} · ${formatDate(article.publishedAt)}\n\nRead: ${articleUrl}`,
+      unsubscribe.visible
+    );
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
       body: JSON.stringify({
-        from: 'Kvisl <newsletter@kvisl.com>',
+        from: KVISL_NEWSLETTER_FROM,
         to: [subscriber.email],
-        reply_to: 'distributary@kvisl.com',
+        reply_to: KVISL_REPLY_TO,
         subject,
-        html: emailHtml(article.title, article.dek, article.author, formatDate(article.publishedAt), articleUrl, unsubscribeUrl, edition),
-        text: `${edition}\n\n${article.title}\n${article.dek}\n\nBy ${article.author} · ${formatDate(article.publishedAt)}\n\n${articleUrl}\n\nUnsubscribe: ${unsubscribeUrl}`,
-        headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` }
+        text,
+        html: brandedEmailHtml({
+          preheader: article.dek,
+          eyebrow: edition,
+          title: article.title,
+          bodyHtml,
+          unsubscribeUrl: unsubscribe.visible
+        }),
+        headers: {
+          'List-ID': KVISL_LIST_ID,
+          'List-Unsubscribe': `<${unsubscribe.oneClick}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+        }
       })
     });
     if (response.ok) sent += 1;
