@@ -41,7 +41,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
   const canonical = `/articles/${article.slug}`;
-  const socialImage = absoluteUrl(`/articles/${article.slug}/opengraph-image`);
+  const socialVersion = encodeURIComponent(article.updatedAt || article.publishedAt);
+  const socialUrl = absoluteUrl(`${canonical}?v=${socialVersion}`);
+  const socialImage = absoluteUrl(`/articles/${article.slug}/opengraph-image?v=${socialVersion}`);
   const keywords = [article.section, ...article.tags].filter(Boolean);
 
   return {
@@ -70,9 +72,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: SITE_LOCALE,
       title: article.title,
       description,
-      url: canonical,
+      url: socialUrl,
       publishedTime: article.publishedAt,
-      modifiedTime: article.updatedAt,
+      modifiedTime: article.updatedAt || article.publishedAt,
       authors: [article.author],
       section: article.section,
       tags: article.tags,
@@ -103,6 +105,7 @@ export default async function ArticlePage({ params }: Props) {
   const coverImage = publicImageUrl(article.coverImage);
   const coverCredit = article.coverSource ? displayImageCredit(article.coverSource) : '';
   const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
+  const shareVersion = article.updatedAt || article.publishedAt;
 
   return (
     <article className="essay">
@@ -162,7 +165,7 @@ export default async function ArticlePage({ params }: Props) {
             <span className="essay-byline">by {article.author}</span>
             <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
           </div>
-          <ShareButtons title={article.title} />
+          <ShareButtons title={article.title} version={shareVersion} />
         </div>
       </header>
 
