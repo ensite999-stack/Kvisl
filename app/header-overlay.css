@@ -1,0 +1,19 @@
+.site-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: transparent !important;
+  border-bottom-color: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.site-header.is-scrolled {
+  position: fixed;
+  background: var(--bg) !important;
+  border-bottom-color: var(--line) !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent) !important;
+}
