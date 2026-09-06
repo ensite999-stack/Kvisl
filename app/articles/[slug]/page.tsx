@@ -11,6 +11,13 @@ export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 
+function displayImageCredit(value: string) {
+  const clean = value.trim();
+  const legacyPexels = clean.match(/^Photo on Pexels\.?\s*(.+)$/i);
+  if (legacyPexels?.[1]) return `Photo by ${legacyPexels[1].trim()} on Pexels`;
+  return clean;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
@@ -48,6 +55,7 @@ export default async function ArticlePage({ params }: Props) {
   const clean = sanitizeArticleHtml(article.body);
   const articleUrl = absoluteUrl(`/articles/${article.slug}`);
   const coverImage = publicImageUrl(article.coverImage);
+  const coverCredit = article.coverSource ? displayImageCredit(article.coverSource) : '';
 
   return (
     <article className="essay">
@@ -70,11 +78,11 @@ export default async function ArticlePage({ params }: Props) {
       {coverImage && (
         <figure className="essay-cover">
           <img src={coverImage} alt={article.coverAlt || ''} />
-          {article.coverSource && (
+          {coverCredit && (
             <figcaption>
               {article.coverSourceUrl
-                ? <a href={article.coverSourceUrl} rel="noopener noreferrer">{article.coverSource}</a>
-                : article.coverSource}
+                ? <a href={article.coverSourceUrl} rel="noopener noreferrer">{coverCredit}</a>
+                : coverCredit}
             </figcaption>
           )}
         </figure>
@@ -83,16 +91,16 @@ export default async function ArticlePage({ params }: Props) {
       <header className="essay-header essay-header-editorial">
         <h1>{article.title}</h1>
         {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
-      </header>
-
-      <div className="essay-layout">
-        <aside className="essay-side">
-          <div className="essay-meta">
-            <span>By {article.author}</span>
+        <div className="essay-author-row">
+          <div className="essay-author-copy">
+            <span className="essay-byline">by {article.author}</span>
             <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
           </div>
           <ShareButtons title={article.title} />
-        </aside>
+        </div>
+      </header>
+
+      <div className="essay-layout essay-layout-single">
         <div className="essay-body prose" dangerouslySetInnerHTML={{ __html: clean }} />
       </div>
 
