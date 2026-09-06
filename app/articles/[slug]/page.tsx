@@ -40,8 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article || article.status !== 'published') return {};
 
   const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
-  const coverImage = publicImageUrl(article.coverImage);
   const canonical = `/articles/${article.slug}`;
+  const socialImage = absoluteUrl(`/articles/${article.slug}/opengraph-image`);
   const keywords = [article.section, ...article.tags].filter(Boolean);
 
   return {
@@ -76,13 +76,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       authors: [article.author],
       section: article.section,
       tags: article.tags,
-      images: coverImage ? [{ url: coverImage, alt: article.coverAlt || article.title }] : undefined
+      images: [{
+        url: socialImage,
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: article.coverAlt || article.title
+      }]
     },
     twitter: {
       card: 'summary_large_image',
       title: article.title,
       description,
-      images: coverImage ? [coverImage] : undefined
+      images: [socialImage]
     }
   };
 }
