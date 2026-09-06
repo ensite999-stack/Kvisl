@@ -14,6 +14,7 @@ import './kvisl-v2.css';
 import './close-controls.css';
 import './home.css';
 import './editor-enhancements.css';
+import './editor-v2.css';
 import './article.css';
 
 const motto = 'Sparking Thought, Growing Wild';
