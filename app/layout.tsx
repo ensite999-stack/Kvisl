@@ -60,7 +60,8 @@ export const metadata: Metadata = {
     ? { google: process.env.GOOGLE_SITE_VERIFICATION }
     : undefined,
   icons: {
-    icon: [{ url: '/kvisl-bimi.svg', type: 'image/svg+xml' }]
+    icon: [{ url: '/icon.svg?v=2', type: 'image/svg+xml', sizes: 'any' }],
+    shortcut: ['/icon.svg?v=2']
   },
   category: 'magazine'
 };
