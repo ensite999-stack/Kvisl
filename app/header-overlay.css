@@ -10,10 +10,40 @@
   box-shadow: none !important;
 }
 
+.site-header:not(.is-scrolled) .wordmark-link,
+.site-header:not(.is-scrolled) .search-button,
+.site-header:not(.is-scrolled) .menu-button {
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+.site-header:not(.is-scrolled) .wordmark {
+  filter: brightness(0) invert(1) !important;
+}
+
 .site-header.is-scrolled {
   position: fixed;
   background: var(--bg) !important;
   border-bottom-color: var(--line) !important;
   backdrop-filter: none !important;
   box-shadow: 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent) !important;
+}
+
+.site-header.is-scrolled .wordmark-link,
+.site-header.is-scrolled .search-button,
+.site-header.is-scrolled .menu-button {
+  color: var(--text);
+  mix-blend-mode: normal;
+}
+
+.site-header.is-scrolled .wordmark {
+  filter: brightness(0) !important;
+}
+
+html[data-theme="dark"] .site-header.is-scrolled .wordmark {
+  filter: invert(1) !important;
+}
+
+html[data-theme="comfort"] .site-header.is-scrolled .wordmark {
+  filter: brightness(.22) !important;
 }
