@@ -1,49 +1,89 @@
 .site-header {
-  position: absolute;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
+  left: auto;
+  right: auto;
   width: 100%;
-  background: transparent !important;
-  border-bottom-color: transparent !important;
+  z-index: 100;
+  background: var(--bg) !important;
+  color: var(--text);
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 10%, transparent) !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
 
-.site-header:not(.is-scrolled) .wordmark-link,
-.site-header:not(.is-scrolled) .search-button,
-.site-header:not(.is-scrolled) .menu-button {
-  color: #fff;
-  mix-blend-mode: difference;
-}
-
-.site-header:not(.is-scrolled) .wordmark {
-  filter: brightness(0) invert(1) !important;
-}
-
 .site-header.is-scrolled {
-  position: fixed;
+  position: sticky;
   background: var(--bg) !important;
-  border-bottom-color: var(--line) !important;
+  border-bottom-color: color-mix(in srgb, var(--text) 14%, transparent) !important;
   backdrop-filter: none !important;
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent) !important;
+  box-shadow: none !important;
 }
 
-.site-header.is-scrolled .wordmark-link,
-.site-header.is-scrolled .search-button,
-.site-header.is-scrolled .menu-button {
+.site-header .header-inner {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  min-height: 64px;
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-header .wordmark-link {
+  position: absolute;
+  left: 50%;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
+  z-index: 2;
+}
+
+.site-header .wordmark {
+  width: 146px;
+  height: 40px;
+  filter: brightness(0) !important;
+}
+
+.site-header .header-actions {
+  width: 100%;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+}
+
+.site-header .search-button,
+.site-header .menu-button {
   color: var(--text);
   mix-blend-mode: normal;
 }
 
-.site-header.is-scrolled .wordmark {
-  filter: brightness(0) !important;
-}
-
-html[data-theme="dark"] .site-header.is-scrolled .wordmark {
+html[data-theme="dark"] .site-header .wordmark {
   filter: invert(1) !important;
 }
 
-html[data-theme="comfort"] .site-header.is-scrolled .wordmark {
+html[data-theme="comfort"] .site-header .wordmark {
   filter: brightness(.22) !important;
+}
+
+@media (max-width: 620px) {
+  .site-header .header-inner {
+    min-height: 60px;
+    padding: 5px 14px;
+  }
+
+  .site-header .wordmark {
+    width: 132px;
+    height: 36px;
+  }
+
+  .site-header .search-button,
+  .site-header .menu-button {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
 }
