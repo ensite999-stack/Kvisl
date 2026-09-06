@@ -10,6 +10,8 @@ import { absoluteUrl, formatDate } from '@/lib/utils';
 
 export const revalidate = 60;
 
+const SOCIAL_IMAGE_VERSION = '2';
+
 type Props = { params: Promise<{ slug: string }> };
 
 function displayImageCredit(value: string) {
@@ -41,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
   const canonical = `/articles/${article.slug}`;
-  const socialImage = absoluteUrl(`/articles/${article.slug}/opengraph-image`);
+  const socialImage = absoluteUrl(`/articles/${article.slug}/opengraph-image?v=${SOCIAL_IMAGE_VERSION}`);
   const keywords = [article.section, ...article.tags].filter(Boolean);
 
   return {
@@ -78,6 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       tags: article.tags,
       images: [{
         url: socialImage,
+        secureUrl: socialImage,
         width: 1200,
         height: 630,
         type: 'image/png',
