@@ -27,8 +27,8 @@ export function Newsletter() {
     const form = new FormData(formElement);
 
     setSubmissionState('pending');
-    setMessage('Joining Kvisl…');
-    setDetail('Saving your subscription.');
+    setMessage('Sending confirmation…');
+    setDetail('Preparing a secure confirmation link.');
 
     try {
       const response = await fetch('/api/newsletter', {
@@ -40,23 +40,19 @@ export function Newsletter() {
 
       if (!response.ok) {
         setSubmissionState('error');
-        setMessage('Subscription failed');
-        setDetail(data.message || 'Unable to subscribe right now. Please try again.');
+        setMessage('Confirmation email failed');
+        setDetail(data.message || 'Unable to send a confirmation email right now. Please try again.');
         return;
       }
 
       setSubmissionState('success');
-      setMessage("You're subscribed");
-      setDetail(
-        data.emailSent
-          ? 'Check your inbox for a Kvisl welcome email.'
-          : `Your address has been saved for the ${frequency} newsletter.`
-      );
+      setMessage('Check your inbox to confirm');
+      setDetail('Open the email from Kvisl and select “Confirm subscription”. The link expires in 24 hours.');
       formElement.reset();
     } catch {
       setSubmissionState('error');
-      setMessage('Subscription failed');
-      setDetail('Unable to subscribe right now. Please try again.');
+      setMessage('Confirmation email failed');
+      setDetail('Unable to send a confirmation email right now. Please try again.');
     }
   }
 
@@ -106,7 +102,7 @@ export function Newsletter() {
           onChange={clearFeedback}
         />
         <button type="submit" disabled={pending} aria-disabled={pending}>
-          <span>{pending ? 'Subscribing…' : submissionState === 'success' ? 'Subscribed' : 'Subscribe'}</span>
+          <span>{pending ? 'Sending…' : submissionState === 'success' ? 'Email sent' : 'Subscribe'}</span>
         </button>
       </div>
 
