@@ -44,6 +44,12 @@ export function providerImagePage(value: string): ProviderImagePage | null {
   return null;
 }
 
+export function isDirectPexelsImageUrl(value: string) {
+  const clean = cleanHttpUrl(value);
+  if (!clean) return false;
+  return new URL(clean).hostname.toLowerCase() === 'images.pexels.com';
+}
+
 export function isLikelyDirectImageUrl(value: string) {
   const clean = cleanHttpUrl(value);
   if (!clean) return false;
