@@ -67,11 +67,6 @@ export default async function ArticlePage({ params }: Props) {
         keywords: article.tags.length ? article.tags.join(', ') : undefined
       }} />
 
-      <header className="essay-header essay-header-editorial">
-        <h1>{article.title}</h1>
-        {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
-      </header>
-
       {coverImage && (
         <figure className="essay-cover">
           <img src={coverImage} alt={article.coverAlt || ''} />
@@ -84,6 +79,11 @@ export default async function ArticlePage({ params }: Props) {
           )}
         </figure>
       )}
+
+      <header className="essay-header essay-header-editorial">
+        <h1>{article.title}</h1>
+        {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
+      </header>
 
       <div className="essay-layout">
         <aside className="essay-side">
