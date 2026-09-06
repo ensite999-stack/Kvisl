@@ -2,11 +2,20 @@
 
 import { useState } from 'react';
 
-export function ShareButtons({ title }: { title: string }) {
+export function ShareButtons({ title, version }: { title: string; version?: string }) {
   const [status, setStatus] = useState('');
 
+  function currentShareUrl() {
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = '';
+    if (version) url.searchParams.set('v', version);
+    return url.toString();
+  }
+
   async function share() {
-    const data = { title, url: window.location.href };
+    const url = currentShareUrl();
+    const data = { title, url };
     if (navigator.share) {
       try {
         await navigator.share(data);
@@ -16,7 +25,7 @@ export function ShareButtons({ title }: { title: string }) {
         return;
       }
     }
-    await navigator.clipboard.writeText(window.location.href);
+    await navigator.clipboard.writeText(url);
     setStatus('Link copied.');
   }
 
