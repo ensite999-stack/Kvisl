@@ -10,7 +10,7 @@ The private `/admin` area provides:
 - Tiptap rich-text body editing
 - author, date, section and slug fields
 - cover/inline image upload, image replacement and supporting-image URLs
-- direct image URLs plus optional Unsplash/Pexels photo-page resolution
+- Pexels photo-page resolution with automatic photographer credit
 - structured sources/data citations
 - draft, publish, edit and delete workflows
 - homepage-feature flag
@@ -18,7 +18,7 @@ The private `/admin` area provides:
 
 Articles and newsletter subscriptions are stored in PostgreSQL through `DATABASE_URL`. Tables are created automatically on first use. Editorial image uploads use a public Vercel Blob Store and the OIDC-compatible presigned upload flow.
 
-An image-file URL such as `https://images.unsplash.com/...` works directly. A gallery webpage such as `https://unsplash.com/photos/...` is not itself an image; set `UNSPLASH_ACCESS_KEY` or `PEXELS_API_KEY` to let the editor resolve supported photo pages and add their credits automatically.
+Kvisl uses Pexels for editorial photography. Set `PEXELS_API_KEY`, then paste a Pexels photo-page URL such as `https://www.pexels.com/photo/...` into the editor. The server resolves the image and fills `Photo by [photographer] on Pexels` plus the original photo-page link automatically. A direct `https://images.pexels.com/...` URL also works, but its photographer must be entered manually. Uploaded Pexels files use Vercel Blob and likewise need a manual credit.
 
 ## Privacy and analytics
 
@@ -54,7 +54,7 @@ Included:
 3. Attach a PostgreSQL-compatible database and expose its connection string as `DATABASE_URL`.
 4. Set strong `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` values.
 5. Create and connect a **public Vercel Blob Store**. Vercel supplies `BLOB_STORE_ID` and rotating OIDC credentials; `BLOB_READ_WRITE_TOKEN` can be kept as a fallback.
-6. Optional: set `UNSPLASH_ACCESS_KEY` and/or `PEXELS_API_KEY` when editors need to paste normal photo-page URLs instead of direct image-file URLs.
+6. Add `PEXELS_API_KEY` as a server-side Secret for Production and Preview so editors can paste normal Pexels photo-page URLs and receive automatic credits.
 7. Redeploy production after connecting storage or changing environment variables so the runtime receives the updated configuration.
 8. Enable Vercel Web Analytics and the desired Vercel Firewall / Bot protection features in the Vercel project.
 9. Add `kvisl.com` and `www.kvisl.com` as domains, with one canonical redirect.
