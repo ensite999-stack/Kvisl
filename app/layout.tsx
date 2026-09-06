@@ -8,6 +8,7 @@ import { JsonLd } from '@/components/json-ld';
 import { BrowserTitle } from '@/components/browser-title';
 import { SecondaryClose } from '@/components/secondary-close';
 import { absoluteUrl } from '@/lib/utils';
+import { SITE_DESCRIPTION, SITE_LANGUAGE, SITE_LOCALE, SITE_MOTTO, SITE_NAME, SITE_URL } from '@/lib/site-meta';
 import './globals.css';
 import './aeon-refresh.css';
 import './kvisl-v2.css';
@@ -19,19 +20,48 @@ import './article.css';
 import './header-overlay.css';
 import './newsletter-feedback.css';
 
-const motto = 'Sparking Thought, Growing Wild';
-const description = `${motto}. Kvisl is an independent magazine exploring nature, culture and human thought through essays, deep reading and quiet reflection.`;
-
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com'),
-  title: { default: motto, template: '%s — Kvisl' },
-  description,
-  keywords: ['independent magazine', 'essays', 'nature', 'culture', 'philosophy', 'humanities', 'ideas'],
-  authors: [{ name: 'Kvisl', url: absoluteUrl('/about') }],
-  creator: 'Kvisl', publisher: 'Kvisl', alternates: { canonical: '/' },
-  openGraph: { type: 'website', siteName: 'Kvisl', title: 'Kvisl — Sparking Thought, Growing Wild', description, url: '/' },
-  twitter: { card: 'summary_large_image', title: 'Kvisl — Sparking Thought, Growing Wild', description },
-  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
+  title: { default: `${SITE_NAME} — ${SITE_MOTTO}`, template: `%s — ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  keywords: ['independent magazine', 'long-form essays', 'essays', 'nature', 'culture', 'philosophy', 'humanities', 'ideas', 'deep reading'],
+  authors: [{ name: SITE_NAME, url: absoluteUrl('/about') }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  alternates: {
+    types: { 'application/rss+xml': absoluteUrl('/feed.xml') }
+  },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — ${SITE_MOTTO}`,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    locale: SITE_LOCALE
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_NAME} — ${SITE_MOTTO}`,
+    description: SITE_DESCRIPTION
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1
+    }
+  },
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
+  icons: {
+    icon: [{ url: '/kvisl-bimi.svg', type: 'image/svg+xml' }]
+  },
   category: 'magazine'
 };
 
@@ -45,13 +75,40 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={SITE_LANGUAGE} suppressHydrationWarning>
       <body>
         <ThemeProvider />
         <BrowserTitle />
         <JsonLd data={[
-          { '@context': 'https://schema.org', '@type': 'Organization', name: 'Kvisl', url: absoluteUrl('/'), slogan: motto },
-          { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Kvisl', url: absoluteUrl('/'), description }
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            '@id': `${SITE_URL}/#organization`,
+            name: SITE_NAME,
+            url: SITE_URL,
+            description: SITE_DESCRIPTION,
+            slogan: SITE_MOTTO,
+            logo: {
+              '@type': 'ImageObject',
+              url: absoluteUrl('/kvisl-bimi.svg')
+            },
+            email: 'distributary@kvisl.com'
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            '@id': `${SITE_URL}/#website`,
+            name: SITE_NAME,
+            url: SITE_URL,
+            description: SITE_DESCRIPTION,
+            inLanguage: SITE_LANGUAGE,
+            publisher: { '@id': `${SITE_URL}/#organization` },
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: `${SITE_URL}/search?q={search_term_string}`,
+              'query-input': 'required name=search_term_string'
+            }
+          }
         ]} />
         <Header />
         <SecondaryClose />

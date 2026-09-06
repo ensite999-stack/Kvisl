@@ -1,14 +1,22 @@
 import type { MetadataRoute } from 'next';
+import { SITE_DESCRIPTION, SITE_MOTTO, SITE_NAME } from '@/lib/site-meta';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Kvisl',
-    short_name: 'Kvisl',
-    description: 'Sparking Thought, Growing Wild. Independent essays on nature, culture and human thought.',
+    name: `${SITE_NAME} — ${SITE_MOTTO}`,
+    short_name: SITE_NAME,
+    description: SITE_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
-    background_color: '#f2f1ec',
-    theme_color: '#171714',
-    icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml' }]
+    background_color: '#ffffff',
+    theme_color: '#ffffff',
+    icons: [
+      {
+        src: '/kvisl-bimi.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'any'
+      }
+    ]
   };
 }

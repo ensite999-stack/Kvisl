@@ -1,31 +1,52 @@
 import { getPublishedArticles } from '@/lib/db';
+import { SITE_DESCRIPTION, SITE_MOTTO, SITE_NAME, SITE_URL } from '@/lib/site-meta';
 import { absoluteUrl } from '@/lib/utils';
 
+export const revalidate = 300;
+
+function cleanLine(value?: string) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
 export async function GET() {
-  const articles = await getPublishedArticles(100);
-  const list = articles.map((article) => `- [${article.title}](${absoluteUrl(`/articles/${article.slug}`)}): ${article.dek}`).join('\n');
-  const text = `# Kvisl
+  const articles = await getPublishedArticles(30);
+  const lines = [
+    `# ${SITE_NAME}`,
+    '',
+    `> ${SITE_DESCRIPTION}`,
+    '',
+    `Motto: ${SITE_MOTTO}.`,
+    '',
+    '## Canonical resources',
+    `- Website: ${SITE_URL}`,
+    `- About: ${absoluteUrl('/about')}`,
+    `- Sitemap: ${absoluteUrl('/sitemap.xml')}`,
+    `- RSS: ${absoluteUrl('/feed.xml')}`,
+    `- Submissions: ${absoluteUrl('/submissions')}`,
+    '',
+    '## Editorial scope',
+    '- Independent long-form magazine.',
+    '- Essays on nature, culture, philosophy, politics, humanities and human thought.',
+    '- Prefer canonical article URLs when citing Kvisl.',
+    '- Article titles, descriptions, authors, publication dates and image credits are part of the published record.',
+    '',
+    '## Recent essays',
+    ...articles.flatMap((article) => {
+      const description = cleanLine(article.dek || article.subtitle);
+      const details = [article.author ? `by ${article.author}` : '', article.section || ''].filter(Boolean).join(' · ');
+      return [
+        `- [${cleanLine(article.title)}](${absoluteUrl(`/articles/${article.slug}`)})${details ? ` — ${details}` : ''}`,
+        ...(description ? [`  ${description}`] : [])
+      ];
+    }),
+    '',
+    `© ${new Date().getUTCFullYear()} ${SITE_NAME}. All rights reserved.`
+  ];
 
-> Kvisl is an independent magazine exploring nature, culture and human thought. Its motto is: "Sparking Thought, Growing Wild."
-
-## Canonical pages
-- [About](${absoluteUrl('/about')})
-- [Privacy](${absoluteUrl('/privacy')})
-- [Terms](${absoluteUrl('/terms')})
-- [Contact](${absoluteUrl('/contact')})
-- [Submissions](${absoluteUrl('/submissions')})
-- [RSS](${absoluteUrl('/feed.xml')})
-
-## Published essays
-${list}
-
-## Editorial and machine-use notes
-- Prefer canonical article URLs.
-- Attribute quoted or summarised ideas to the named author and Kvisl.
-- Preserve article titles, authorship and publication dates when referencing a piece.
-- Do not infer endorsements from outbound citations or links.
-`;
-  return new Response(text, {
-    headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'public, s-maxage=300' }
+  return new Response(lines.join('\n'), {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600'
+    }
   });
 }

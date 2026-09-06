@@ -5,6 +5,7 @@ import { ShareButtons } from '@/components/share-buttons';
 import { getArticleBySlug } from '@/lib/db';
 import { publicImageUrl } from '@/lib/media-url';
 import { sanitizeArticleHtml } from '@/lib/sanitize';
+import { SITE_LANGUAGE, SITE_LOCALE, SITE_NAME, SITE_URL } from '@/lib/site-meta';
 import { absoluteUrl, formatDate } from '@/lib/utils';
 
 export const revalidate = 60;
@@ -18,24 +19,63 @@ function displayImageCredit(value: string) {
   return clean;
 }
 
+function plainTextExcerpt(html: string, limit = 180) {
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return undefined;
+  return text.length > limit ? `${text.slice(0, limit - 1).trimEnd()}…` : text;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article || article.status !== 'published') return {};
-  const description = article.dek || article.subtitle || undefined;
+
+  const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
   const coverImage = publicImageUrl(article.coverImage);
+  const canonical = `/articles/${article.slug}`;
+  const keywords = [article.section, ...article.tags].filter(Boolean);
+
   return {
     title: article.title,
     description,
-    alternates: { canonical: `/articles/${article.slug}` },
+    keywords,
+    authors: [{ name: article.author }],
+    creator: article.author,
+    publisher: SITE_NAME,
+    category: article.section,
+    alternates: { canonical },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1
+      }
+    },
     openGraph: {
       type: 'article',
+      siteName: SITE_NAME,
+      locale: SITE_LOCALE,
       title: article.title,
       description,
-      url: `/articles/${article.slug}`,
+      url: canonical,
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt,
       authors: [article.author],
+      section: article.section,
+      tags: article.tags,
       images: coverImage ? [{ url: coverImage, alt: article.coverAlt || article.title }] : undefined
     },
     twitter: {
@@ -56,23 +96,43 @@ export default async function ArticlePage({ params }: Props) {
   const articleUrl = absoluteUrl(`/articles/${article.slug}`);
   const coverImage = publicImageUrl(article.coverImage);
   const coverCredit = article.coverSource ? displayImageCredit(article.coverSource) : '';
+  const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
 
   return (
     <article className="essay">
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'Article',
+        '@id': `${articleUrl}#article`,
+        url: articleUrl,
         headline: article.title,
         alternativeHeadline: article.subtitle || undefined,
-        description: article.dek || article.subtitle || undefined,
+        description,
         datePublished: article.publishedAt,
         dateModified: article.updatedAt || article.publishedAt,
-        mainEntityOfPage: articleUrl,
-        image: coverImage ? absoluteUrl(coverImage) : undefined,
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': articleUrl
+        },
+        image: coverImage ? [absoluteUrl(coverImage)] : undefined,
+        thumbnailUrl: coverImage ? absoluteUrl(coverImage) : undefined,
+        inLanguage: SITE_LANGUAGE,
+        isPartOf: { '@id': `${SITE_URL}/#website` },
         author: { '@type': 'Person', name: article.author },
-        publisher: { '@type': 'Organization', name: 'Kvisl', url: absoluteUrl('/') },
+        publisher: {
+          '@id': `${SITE_URL}/#organization`,
+          '@type': 'Organization',
+          name: SITE_NAME,
+          url: SITE_URL,
+          logo: {
+            '@type': 'ImageObject',
+            url: absoluteUrl('/kvisl-bimi.svg')
+          }
+        },
+        copyrightHolder: { '@id': `${SITE_URL}/#organization` },
+        copyrightYear: new Date(article.publishedAt).getUTCFullYear(),
         articleSection: article.section,
-        keywords: article.tags.length ? article.tags.join(', ') : undefined
+        keywords: article.tags.length ? article.tags.join(', ') : article.section || undefined
       }} />
 
       {coverImage && (
