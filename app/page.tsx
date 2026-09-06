@@ -7,34 +7,44 @@ import { absoluteUrl } from '@/lib/utils';
 
 export const revalidate = 60;
 
-const title = `${SITE_NAME} — ${SITE_MOTTO}`;
-const socialImage = absoluteUrl('/opengraph-image');
+const siteTitle = `${SITE_NAME} — ${SITE_MOTTO}`;
 
-export const metadata: Metadata = {
-  title: { absolute: title },
-  description: SITE_DESCRIPTION,
-  alternates: { canonical: '/' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title,
+function latestByPublishedAt<T extends { publishedAt: string }>(items: T[]) {
+  return [...items].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())[0];
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const articles = await getPublishedArticles(40);
+  const latest = latestByPublishedAt(articles);
+  const latestImage = latest ? publicImageUrl(latest.coverImage) : undefined;
+  const shareImage = latestImage ? absoluteUrl(latestImage) : undefined;
+  const shareTitle = latest?.title || siteTitle;
+  const shareDescription = latest
+    ? latest.dek || latest.subtitle || SITE_DESCRIPTION
+    : SITE_DESCRIPTION;
+
+  return {
+    title: { absolute: siteTitle },
     description: SITE_DESCRIPTION,
-    url: SITE_URL,
-    images: [{
-      url: socialImage,
-      width: 1200,
-      height: 630,
-      type: 'image/png',
-      alt: title
-    }]
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title,
-    description: SITE_DESCRIPTION,
-    images: [socialImage]
-  }
-};
+    alternates: { canonical: '/' },
+    openGraph: {
+      type: 'website',
+      siteName: SITE_NAME,
+      title: shareTitle,
+      description: shareDescription,
+      url: SITE_URL,
+      images: shareImage
+        ? [{ url: shareImage, alt: latest?.coverAlt || shareTitle }]
+        : undefined
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: shareTitle,
+      description: shareDescription,
+      images: shareImage ? [shareImage] : undefined
+    }
+  };
+}
 
 function BookmarkMark() {
   return (
