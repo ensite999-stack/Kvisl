@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
   const canonical = `/articles/${article.slug}`;
-  const socialVersion = encodeURIComponent(article.updatedAt || article.publishedAt);
+  const socialVersion = encodeURIComponent(`2-${article.updatedAt || article.publishedAt}`);
   const socialUrl = absoluteUrl(`${canonical}?v=${socialVersion}`);
   const socialImage = absoluteUrl(`/articles/${article.slug}/opengraph-image?v=${socialVersion}`);
   const keywords = [article.section, ...article.tags].filter(Boolean);
@@ -105,7 +105,7 @@ export default async function ArticlePage({ params }: Props) {
   const coverImage = publicImageUrl(article.coverImage);
   const coverCredit = article.coverSource ? displayImageCredit(article.coverSource) : '';
   const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
-  const shareVersion = article.updatedAt || article.publishedAt;
+  const shareVersion = `2-${article.updatedAt || article.publishedAt}`;
 
   return (
     <article className="essay">
