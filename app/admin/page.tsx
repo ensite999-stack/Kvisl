@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { isAdminAuthenticated } from '@/lib/auth';
 import { AdminLogin } from './login';
-import { EditorDashboardV2 } from './editor-dashboard-v2';
+import { EditorDashboardParagraph } from './editor-dashboard-paragraph';
 import { FeaturedManager } from './featured-manager';
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default async function AdminPage() {
   const authenticated = await isAdminAuthenticated();
   return (
     <div className="admin-shell">
-      {authenticated ? <><FeaturedManager /><EditorDashboardV2 /></> : <AdminLogin />}
+      {authenticated ? <><FeaturedManager /><EditorDashboardParagraph /></> : <AdminLogin />}
     </div>
   );
 }
