@@ -97,7 +97,7 @@ const copy = {
     cover: '封面图', uploadCover: '上传封面', replaceCover: '更换封面', removeCover: '移除封面', coverDescription: '封面图文字说明', coverDescriptionHelp: '简单描述图片内容，方便图片无法显示或读屏时理解。', imageSource: '图片署名（可选）', coverSourceHelp: '推荐格式：Photo by 摄影师姓名 on Pexels。使用 Pexels 照片页时会自动填写。', imageSourceUrl: 'Pexels 照片页链接（可选）', imageSourceUrlHelp: '应链接到原始 Pexels 照片页；使用照片页解析时会自动填写。',
     imageUrl: 'Pexels 图片链接', imageUrlHelp: '推荐粘贴 Pexels 照片详情页，系统会自动取得图片、摄影师署名与来源链接。', useImageUrl: '解析 Pexels 链接', insertImageUrl: '插入或替换 Pexels 图片', invalidImageUrl: '链接无效，请使用 Pexels 照片页、images.pexels.com 地址，或上传来自 Pexels 的文件。', linkedImageReady: 'Pexels 图片及署名已准备好。', linkedImageInserted: 'Pexels 图片与署名已插入正文。', imageReplaced: '选中的正文图片已替换。', replaceSelectedHelp: '先在正文中点选一张图片，再使用链接或上传新图即可替换。', resolvingImage: '正在解析 Pexels 链接…', directImageRequired: '请使用 Pexels 照片页、images.pexels.com 地址，或上传来自 Pexels 的图片文件。', providerKeyMissing: '请先在 Vercel 添加服务端环境变量 PEXELS_API_KEY，或改用 images.pexels.com 图片地址。', pexelsKeyMissing: 'Pexels 照片页自动解析尚未启用：请在 Vercel 添加 PEXELS_API_KEY。', storageMissing: '图片上传尚未配置。请先在 Vercel 为项目连接公开 Blob Store；Pexels 链接仍可使用。',
     body: '正文', compactBody: '收起正文', expandBody: '展开正文', bold: '粗体', italic: '斜体', heading: '小标题', smallerHeading: '次级标题', quote: '引用', list: '列表', link: '链接', undo: '撤销', redo: '重做',
-    textColor: '文字颜色', selectedColor: '选中文字', lineColor: '当前行颜色', paragraphColor: '整段颜色', clearColor: '清除颜色', imageLine: '插入到第几行', imageLineHelp: '按正文中的段落、标题、列表或图片顺序计算。', inlineSourceHelp: '使用 Pexels 照片页时会自动插入摄影师署名；上传文件时请手动填写“Photo by 摄影师姓名 on Pexels”。', insertImage: '上传 Pexels 图片',
+    textColor: '文字颜色', selectedColor: '选中文字', lineColor: '当前行颜色', paragraphColor: '整段颜色', clearColor: '清除颜色', imageLine: '插入在第几段之后', imageLineHelp: '只按正文段落计算位置；标题、列表、图片和图片署名不计入段落。', inlineSourceHelp: '使用 Pexels 照片页时会自动插入摄影师署名；上传文件时请手动填写“Photo by 摄影师姓名 on Pexels”。', insertImage: '上传 Pexels 图片',
     uploading: '正在上传', uploadSuccess: '上传成功，图片已显示。', uploadFailed: '图片上传失败。当前允许单张图片最大 50 MB；如果一直停在 0%，可直接使用图片链接。', uploadSlow: '0% 通常表示浏览器还在连接 Blob；移动网络或 VPN 可能让直传连接变慢。', coverUploaded: '封面已上传。', imageInserted: '图片已插入正文。',
     sources: '资料来源（可选）', sourcesHelp: '每行一条：名称｜链接｜备注。只有名称也可以。', sourcesPlaceholder: '资料名称｜https://example.com｜可选备注', saveDraft: '存为草稿', publish: '发布', delete: '删除', draftStatus: '草稿', publishedStatus: '已发布',
     loadFailed: '文章加载失败，请稍后再试。', addTitle: '请先填写标题。', saveFailed: '保存失败，请稍后再试。', publishedMessage: '文章已发布。', draftSaved: '草稿已保存。', deleteConfirm: '确定删除这篇文章吗？删除后无法恢复。', deleteFailed: '删除失败，请稍后再试。', deleted: '文章已删除。', linkPrompt: '输入链接地址', noArticles: '还没有文章。', backToTop: '返回顶部'
@@ -109,7 +109,7 @@ const copy = {
     cover: 'Cover image', uploadCover: 'Upload cover', replaceCover: 'Replace cover', removeCover: 'Remove cover', coverDescription: 'Cover image description', coverDescriptionHelp: 'Briefly describe the image for readers when it cannot be seen or loaded.', imageSource: 'Image credit (optional)', coverSourceHelp: 'Recommended: Photo by [photographer] on Pexels. It is filled automatically from a Pexels photo page.', imageSourceUrl: 'Pexels photo-page link (optional)', imageSourceUrlHelp: 'Link to the original Pexels photo page. It is filled automatically when that page is resolved.',
     imageUrl: 'Pexels image link', imageUrlHelp: 'Paste the Pexels photo page to retrieve the image, photographer credit and source link automatically.', useImageUrl: 'Resolve Pexels link', insertImageUrl: 'Insert or replace Pexels image', invalidImageUrl: 'Use a Pexels photo page, an images.pexels.com URL, or upload a file sourced from Pexels.', linkedImageReady: 'The Pexels image and credit are ready.', linkedImageInserted: 'The Pexels image and credit were inserted.', imageReplaced: 'The selected article image was replaced.', replaceSelectedHelp: 'Select an image in the article, then use a URL or upload a new file to replace it.', resolvingImage: 'Resolving Pexels link…', directImageRequired: 'Use a Pexels photo page, an images.pexels.com URL, or upload a Pexels image file.', providerKeyMissing: 'Add the server-side PEXELS_API_KEY in Vercel, or use an images.pexels.com URL.', pexelsKeyMissing: 'Automatic Pexels photo-page resolution is not enabled. Add PEXELS_API_KEY in Vercel.', storageMissing: 'Image upload is not configured. Connect a public Blob Store to this Vercel project; Pexels links still work.',
     body: 'Article text', compactBody: 'Compact article text', expandBody: 'Expand article text', bold: 'Bold', italic: 'Italic', heading: 'Heading', smallerHeading: 'Smaller heading', quote: 'Quote', list: 'List', link: 'Link', undo: 'Undo', redo: 'Redo',
-    textColor: 'Text color', selectedColor: 'Selected text', lineColor: 'Current line', paragraphColor: 'Whole paragraph', clearColor: 'Clear color', imageLine: 'Insert at line', imageLineHelp: 'Lines are counted by paragraphs, headings, lists and images in the editor.', inlineSourceHelp: 'A Pexels photo page adds the photographer credit automatically. For uploads, enter “Photo by [photographer] on Pexels” manually.', insertImage: 'Upload Pexels image',
+    textColor: 'Text color', selectedColor: 'Selected text', lineColor: 'Current line', paragraphColor: 'Whole paragraph', clearColor: 'Clear color', imageLine: 'Insert after paragraph', imageLineHelp: 'Only body paragraphs are counted; headings, lists, images and image credits are ignored.', inlineSourceHelp: 'A Pexels photo page adds the photographer credit automatically. For uploads, enter “Photo by [photographer] on Pexels” manually.', insertImage: 'Upload Pexels image',
     uploading: 'Uploading', uploadSuccess: 'Upload succeeded and the image is visible.', uploadFailed: 'Image upload failed. Images up to 50 MB are allowed. If it stays at 0%, use an image URL instead.', uploadSlow: '0% usually means the browser is still connecting to Blob; mobile networks or VPNs can slow that direct connection.', coverUploaded: 'Cover uploaded.', imageInserted: 'Image inserted into the article.',
     sources: 'Sources (optional)', sourcesHelp: 'One per line: name | link | note. A name by itself is also fine.', sourcesPlaceholder: 'Source name | https://example.com | optional note', saveDraft: 'Save draft', publish: 'Publish', delete: 'Delete', draftStatus: 'Draft', publishedStatus: 'Published',
     loadFailed: 'Could not load the articles. Please try again.', addTitle: 'Add a title first.', saveFailed: 'Could not save. Please try again.', publishedMessage: 'Article published.', draftSaved: 'Draft saved.', deleteConfirm: 'Delete this article? This cannot be undone.', deleteFailed: 'Could not delete the article. Please try again.', deleted: 'Article deleted.', linkPrompt: 'Enter the link address', noArticles: 'No articles yet.', backToTop: 'Back to top'
@@ -300,12 +300,34 @@ export function EditorDashboard() {
     }
   }
 
-  function blockInsertPosition(line: number) {
+  function isImageCreditParagraph(node: any) {
+    if (node.type?.name !== 'paragraph') return false;
+    const text = node.textContent.trim();
+    if (!/^Photo\b/i.test(text)) return false;
+    let italic = false;
+    node.descendants((child: any) => {
+      if (child.isText && child.marks?.some((mark: any) => mark.type.name === 'italic')) italic = true;
+    });
+    return italic;
+  }
+
+  function paragraphInsertPosition(afterParagraph: number) {
     if (!editor) return 0;
     const doc = editor.state.doc;
-    const targetIndex = Math.max(0, Math.min(Math.floor(line) - 1, doc.childCount));
-    let position = 0;
-    for (let index = 0; index < targetIndex; index += 1) position += doc.child(index).nodeSize;
+    const target = Math.max(0, Math.floor(afterParagraph));
+    if (target <= 0) return 0;
+
+    let paragraph = 0;
+    let position = doc.content.size;
+    let found = false;
+    doc.forEach((node, offset) => {
+      if (found || node.type.name !== 'paragraph' || isImageCreditParagraph(node)) return;
+      paragraph += 1;
+      if (paragraph === target) {
+        position = offset + node.nodeSize;
+        found = true;
+      }
+    });
     return position;
   }
 
@@ -322,7 +344,7 @@ export function EditorDashboard() {
       if (sourceUrl) marks.push({ type: 'link', attrs: { href: sourceUrl } });
       content.push({ type: 'paragraph', content: [{ type: 'text', marks, text: source }] });
     }
-    editor.chain().focus().insertContentAt(blockInsertPosition(Number(imageLine) || 1), content).run();
+    editor.chain().focus().insertContentAt(paragraphInsertPosition(Number(imageLine) || 1), content).run();
     return false;
   }
 
@@ -481,7 +503,11 @@ export function EditorDashboard() {
   const draftCount = articles.filter((article) => article.status === 'draft').length;
   const statusLabel = (status: ArticleStatus) => status === 'published' ? t.publishedStatus : t.draftStatus;
   const uploadText = (status: UploadStatus, progress: number) => status === 'uploading' ? `${t.uploading} ${progress}%` : status === 'success' ? t.uploadSuccess : status === 'error' ? t.uploadFailed : '';
-  const lineMax = (editor?.state.doc.childCount || 0) + 1;
+  let paragraphCount = 0;
+  editor?.state.doc.forEach((node) => {
+    if (node.type.name === 'paragraph' && !isImageCreditParagraph(node)) paragraphCount += 1;
+  });
+  const lineMax = Math.max(1, paragraphCount);
 
   const formatButtons = <>
     <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()}>{t.bold}</button>
