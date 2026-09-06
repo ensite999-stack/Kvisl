@@ -72,6 +72,10 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     creator: article.author,
     publisher: SITE_NAME,
     category: article.section,
+    icons: {
+      icon: [{ url: '/icon.svg?v=2', type: 'image/svg+xml', sizes: 'any' }],
+      shortcut: ['/icon.svg?v=2']
+    },
     alternates: { canonical },
     robots: {
       index: true,
