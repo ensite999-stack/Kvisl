@@ -2,12 +2,13 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Mark, mergeAttributes } from '@tiptap/core';
-import { upload as uploadBlob } from '@vercel/blob/client';
+import { uploadPresigned } from '@vercel/blob/client';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import type { Article, ArticleSource, ArticleStatus } from '@/lib/types';
+import { cleanHttpUrl, publicImageUrl, sourceNameFromUrl } from '@/lib/media-url';
 import { slugify } from '@/lib/utils';
 
 type Language = 'zh' | 'en';
@@ -26,6 +27,7 @@ type Draft = {
   coverImage: string;
   coverAlt: string;
   coverSource: string;
+  coverSourceUrl: string;
   supportingImagesText: string;
   sourcesText: string;
   featured: boolean;
@@ -52,7 +54,7 @@ const TextColor = Mark.create({
 const fresh = (): Draft => ({
   slug: '', title: '', subtitle: '', dek: '', body: '<p></p>', author: 'Kvisl Editors',
   publishedAt: new Date().toISOString().slice(0, 16), section: '', tagsText: '',
-  coverImage: '', coverAlt: '', coverSource: '', supportingImagesText: '', sourcesText: '', featured: false
+  coverImage: '', coverAlt: '', coverSource: '', coverSourceUrl: '', supportingImagesText: '', sourcesText: '', featured: false
 });
 
 function toDraft(article: Article): Draft {
@@ -69,6 +71,7 @@ function toDraft(article: Article): Draft {
     coverImage: article.coverImage || '',
     coverAlt: article.coverAlt || '',
     coverSource: article.coverSource || '',
+    coverSourceUrl: article.coverSourceUrl || '',
     supportingImagesText: article.supportingImages.join('\n'),
     sourcesText: article.sources.map((source) => [source.label, source.url || '', source.note || ''].join(' | ')).join('\n'),
     featured: Boolean(article.featured)
@@ -86,36 +89,13 @@ function parseTags(value: string): string[] {
   return value.split(/[,，\n]/).map((tag) => tag.trim()).filter(Boolean);
 }
 
-function cleanImageUrl(value: string) {
-  try {
-    const url = new URL(value.trim());
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : '';
-  } catch {
-    return '';
-  }
-}
-
-function sourceFromUrl(value: string) {
-  try {
-    const host = new URL(value).hostname.replace(/^www\./, '').toLowerCase();
-    if (host.includes('unsplash.com')) return 'Unsplash';
-    if (host.includes('pexels.com')) return 'Pexels';
-    if (host.includes('pixabay.com')) return 'Pixabay';
-    if (host.includes('wikimedia.org') || host.includes('wikipedia.org')) return 'Wikimedia Commons';
-    if (host.includes('flickr.com') || host.includes('staticflickr.com')) return 'Flickr';
-    return host;
-  } catch {
-    return '';
-  }
-}
-
 const copy = {
   zh: {
     admin: 'Kvisl 后台', untitled: '文章编辑', newArticle: '新建文章', signOut: '退出', language: '语言', articles: '文章', total: '全部', published: '已发布', drafts: '草稿',
     title: '标题', titlePlaceholder: '输入文章标题', subtitle: '副标题（可选）', subtitlePlaceholder: '输入副标题', subtitleHelp: '显示在文章标题下方；不填写则不显示。', summary: '简介', summaryHelp: '用一两句话告诉读者这篇文章讲什么。',
     author: '作者', date: '发布时间', category: '分类', categoryPlaceholder: '例如：自然', tags: '标签', tagsHelp: '多个标签用逗号隔开。发布后会自动进入站内分类与标签列表。', tagsPlaceholder: '自然，文化，思想',
-    cover: '封面图', uploadCover: '上传封面', replaceCover: '更换封面', removeCover: '移除封面', coverDescription: '封面图文字说明', coverDescriptionHelp: '简单描述图片内容，方便图片无法显示或读屏时理解。', imageSource: '图片来源说明（可选）', coverSourceHelp: '例如摄影者、机构或图片出处，会显示在封面图下方。',
-    imageUrl: '图片链接', imageUrlHelp: '可直接粘贴图片文件地址，不占用 Kvisl 的 Blob 存储；系统会自动填入常见图片站点来源。', useImageUrl: '使用图片链接', insertImageUrl: '插入链接图片', invalidImageUrl: '图片链接无效，请使用 http 或 https 图片地址。', linkedImageReady: '图片链接已使用，不需要上传。', linkedImageInserted: '链接图片已插入正文。',
+    cover: '封面图', uploadCover: '上传封面', replaceCover: '更换封面', removeCover: '移除封面', coverDescription: '封面图文字说明', coverDescriptionHelp: '简单描述图片内容，方便图片无法显示或读屏时理解。', imageSource: '图片来源说明（可选）', coverSourceHelp: '例如摄影者、机构或图片出处，会显示在封面图下方。', imageSourceUrl: '图片来源链接（可选）', imageSourceUrlHelp: '使用 Unsplash 或 Pexels 作品页时会自动填写。',
+    imageUrl: '图片链接', imageUrlHelp: '可粘贴图片文件直链；Unsplash/Pexels 作品页会通过已配置的 API 自动转换。', useImageUrl: '解析并使用链接', insertImageUrl: '插入或替换链接图片', invalidImageUrl: '图片链接无效，请使用 http 或 https 图片地址。', linkedImageReady: '图片链接已解析并可正常显示。', linkedImageInserted: '链接图片已插入正文。', imageReplaced: '选中的正文图片已替换。', replaceSelectedHelp: '先在正文中点选一张图片，再使用链接或上传新图即可替换。', resolvingImage: '正在解析图片链接…', directImageRequired: '这不是图片直链。请使用以 .jpg、.png、.webp、.gif 或 .avif 结尾的地址，或配置图库 API。', providerKeyMissing: '需要在 Vercel 环境变量中配置对应图库的 API Key，或改用图片文件直链。', storageMissing: '图片上传尚未配置。请先在 Vercel 为项目连接公开 Blob Store；图片直链仍可使用。',
     body: '正文', compactBody: '收起正文', expandBody: '展开正文', bold: '粗体', italic: '斜体', heading: '小标题', smallerHeading: '次级标题', quote: '引用', list: '列表', link: '链接', undo: '撤销', redo: '重做',
     textColor: '文字颜色', selectedColor: '选中文字', lineColor: '当前行颜色', paragraphColor: '整段颜色', clearColor: '清除颜色', imageLine: '插入到第几行', imageLineHelp: '按正文中的段落、标题、列表或图片顺序计算。', inlineSourceHelp: '填写后会按原样插在图片下一行；不填写时会根据图片链接自动识别来源站点。', insertImage: '选择并插入图片',
     uploading: '正在上传', uploadSuccess: '上传成功，图片已显示。', uploadFailed: '图片上传失败。当前允许单张图片最大 50 MB；如果一直停在 0%，可直接使用图片链接。', uploadSlow: '0% 通常表示浏览器还在连接 Blob；移动网络或 VPN 可能让直传连接变慢。', coverUploaded: '封面已上传。', imageInserted: '图片已插入正文。',
@@ -126,8 +106,8 @@ const copy = {
     admin: 'Kvisl Admin', untitled: 'Article editor', newArticle: 'New article', signOut: 'Sign out', language: 'Language', articles: 'Articles', total: 'All', published: 'Published', drafts: 'Drafts',
     title: 'Title', titlePlaceholder: 'Type the article title', subtitle: 'Subtitle (optional)', subtitlePlaceholder: 'Type the subtitle', subtitleHelp: 'Shown directly below the article title. Leave blank to hide it.', summary: 'Summary', summaryHelp: 'Describe what the article is about in one or two sentences.',
     author: 'Author', date: 'Publish date', category: 'Category', categoryPlaceholder: 'e.g. Nature', tags: 'Tags', tagsHelp: 'Separate multiple tags with commas. Published terms are added automatically to site search.', tagsPlaceholder: 'Nature, Culture, Ideas',
-    cover: 'Cover image', uploadCover: 'Upload cover', replaceCover: 'Replace cover', removeCover: 'Remove cover', coverDescription: 'Cover image description', coverDescriptionHelp: 'Briefly describe the image for readers when it cannot be seen or loaded.', imageSource: 'Image source / credit (optional)', coverSourceHelp: 'Photographer, institution or image source. It is shown below the cover image.',
-    imageUrl: 'Image URL', imageUrlHelp: 'Paste a direct image-file URL to use it without consuming Kvisl Blob storage. Common image providers are credited automatically.', useImageUrl: 'Use image URL', insertImageUrl: 'Insert linked image', invalidImageUrl: 'Invalid image URL. Use an http or https image address.', linkedImageReady: 'Image URL is in use; no upload is needed.', linkedImageInserted: 'Linked image inserted into the article.',
+    cover: 'Cover image', uploadCover: 'Upload cover', replaceCover: 'Replace cover', removeCover: 'Remove cover', coverDescription: 'Cover image description', coverDescriptionHelp: 'Briefly describe the image for readers when it cannot be seen or loaded.', imageSource: 'Image source / credit (optional)', coverSourceHelp: 'Photographer, institution or image source. It is shown below the cover image.', imageSourceUrl: 'Image credit link (optional)', imageSourceUrlHelp: 'Filled automatically when an Unsplash or Pexels photo page is used.',
+    imageUrl: 'Image URL', imageUrlHelp: 'Paste a direct image-file URL. Unsplash and Pexels photo pages are converted through a configured provider API.', useImageUrl: 'Resolve and use URL', insertImageUrl: 'Insert or replace linked image', invalidImageUrl: 'Invalid image URL. Use an http or https image address.', linkedImageReady: 'The image URL was resolved and is ready.', linkedImageInserted: 'Linked image inserted into the article.', imageReplaced: 'The selected article image was replaced.', replaceSelectedHelp: 'Select an image in the article, then use a URL or upload a new file to replace it.', resolvingImage: 'Resolving image URL…', directImageRequired: 'This is a webpage, not an image file. Use a URL ending in .jpg, .png, .webp, .gif or .avif, or configure the provider API.', providerKeyMissing: 'Configure the matching image-provider API key in Vercel, or use a direct image-file URL.', storageMissing: 'Image upload is not configured. Connect a public Blob Store to this Vercel project; direct image URLs still work.',
     body: 'Article text', compactBody: 'Compact article text', expandBody: 'Expand article text', bold: 'Bold', italic: 'Italic', heading: 'Heading', smallerHeading: 'Smaller heading', quote: 'Quote', list: 'List', link: 'Link', undo: 'Undo', redo: 'Redo',
     textColor: 'Text color', selectedColor: 'Selected text', lineColor: 'Current line', paragraphColor: 'Whole paragraph', clearColor: 'Clear color', imageLine: 'Insert at line', imageLineHelp: 'Lines are counted by paragraphs, headings, lists and images in the editor.', inlineSourceHelp: 'When supplied, this text is inserted below the image. When blank, the image host is used as the source automatically.', insertImage: 'Choose and insert image',
     uploading: 'Uploading', uploadSuccess: 'Upload succeeded and the image is visible.', uploadFailed: 'Image upload failed. Images up to 50 MB are allowed. If it stays at 0%, use an image URL instead.', uploadSlow: '0% usually means the browser is still connecting to Blob; mobile networks or VPNs can slow that direct connection.', coverUploaded: 'Cover uploaded.', imageInserted: 'Image inserted into the article.',
@@ -139,6 +119,8 @@ const copy = {
 export function EditorDashboard() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [draft, setDraft] = useState<Draft>(fresh);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [uploadConfigured, setUploadConfigured] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [language, setLanguage] = useState<Language>('zh');
@@ -176,6 +158,12 @@ export function EditorDashboard() {
     if (saved === 'zh' || saved === 'en') setLanguage(saved);
     else if (!navigator.language.toLowerCase().startsWith('zh')) setLanguage('en');
     void load();
+    void fetch('/api/admin/media', { cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (data && typeof data.uploadConfigured === 'boolean') setUploadConfigured(data.uploadConfigured);
+      })
+      .catch(() => undefined);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -200,15 +188,18 @@ export function EditorDashboard() {
   function select(article: Article) {
     const next = toDraft(article);
     setDraft(next);
+    setEditingSlug(article.slug);
     editor?.commands.setContent(next.body);
     setMessage('');
     setBodyExpanded(false);
     resetUploadState();
+    setCoverImageUrl(next.coverImage);
   }
 
   function newArticle() {
     const next = fresh();
     setDraft(next);
+    setEditingSlug(null);
     editor?.commands.setContent(next.body);
     setMessage('');
     setBodyExpanded(false);
@@ -219,11 +210,12 @@ export function EditorDashboard() {
   async function upload(file: File, onProgress: (value: number) => void) {
     const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']);
     if (!allowed.has(file.type) || file.size > 50 * 1024 * 1024) throw new Error(t.uploadFailed);
+    if (uploadConfigured === false) throw new Error(t.storageMissing);
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '-').slice(-120) || 'image';
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 5 * 60 * 1000);
     try {
-      const blob = await uploadBlob(`editorial/${Date.now()}-${safeName}`, file, {
+      const blob = await uploadPresigned(`editorial/${Date.now()}-${safeName}`, file, {
         access: 'public',
         handleUploadUrl: '/api/admin/upload',
         multipart: file.size > 10 * 1024 * 1024,
@@ -245,27 +237,65 @@ export function EditorDashboard() {
     setCoverUploadStatus('uploading');
     try {
       const url = await upload(file, setCoverUploadProgress);
-      setDraft((current) => ({ ...current, coverImage: url }));
+      setDraft((current) => ({
+        ...current,
+        coverImage: url,
+        coverAlt: '',
+        coverSource: '',
+        coverSourceUrl: ''
+      }));
       setCoverImageUrl('');
       setCoverUploadStatus('success');
       setMessage(t.coverUploaded);
-    } catch {
+    } catch (error) {
       setCoverUploadStatus('error');
-      setMessage(t.uploadFailed);
+      setMessage(error instanceof Error ? error.message : t.uploadFailed);
     } finally {
       setBusy(false);
       event.target.value = '';
     }
   }
 
-  function useCoverUrl() {
-    const url = cleanImageUrl(coverImageUrl);
-    if (!url) return setMessage(t.invalidImageUrl);
-    const source = draft.coverSource.trim() || sourceFromUrl(url);
-    setDraft((current) => ({ ...current, coverImage: url, coverSource: source }));
-    setCoverUploadStatus('success');
-    setCoverUploadProgress(100);
-    setMessage(t.linkedImageReady);
+  async function resolveEditorImage(value: string) {
+    const url = cleanHttpUrl(value);
+    if (!url) throw new Error(t.invalidImageUrl);
+
+    const response = await fetch('/api/admin/media', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (data.code === 'PROVIDER_KEY_MISSING') throw new Error(t.providerKeyMissing);
+      if (data.code === 'DIRECT_IMAGE_REQUIRED') throw new Error(t.directImageRequired);
+      throw new Error(data.message || t.invalidImageUrl);
+    }
+
+    return data as { url: string; source?: string; sourceUrl?: string };
+  }
+
+  async function useCoverUrl() {
+    setBusy(true);
+    setMessage(t.resolvingImage);
+    try {
+      const image = await resolveEditorImage(coverImageUrl);
+      setDraft((current) => ({
+        ...current,
+        coverImage: image.url,
+        coverSource: current.coverSource.trim() || image.source || sourceNameFromUrl(image.url),
+        coverSourceUrl: current.coverSourceUrl.trim() || image.sourceUrl || ''
+      }));
+      setCoverImageUrl(image.url);
+      setCoverUploadStatus('success');
+      setCoverUploadProgress(100);
+      setMessage(t.linkedImageReady);
+    } catch (error) {
+      setCoverUploadStatus('error');
+      setMessage(error instanceof Error ? error.message : t.invalidImageUrl);
+    } finally {
+      setBusy(false);
+    }
   }
 
   function blockInsertPosition(line: number) {
@@ -277,18 +307,45 @@ export function EditorDashboard() {
     return position;
   }
 
-  function insertInlineUrl() {
-    if (!editor) return;
-    const url = cleanImageUrl(inlineImageUrl);
-    if (!url) return setMessage(t.invalidImageUrl);
-    const source = inlineSource.trim() || sourceFromUrl(url);
+  function placeInlineImage(url: string, source = '', sourceUrl = '') {
+    if (!editor) return false;
+    if (editor.isActive('image')) {
+      editor.chain().focus().updateAttributes('image', { src: url }).run();
+      return true;
+    }
+
     const content: any[] = [{ type: 'image', attrs: { src: url, alt: '' } }];
-    if (source) content.push({ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'italic' }], text: source }] });
+    if (source) {
+      const marks: any[] = [{ type: 'italic' }];
+      if (sourceUrl) marks.push({ type: 'link', attrs: { href: sourceUrl } });
+      content.push({ type: 'paragraph', content: [{ type: 'text', marks, text: source }] });
+    }
     editor.chain().focus().insertContentAt(blockInsertPosition(Number(imageLine) || 1), content).run();
-    setInlinePreview(url);
-    setInlineUploadStatus('success');
-    setInlineUploadProgress(100);
-    setMessage(t.linkedImageInserted);
+    return false;
+  }
+
+  async function insertInlineUrl() {
+    if (!editor) return;
+    setBusy(true);
+    setMessage(t.resolvingImage);
+    try {
+      const image = await resolveEditorImage(inlineImageUrl);
+      const replaced = placeInlineImage(
+        image.url,
+        inlineSource.trim() || image.source || sourceNameFromUrl(image.url),
+        image.sourceUrl || ''
+      );
+      setInlinePreview(image.url);
+      setInlineImageUrl(image.url);
+      setInlineUploadStatus('success');
+      setInlineUploadProgress(100);
+      setMessage(replaced ? t.imageReplaced : t.linkedImageInserted);
+    } catch (error) {
+      setInlineUploadStatus('error');
+      setMessage(error instanceof Error ? error.message : t.invalidImageUrl);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function uploadInline(event: ChangeEvent<HTMLInputElement>) {
@@ -299,17 +356,14 @@ export function EditorDashboard() {
     setInlineUploadStatus('uploading');
     try {
       const url = await upload(file, setInlineUploadProgress);
-      const content: any[] = [{ type: 'image', attrs: { src: url, alt: '' } }];
-      const source = inlineSource.trim();
-      if (source) content.push({ type: 'paragraph', content: [{ type: 'text', marks: [{ type: 'italic' }], text: source }] });
-      editor.chain().focus().insertContentAt(blockInsertPosition(Number(imageLine) || 1), content).run();
+      const replaced = placeInlineImage(url, inlineSource.trim());
       setInlinePreview(url);
       setInlineImageUrl('');
       setInlineUploadStatus('success');
-      setMessage(t.imageInserted);
-    } catch {
+      setMessage(replaced ? t.imageReplaced : t.imageInserted);
+    } catch (error) {
       setInlineUploadStatus('error');
-      setMessage(t.uploadFailed);
+      setMessage(error instanceof Error ? error.message : t.uploadFailed);
     } finally {
       setBusy(false);
       event.target.value = '';
@@ -368,37 +422,43 @@ export function EditorDashboard() {
     setBusy(true);
     setMessage('');
     try {
-      const response = await fetch('/api/admin/articles', {
-        method: 'POST',
+      const endpoint = editingSlug
+        ? `/api/admin/articles/${encodeURIComponent(editingSlug)}`
+        : '/api/admin/articles';
+      const response = await fetch(endpoint, {
+        method: editingSlug ? 'PATCH' : 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           slug, title, subtitle: draft.subtitle, dek: draft.dek, body: editor?.getHTML() || draft.body,
           author: draft.author, publishedAt: new Date(draft.publishedAt).toISOString(), status,
           section: draft.section, tags: parseTags(draft.tagsText), coverImage: draft.coverImage || undefined,
           coverAlt: draft.coverAlt || undefined, coverSource: draft.coverSource || undefined,
+          coverSourceUrl: draft.coverSourceUrl || undefined,
           supportingImages: draft.supportingImagesText.split('\n').map((value) => value.trim()).filter(Boolean),
           sources: parseSources(draft.sourcesText), featured: draft.featured
         })
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(t.saveFailed);
+      if (!response.ok) throw new Error(data.message || t.saveFailed);
       const next = toDraft(data.article);
       setDraft(next);
+      setEditingSlug(data.article.slug);
       editor?.commands.setContent(next.body);
       setMessage(status === 'published' ? t.publishedMessage : t.draftSaved);
       await load();
-    } catch {
-      setMessage(t.saveFailed);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : t.saveFailed);
     } finally {
       setBusy(false);
     }
   }
 
   async function remove() {
-    if (!draft.slug || !window.confirm(t.deleteConfirm)) return;
+    const articleSlug = editingSlug || draft.slug;
+    if (!articleSlug || !window.confirm(t.deleteConfirm)) return;
     setBusy(true);
     try {
-      const response = await fetch(`/api/admin/articles/${encodeURIComponent(draft.slug)}`, { method: 'DELETE' });
+      const response = await fetch(`/api/admin/articles/${encodeURIComponent(articleSlug)}`, { method: 'DELETE' });
       if (!response.ok) throw new Error(t.deleteFailed);
       newArticle();
       setMessage(t.deleted);
@@ -456,7 +516,7 @@ export function EditorDashboard() {
       <aside className="editor-list" aria-label={t.articles}>
         <h2>{t.articles} <small>({publishedCount} {t.published})</small></h2>
         {articles.length === 0 && <p className="editor-empty-note">{t.noArticles}</p>}
-        {articles.map((article) => <button key={article.slug} type="button" className={draft.slug === article.slug ? 'active' : ''} onClick={() => select(article)}><span>{article.title}</span><small>{statusLabel(article.status)} · {article.section || '—'}</small></button>)}
+        {articles.map((article) => <button key={article.slug} type="button" className={editingSlug === article.slug ? 'active' : ''} onClick={() => select(article)}><span>{article.title}</span><small>{statusLabel(article.status)} · {article.section || '—'}</small></button>)}
       </aside>
 
       <section className="editor-panel">
@@ -471,20 +531,22 @@ export function EditorDashboard() {
 
           <div className="field full">
             <span>{t.cover}</span>
-            {draft.coverImage && <img className="admin-image-preview" src={draft.coverImage} alt={draft.coverAlt || ''} onError={() => setMessage(t.invalidImageUrl)} />}
+            {draft.coverImage && <img className="admin-image-preview" src={publicImageUrl(draft.coverImage)} alt={draft.coverAlt || ''} onError={() => setMessage(t.invalidImageUrl)} />}
             <div className="admin-url-row">
               <input value={coverImageUrl} inputMode="url" placeholder="https://…" aria-label={t.imageUrl} onChange={(event) => setCoverImageUrl(event.target.value)} />
-              <button type="button" className="text-button" onClick={useCoverUrl}>{t.useImageUrl}</button>
+              <button type="button" className="text-button" disabled={busy} onClick={useCoverUrl}>{t.useImageUrl}</button>
             </div>
             <small>{t.imageUrlHelp}</small>
+            {uploadConfigured === false && <p className="upload-config-warning" role="note">{t.storageMissing}</p>}
             <div className="admin-inline-controls">
-              <label className="upload-button">{draft.coverImage ? t.replaceCover : t.uploadCover}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadCover} /></label>
-              {draft.coverImage && <button type="button" className="text-button" onClick={() => { setDraft((current) => ({ ...current, coverImage: '', coverAlt: '', coverSource: '' })); setCoverUploadStatus('idle'); }}>{t.removeCover}</button>}
+              <label className={`upload-button${uploadConfigured === false ? ' is-disabled' : ''}`}>{draft.coverImage ? t.replaceCover : t.uploadCover}<input type="file" disabled={uploadConfigured === false || busy} accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadCover} /></label>
+              {draft.coverImage && <button type="button" className="text-button" onClick={() => { setDraft((current) => ({ ...current, coverImage: '', coverAlt: '', coverSource: '', coverSourceUrl: '' })); setCoverImageUrl(''); setCoverUploadStatus('idle'); }}>{t.removeCover}</button>}
             </div>
             {coverUploadStatus !== 'idle' && <><p className={`upload-status ${coverUploadStatus}`}>{uploadText(coverUploadStatus, coverUploadProgress)}</p>{coverUploadStatus === 'uploading' && <progress className="upload-progress" max="100" value={coverUploadProgress} aria-label={uploadText(coverUploadStatus, coverUploadProgress)} />}{coverUploadStatus === 'uploading' && <small className="upload-help">{t.uploadSlow}</small>}</>}
           </div>
           <label className="field full"><span>{t.coverDescription}</span><input value={draft.coverAlt} onChange={(event) => setDraft((current) => ({ ...current, coverAlt: event.target.value }))} /><small>{t.coverDescriptionHelp}</small></label>
           <label className="field full"><span>{t.imageSource}</span><input value={draft.coverSource} onChange={(event) => setDraft((current) => ({ ...current, coverSource: event.target.value }))} /><small>{t.coverSourceHelp}</small></label>
+          <label className="field full"><span>{t.imageSourceUrl}</span><input value={draft.coverSourceUrl} inputMode="url" onChange={(event) => setDraft((current) => ({ ...current, coverSourceUrl: event.target.value }))} /><small>{t.imageSourceUrlHelp}</small></label>
         </div>
 
         <div className="editor-block">
@@ -509,9 +571,9 @@ export function EditorDashboard() {
               <label><span>{t.imageLine}</span><input type="number" min="1" max={lineMax} value={imageLine} onChange={(event) => setImageLine(event.target.value)} /></label>
               <label className="inline-source-field"><span>{t.imageSource}</span><input value={inlineSource} onChange={(event) => setInlineSource(event.target.value)} /></label>
               <label className="inline-source-field"><span>{t.imageUrl}</span><input value={inlineImageUrl} inputMode="url" placeholder="https://…" onChange={(event) => setInlineImageUrl(event.target.value)} /></label>
-              <button type="button" className="text-button" onClick={insertInlineUrl}>{t.insertImageUrl}</button>
-              <label className="upload-button">{t.insertImage}<input type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadInline} /></label>
-              <small>{t.imageLineHelp} {t.inlineSourceHelp}</small>
+              <button type="button" className="text-button" disabled={busy} onClick={insertInlineUrl}>{t.insertImageUrl}</button>
+              <label className={`upload-button${uploadConfigured === false ? ' is-disabled' : ''}`}>{t.insertImage}<input type="file" disabled={uploadConfigured === false || busy} accept="image/jpeg,image/png,image/webp,image/avif,image/gif" onChange={uploadInline} /></label>
+              <small>{t.imageLineHelp} {t.inlineSourceHelp} {t.replaceSelectedHelp}</small>
               {inlineUploadStatus !== 'idle' && <p className={`upload-status ${inlineUploadStatus}`}>{uploadText(inlineUploadStatus, inlineUploadProgress)}</p>}
               {inlineUploadStatus === 'uploading' && <progress className="upload-progress" max="100" value={inlineUploadProgress} aria-label={uploadText(inlineUploadStatus, inlineUploadProgress)} />}
               {inlineUploadStatus === 'uploading' && <small className="upload-help">{t.uploadSlow}</small>}

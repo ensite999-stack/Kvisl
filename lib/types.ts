@@ -22,6 +22,7 @@ export type Article = {
   coverImage?: string;
   coverAlt?: string;
   coverSource?: string;
+  coverSourceUrl?: string;
   supportingImages: string[];
   sources: ArticleSource[];
   featured?: boolean;

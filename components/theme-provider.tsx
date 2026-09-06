@@ -12,7 +12,7 @@ export function applyTheme(theme: ThemeName) {
 export function ThemeProvider() {
   useEffect(() => {
     const saved = localStorage.getItem('kvisl-theme') as ThemeName | null;
-    const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const theme = saved || 'light';
     document.documentElement.dataset.theme = theme;
   }, []);
   return null;

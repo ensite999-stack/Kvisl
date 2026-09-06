@@ -13,7 +13,7 @@ export default function Image() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: '#f2f1ec',
+          background: '#ffffff',
           color: '#171714',
           padding: '76px 84px',
           fontFamily: 'Georgia, serif'

@@ -1,9 +1,15 @@
-.site-header,
-.site-header.is-scrolled{
+.site-header{
   background:transparent;
   border-bottom-color:transparent;
   backdrop-filter:none;
   box-shadow:none;
+}
+
+.site-header.is-scrolled{
+  background:var(--bg);
+  border-bottom-color:var(--line);
+  backdrop-filter:blur(10px);
+  box-shadow:0 1px 0 color-mix(in srgb,var(--text) 4%,transparent);
 }
 
 .header-inner{

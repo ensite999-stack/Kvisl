@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/json-ld';
 import { ShareButtons } from '@/components/share-buttons';
 import { getArticleBySlug } from '@/lib/db';
+import { publicImageUrl } from '@/lib/media-url';
 import { sanitizeArticleHtml } from '@/lib/sanitize';
 import { absoluteUrl, formatDate } from '@/lib/utils';
 
@@ -15,6 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getArticleBySlug(slug);
   if (!article || article.status !== 'published') return {};
   const description = article.dek || article.subtitle || undefined;
+  const coverImage = publicImageUrl(article.coverImage);
   return {
     title: article.title,
     description,
@@ -27,13 +29,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt,
       authors: [article.author],
-      images: article.coverImage ? [{ url: article.coverImage, alt: article.coverAlt || article.title }] : undefined
+      images: coverImage ? [{ url: coverImage, alt: article.coverAlt || article.title }] : undefined
     },
     twitter: {
       card: 'summary_large_image',
       title: article.title,
       description,
-      images: article.coverImage ? [article.coverImage] : undefined
+      images: coverImage ? [coverImage] : undefined
     }
   };
 }
@@ -45,9 +47,10 @@ export default async function ArticlePage({ params }: Props) {
 
   const clean = sanitizeArticleHtml(article.body);
   const articleUrl = absoluteUrl(`/articles/${article.slug}`);
+  const coverImage = publicImageUrl(article.coverImage);
 
   return (
-    <article className="essay">
+    <article className={`essay${coverImage ? ' has-cover' : ''}`}>
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'Article',
@@ -57,30 +60,43 @@ export default async function ArticlePage({ params }: Props) {
         datePublished: article.publishedAt,
         dateModified: article.updatedAt || article.publishedAt,
         mainEntityOfPage: articleUrl,
-        image: article.coverImage || undefined,
+        image: coverImage ? absoluteUrl(coverImage) : undefined,
         author: { '@type': 'Person', name: article.author },
         publisher: { '@type': 'Organization', name: 'Kvisl', url: absoluteUrl('/') },
-        articleSection: article.section
+        articleSection: article.section,
+        keywords: article.tags.length ? article.tags.join(', ') : undefined
       }} />
-      <header className="essay-header">
-        <p className="eyebrow">{article.section}</p>
-        <h1>{article.title}</h1>
-        {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
-        <div className="essay-meta">
-          <span>By {article.author}</span>
-          <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
-        </div>
-      </header>
-
-      {article.coverImage && (
-        <figure className="essay-cover">
-          <img src={article.coverImage} alt={article.coverAlt || ''} />
-          {article.coverSource && <figcaption>{article.coverSource}</figcaption>}
+      {coverImage ? (
+        <figure className="essay-hero">
+          <div className="essay-hero-stage">
+            <img src={coverImage} alt={article.coverAlt || ''} />
+            <span className="essay-hero-shade" aria-hidden="true" />
+            <header className="essay-header essay-header-on-cover">
+              <h1>{article.title}</h1>
+              {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
+            </header>
+          </div>
+          {article.coverSource && (
+            <figcaption>
+              {article.coverSourceUrl
+                ? <a href={article.coverSourceUrl} rel="noopener noreferrer">{article.coverSource}</a>
+                : article.coverSource}
+            </figcaption>
+          )}
         </figure>
+      ) : (
+        <header className="essay-header essay-header-plain">
+          <h1>{article.title}</h1>
+          {(article.subtitle || article.dek) && <p className="essay-dek">{article.subtitle || article.dek}</p>}
+        </header>
       )}
 
       <div className="essay-layout">
         <aside className="essay-side">
+          <div className="essay-meta">
+            <span>By {article.author}</span>
+            <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+          </div>
           <ShareButtons title={article.title} />
         </aside>
         <div className="essay-body prose" dangerouslySetInnerHTML={{ __html: clean }} />
@@ -88,7 +104,7 @@ export default async function ArticlePage({ params }: Props) {
 
       {article.supportingImages.length > 0 && (
         <section className="supporting-images" aria-label="Supporting images">
-          {article.supportingImages.map((image, index) => <img key={image} src={image} alt={`Supporting image ${index + 1} for ${article.title}`} loading="lazy" />)}
+          {article.supportingImages.map((image, index) => <img key={image} src={publicImageUrl(image)} alt={`Supporting image ${index + 1} for ${article.title}`} loading="lazy" />)}
         </section>
       )}
 
@@ -104,6 +120,26 @@ export default async function ArticlePage({ params }: Props) {
             ))}
           </ol>
         </section>
+      )}
+
+      {(article.section || article.tags.length > 0) && (
+        <footer className="essay-taxonomy" aria-labelledby="taxonomy-title">
+          <h2 id="taxonomy-title">Explore this essay</h2>
+          {article.section && (
+            <div className="essay-taxonomy-row">
+              <span>Category</span>
+              <a href={`/search?q=${encodeURIComponent(article.section)}`}>{article.section}</a>
+            </div>
+          )}
+          {article.tags.length > 0 && (
+            <div className="essay-taxonomy-row">
+              <span>Tags</span>
+              <div className="essay-tag-list">
+                {article.tags.map((tag) => <a key={tag} href={`/search?q=${encodeURIComponent(tag)}`}>{tag}</a>)}
+              </div>
+            </div>
+          )}
+        </footer>
       )}
     </article>
   );

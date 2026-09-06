@@ -14,6 +14,7 @@ import './kvisl-v2.css';
 import './close-controls.css';
 import './home.css';
 import './editor-enhancements.css';
+import './article.css';
 
 const motto = 'Sparking Thought, Growing Wild';
 const description = `${motto}. Kvisl is an independent magazine exploring nature, culture and human thought through essays, deep reading and quiet reflection.`;
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width', initialScale: 1, colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f5f5f7' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#000000' }
   ]
 };

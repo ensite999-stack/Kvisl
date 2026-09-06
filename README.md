@@ -9,13 +9,16 @@ The private `/admin` area provides:
 - click-to-edit title and overview fields
 - Tiptap rich-text body editing
 - author, date, section and slug fields
-- cover image upload, inline image upload and supporting-image URLs
+- cover/inline image upload, image replacement and supporting-image URLs
+- direct image URLs plus optional Unsplash/Pexels photo-page resolution
 - structured sources/data citations
 - draft, publish, edit and delete workflows
 - homepage-feature flag
 - automatic article typography and responsive layout
 
-Articles and newsletter subscriptions are stored in PostgreSQL through `DATABASE_URL`. Tables are created automatically on first use. Editorial image uploads use Vercel Blob.
+Articles and newsletter subscriptions are stored in PostgreSQL through `DATABASE_URL`. Tables are created automatically on first use. Editorial image uploads use a public Vercel Blob Store and the OIDC-compatible presigned upload flow.
+
+An image-file URL such as `https://images.unsplash.com/...` works directly. A gallery webpage such as `https://unsplash.com/photos/...` is not itself an image; set `UNSPLASH_ACCESS_KEY` or `PEXELS_API_KEY` to let the editor resolve supported photo pages and add their credits automatically.
 
 ## Privacy and analytics
 
@@ -50,11 +53,12 @@ Included:
 2. Set `NEXT_PUBLIC_SITE_URL=https://kvisl.com`.
 3. Attach a PostgreSQL-compatible database and expose its connection string as `DATABASE_URL`.
 4. Set strong `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` values.
-5. Attach Vercel Blob to create `BLOB_READ_WRITE_TOKEN`.
-6. Redeploy production after connecting storage or changing environment variables so the runtime receives the updated configuration.
-7. Enable Vercel Web Analytics and the desired Vercel Firewall / Bot protection features in the Vercel project.
-8. Add `kvisl.com` and `www.kvisl.com` as domains, with one canonical redirect.
-9. Test `/admin`, image uploads, newsletter subscription, sitemap, RSS, sharing previews and accessibility before launch.
+5. Create and connect a **public Vercel Blob Store**. Vercel supplies `BLOB_STORE_ID` and rotating OIDC credentials; `BLOB_READ_WRITE_TOKEN` can be kept as a fallback.
+6. Optional: set `UNSPLASH_ACCESS_KEY` and/or `PEXELS_API_KEY` when editors need to paste normal photo-page URLs instead of direct image-file URLs.
+7. Redeploy production after connecting storage or changing environment variables so the runtime receives the updated configuration.
+8. Enable Vercel Web Analytics and the desired Vercel Firewall / Bot protection features in the Vercel project.
+9. Add `kvisl.com` and `www.kvisl.com` as domains, with one canonical redirect.
+10. Test `/admin`, image uploads, newsletter subscription, sitemap, RSS, sharing previews and accessibility before launch.
 
 The application also sends CSP, Referrer-Policy, X-Content-Type-Options, X-Frame-Options, Permissions-Policy and Cross-Origin-Opener-Policy headers.
 
