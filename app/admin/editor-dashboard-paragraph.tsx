@@ -36,9 +36,6 @@ function moveImageToParagraph(html: string, paragraphNumber: number, preferredIm
     ? images.find((image) => sameUrl(image.getAttribute('src') || '', preferredImageUrl))
     : undefined;
 
-  // After a page reload the preview URL is no longer available. In that case,
-  // use the most recently inserted Pexels body image, which is the last Pexels
-  // image in the stored article HTML.
   if (!target) {
     target = [...images].reverse().find((image) => {
       try {
@@ -89,9 +86,6 @@ function ParagraphPositionEnhancer() {
     const getTools = () => document.querySelector('.editor-dashboard-v2 .inline-image-tools');
     const getParagraphSelect = () => getTools()?.querySelector('select[data-paragraph-position]') as HTMLSelectElement | null;
 
-    // The V2 editor still owns the actual article save. Rewrite only its outgoing
-    // article JSON so the chosen paragraph position becomes the persisted HTML
-    // position as well, rather than relying on the legacy line-number field.
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const requestUrl = typeof input === 'string' || input instanceof URL ? String(input) : input.url;
       const method = (init?.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
@@ -101,7 +95,7 @@ function ParagraphPositionEnhancer() {
         try {
           const payload = JSON.parse(init.body) as { body?: string };
           const select = getParagraphSelect();
-          if (select && typeof payload.body === 'string') {
+          if (select?.dataset.userSelected === 'true' && typeof payload.body === 'string') {
             const paragraphNumber = Number(select.value || '0');
             const preview = document.querySelector('.editor-dashboard-v2 .admin-inline-preview') as HTMLImageElement | null;
             payload.body = moveImageToParagraph(payload.body, paragraphNumber, preview?.src || '');
@@ -141,6 +135,7 @@ function ParagraphPositionEnhancer() {
       if (!select) {
         select = document.createElement('select');
         select.dataset.paragraphPosition = 'true';
+        select.dataset.userSelected = 'false';
         select.style.minWidth = 'min(100%, 360px)';
         select.style.minHeight = '42px';
         select.style.padding = '8px 10px';
@@ -151,10 +146,9 @@ function ParagraphPositionEnhancer() {
         label.appendChild(select);
         select.addEventListener('change', () => {
           if (!select) return;
+          select.dataset.userSelected = 'true';
           const option = select.selectedOptions[0];
           const legacyLine = option?.dataset.legacyLine || '1';
-          // Keep the current V2 editor preview roughly in sync. The save interceptor
-          // above is authoritative and persists by paragraph number.
           setReactInputValue(original, legacyLine);
         });
       }
