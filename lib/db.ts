@@ -35,13 +35,15 @@ async function ensureSchema() {
           cover_source_url text not null default '',
           supporting_images jsonb not null default '[]'::jsonb,
           sources jsonb not null default '[]'::jsonb,
-          featured boolean not null default false
+          featured boolean not null default false,
+          deleted_at timestamptz
         )
       `;
       await sql`alter table articles add column if not exists subtitle text not null default ''`;
       await sql`alter table articles add column if not exists tags jsonb not null default '[]'::jsonb`;
       await sql`alter table articles add column if not exists cover_source text not null default ''`;
       await sql`alter table articles add column if not exists cover_source_url text not null default ''`;
+      await sql`alter table articles add column if not exists deleted_at timestamptz`;
       await sql`
         create table if not exists newsletter_subscribers (
           id uuid primary key default gen_random_uuid(),
@@ -55,6 +57,7 @@ async function ensureSchema() {
       await sql`alter table newsletter_subscribers add column if not exists frequency text not null default 'weekly'`;
       await sql`alter table newsletter_subscribers add column if not exists unsubscribed_at timestamptz`;
       await sql`create index if not exists articles_status_date_idx on articles(status, published_at desc)`;
+      await sql`create index if not exists articles_active_status_date_idx on articles(status, published_at desc) where deleted_at is null`;
       await sql`create index if not exists newsletter_frequency_idx on newsletter_subscribers(frequency, unsubscribed_at)`;
     })();
   }
@@ -79,7 +82,12 @@ export async function getPublishedArticles(limit = 30): Promise<Article[]> {
   if (!sql) return [];
   try {
     await ensureSchema();
-    const rows = await sql`select * from articles where status = 'published' order by published_at desc limit ${limit}`;
+    const rows = await sql`
+      select * from articles
+      where status = 'published' and deleted_at is null
+      order by published_at desc
+      limit ${limit}
+    `;
     return rows.map(rowToArticle);
   } catch { return []; }
 }
@@ -89,7 +97,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   if (!sql) return null;
   try {
     await ensureSchema();
-    const rows = await sql`select * from articles where slug = ${slug} limit 1`;
+    const rows = await sql`select * from articles where slug = ${slug} and deleted_at is null limit 1`;
     return rows[0] ? rowToArticle(rows[0]) : null;
   } catch { return null; }
 }
@@ -98,7 +106,7 @@ export async function getAllArticles(): Promise<Article[]> {
   const sql = getClient();
   if (!sql) return [];
   await ensureSchema();
-  const rows = await sql`select * from articles order by updated_at desc`;
+  const rows = await sql`select * from articles where deleted_at is null order by updated_at desc`;
   return rows.map(rowToArticle);
 }
 
@@ -108,15 +116,16 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
   await ensureSchema();
   const rows = await sql`
     insert into articles (slug, title, subtitle, dek, body, author, published_at, status, section, tags,
-      cover_image, cover_alt, cover_source, cover_source_url, supporting_images, sources, featured, updated_at)
+      cover_image, cover_alt, cover_source, cover_source_url, supporting_images, sources, featured, updated_at, deleted_at)
     values (${input.slug}, ${input.title}, ${input.subtitle ?? ''}, ${input.dek}, ${input.body}, ${input.author}, ${input.publishedAt},
       ${input.status}, ${input.section}, ${sql.json(input.tags)}, ${input.coverImage ?? null}, ${input.coverAlt ?? null}, ${input.coverSource ?? ''}, ${input.coverSourceUrl ?? ''},
-      ${sql.json(input.supportingImages)}, ${sql.json(input.sources)}, ${input.featured ?? false}, now())
+      ${sql.json(input.supportingImages)}, ${sql.json(input.sources)}, ${input.featured ?? false}, now(), null)
     on conflict (slug) do update set
       title=excluded.title, subtitle=excluded.subtitle, dek=excluded.dek, body=excluded.body, author=excluded.author,
       published_at=excluded.published_at, status=excluded.status, section=excluded.section, tags=excluded.tags,
       cover_image=excluded.cover_image, cover_alt=excluded.cover_alt, cover_source=excluded.cover_source, cover_source_url=excluded.cover_source_url,
-      supporting_images=excluded.supporting_images, sources=excluded.sources, featured=excluded.featured, updated_at=now()
+      supporting_images=excluded.supporting_images, sources=excluded.sources, featured=excluded.featured,
+      deleted_at=null, updated_at=now()
     returning *
   `;
   return rowToArticle(rows[0]);
@@ -134,8 +143,8 @@ export async function updateArticle(originalSlug: string, input: ArticleInput): 
       tags=${sql.json(input.tags)}, cover_image=${input.coverImage ?? null}, cover_alt=${input.coverAlt ?? null},
       cover_source=${input.coverSource ?? ''}, cover_source_url=${input.coverSourceUrl ?? ''},
       supporting_images=${sql.json(input.supportingImages)}, sources=${sql.json(input.sources)},
-      featured=${input.featured ?? false}, updated_at=now()
-    where slug=${originalSlug}
+      featured=${input.featured ?? false}, deleted_at=null, updated_at=now()
+    where slug=${originalSlug} and deleted_at is null
     returning *
   `;
 
@@ -147,7 +156,13 @@ export async function removeArticle(slug: string) {
   const sql = getClient();
   if (!sql) throw new Error('DATABASE_URL is not configured.');
   await ensureSchema();
-  await sql`delete from articles where slug = ${slug}`;
+  const rows = await sql`
+    update articles
+    set deleted_at=now(), updated_at=now()
+    where slug=${slug} and deleted_at is null
+    returning slug
+  `;
+  if (!rows[0]) throw new Error('Article not found.');
 }
 
 export async function subscribeEmail(email: string, frequency: NewsletterFrequency) {
