@@ -1,4 +1,5 @@
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { issueSignedToken } from '@vercel/blob';
+import { handleUploadPresigned, type HandleUploadPresignedBody } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
 import { isAdminAuthenticated } from '@/lib/auth';
 
@@ -11,20 +12,36 @@ const allowedContentTypes = [
 ];
 
 export async function POST(request: Request) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ message: 'Unauthorized.' }, { status: 401 });
+  }
+
   try {
-    const body = (await request.json()) as HandleUploadBody;
-    const jsonResponse = await handleUpload({
+    const body = (await request.json()) as HandleUploadPresignedBody;
+    const jsonResponse = await handleUploadPresigned({
       body,
       request,
-      onBeforeGenerateToken: async () => {
+      getSignedToken: async (pathname) => {
         if (!(await isAdminAuthenticated())) throw new Error('Unauthorized.');
+        const validUntil = Date.now() + 10 * 60 * 1000;
         return {
-          allowedContentTypes,
-          maximumSizeInBytes: 50 * 1024 * 1024,
-          addRandomSuffix: true
+          token: await issueSignedToken({
+            pathname,
+            operations: ['put'],
+            allowedContentTypes,
+            maximumSizeInBytes: 50 * 1024 * 1024,
+            validUntil
+          }),
+          urlOptions: {
+            allowedContentTypes,
+            maximumSizeInBytes: 50 * 1024 * 1024,
+            validUntil,
+            addRandomSuffix: true,
+            allowOverwrite: false,
+            cacheControlMaxAge: 30 * 24 * 60 * 60
+          }
         };
-      },
-      onUploadCompleted: async () => {}
+      }
     });
     return NextResponse.json(jsonResponse);
   } catch (error) {

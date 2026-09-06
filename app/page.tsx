@@ -1,4 +1,5 @@
 import { getPublishedArticles } from '@/lib/db';
+import { publicImageUrl } from '@/lib/media-url';
 
 export const revalidate = 60;
 
@@ -16,13 +17,14 @@ export default async function HomePage() {
           {articles.map((article, index) => {
             const taxonomy = [article.section, ...(article.tags || [])].filter(Boolean);
             const Heading = index === 0 ? 'h1' : 'h2';
+            const coverImage = publicImageUrl(article.coverImage);
 
             return (
               <article className="feed-story" key={article.slug}>
                 <a className="feed-story-link" href={`/articles/${article.slug}`}>
-                  {article.coverImage && (
+                  {coverImage && (
                     <div className="feed-image">
-                      <img src={article.coverImage} alt={article.coverAlt || ''} />
+                      <img src={coverImage} alt={article.coverAlt || ''} />
                     </div>
                   )}
 

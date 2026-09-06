@@ -32,6 +32,7 @@ async function ensureSchema() {
           cover_image text,
           cover_alt text,
           cover_source text not null default '',
+          cover_source_url text not null default '',
           supporting_images jsonb not null default '[]'::jsonb,
           sources jsonb not null default '[]'::jsonb,
           featured boolean not null default false
@@ -40,6 +41,7 @@ async function ensureSchema() {
       await sql`alter table articles add column if not exists subtitle text not null default ''`;
       await sql`alter table articles add column if not exists tags jsonb not null default '[]'::jsonb`;
       await sql`alter table articles add column if not exists cover_source text not null default ''`;
+      await sql`alter table articles add column if not exists cover_source_url text not null default ''`;
       await sql`
         create table if not exists newsletter_subscribers (
           id uuid primary key default gen_random_uuid(),
@@ -66,6 +68,7 @@ function rowToArticle(row: any): Article {
     updatedAt: new Date(row.updated_at).toISOString(), status: row.status, section: row.section,
     tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
     coverImage: row.cover_image || undefined, coverAlt: row.cover_alt || undefined, coverSource: row.cover_source || undefined,
+    coverSourceUrl: row.cover_source_url || undefined,
     supportingImages: Array.isArray(row.supporting_images) ? row.supporting_images : [],
     sources: Array.isArray(row.sources) ? row.sources as ArticleSource[] : [], featured: Boolean(row.featured)
   };
@@ -105,17 +108,38 @@ export async function saveArticle(input: ArticleInput): Promise<Article> {
   await ensureSchema();
   const rows = await sql`
     insert into articles (slug, title, subtitle, dek, body, author, published_at, status, section, tags,
-      cover_image, cover_alt, cover_source, supporting_images, sources, featured, updated_at)
+      cover_image, cover_alt, cover_source, cover_source_url, supporting_images, sources, featured, updated_at)
     values (${input.slug}, ${input.title}, ${input.subtitle ?? ''}, ${input.dek}, ${input.body}, ${input.author}, ${input.publishedAt},
-      ${input.status}, ${input.section}, ${sql.json(input.tags)}, ${input.coverImage ?? null}, ${input.coverAlt ?? null}, ${input.coverSource ?? ''},
+      ${input.status}, ${input.section}, ${sql.json(input.tags)}, ${input.coverImage ?? null}, ${input.coverAlt ?? null}, ${input.coverSource ?? ''}, ${input.coverSourceUrl ?? ''},
       ${sql.json(input.supportingImages)}, ${sql.json(input.sources)}, ${input.featured ?? false}, now())
     on conflict (slug) do update set
       title=excluded.title, subtitle=excluded.subtitle, dek=excluded.dek, body=excluded.body, author=excluded.author,
       published_at=excluded.published_at, status=excluded.status, section=excluded.section, tags=excluded.tags,
-      cover_image=excluded.cover_image, cover_alt=excluded.cover_alt, cover_source=excluded.cover_source,
+      cover_image=excluded.cover_image, cover_alt=excluded.cover_alt, cover_source=excluded.cover_source, cover_source_url=excluded.cover_source_url,
       supporting_images=excluded.supporting_images, sources=excluded.sources, featured=excluded.featured, updated_at=now()
     returning *
   `;
+  return rowToArticle(rows[0]);
+}
+
+export async function updateArticle(originalSlug: string, input: ArticleInput): Promise<Article> {
+  const sql = getClient();
+  if (!sql) throw new Error('DATABASE_URL is not configured.');
+  await ensureSchema();
+
+  const rows = await sql`
+    update articles set
+      slug=${input.slug}, title=${input.title}, subtitle=${input.subtitle ?? ''}, dek=${input.dek}, body=${input.body},
+      author=${input.author}, published_at=${input.publishedAt}, status=${input.status}, section=${input.section},
+      tags=${sql.json(input.tags)}, cover_image=${input.coverImage ?? null}, cover_alt=${input.coverAlt ?? null},
+      cover_source=${input.coverSource ?? ''}, cover_source_url=${input.coverSourceUrl ?? ''},
+      supporting_images=${sql.json(input.supportingImages)}, sources=${sql.json(input.sources)},
+      featured=${input.featured ?? false}, updated_at=now()
+    where slug=${originalSlug}
+    returning *
+  `;
+
+  if (!rows[0]) throw new Error('Article not found.');
   return rowToArticle(rows[0]);
 }
 
