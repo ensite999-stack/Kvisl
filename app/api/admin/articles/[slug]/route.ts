@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { isAdminAuthenticated } from '@/lib/auth';
-import { removeArticle, updateArticle } from '@/lib/db';
+import { getArticleBySlug, removeArticle, updateArticle } from '@/lib/db';
 import { parseArticleInput } from '@/lib/article-input';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -21,10 +21,17 @@ export async function PATCH(request: Request, { params }: Props) {
 
   try {
     const { slug: originalSlug } = await params;
-    const input = parseArticleInput(await request.json());
+    const existing = await getArticleBySlug(originalSlug);
+    if (!existing) return NextResponse.json({ message: 'Article not found.' }, { status: 404 });
+
+    const parsed = parseArticleInput(await request.json());
+    const input = existing.status === 'published'
+      ? { ...parsed, status: 'published' as const }
+      : parsed;
+
     const article = await updateArticle(originalSlug, input);
     refreshArticlePaths(originalSlug, article.slug);
-    return NextResponse.json({ article });
+    return NextResponse.json({ article, action: existing.status === 'published' ? 'updated-published' : 'updated' });
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Unable to update article.' },
@@ -41,8 +48,8 @@ export async function DELETE(_: Request, { params }: Props) {
     const { slug } = await params;
     await removeArticle(slug);
     refreshArticlePaths(slug);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, recoverable: true });
   } catch (error) {
-    return NextResponse.json({ message: error instanceof Error ? error.message : 'Unable to delete article.' }, { status: 400 });
+    return NextResponse.json({ message: error instanceof Error ? error.message : 'Unable to remove article.' }, { status: 400 });
   }
 }
