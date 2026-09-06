@@ -10,7 +10,10 @@ import { absoluteUrl, formatDate } from '@/lib/utils';
 
 export const revalidate = 60;
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
 function displayImageCredit(value: string) {
   const clean = value.trim();
@@ -34,15 +37,29 @@ function plainTextExcerpt(html: string, limit = 180) {
   return text.length > limit ? `${text.slice(0, limit - 1).trimEnd()}…` : text;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+function firstQueryValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function cleanShareToken(value: string | undefined) {
+  if (!value) return undefined;
+  const clean = value.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 96);
+  return clean || undefined;
+}
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article || article.status !== 'published') return {};
 
   const description = article.dek || article.subtitle || plainTextExcerpt(article.body);
   const canonical = `/articles/${article.slug}`;
-  const socialVersion = encodeURIComponent(`2-${article.updatedAt || article.publishedAt}`);
-  const socialUrl = absoluteUrl(`${canonical}?v=${socialVersion}`);
+  const socialVersion = `2-${article.updatedAt || article.publishedAt}`;
+  const requestedSearchParams = searchParams ? await searchParams : undefined;
+  const shareToken = cleanShareToken(firstQueryValue(requestedSearchParams?.share));
+  const socialParams = new URLSearchParams({ v: socialVersion });
+  if (shareToken) socialParams.set('share', shareToken);
+  const socialUrl = absoluteUrl(`${canonical}?${socialParams.toString()}`);
   const coverImage = publicImageUrl(article.coverImage);
   const socialImage = coverImage ? absoluteUrl(coverImage) : undefined;
   const keywords = [article.section, ...article.tags].filter(Boolean);
