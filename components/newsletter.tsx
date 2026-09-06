@@ -3,10 +3,21 @@
 import { FormEvent, useState } from 'react';
 import type { NewsletterFrequency } from '@/lib/types';
 
+type SubmissionState = 'idle' | 'pending' | 'success' | 'error';
+
 export function Newsletter() {
+  const [submissionState, setSubmissionState] = useState<SubmissionState>('idle');
   const [message, setMessage] = useState('');
-  const [pending, setPending] = useState(false);
+  const [detail, setDetail] = useState('');
   const [frequency, setFrequency] = useState<NewsletterFrequency>('weekly');
+  const pending = submissionState === 'pending';
+
+  function clearFeedback() {
+    if (submissionState === 'idle' || pending) return;
+    setSubmissionState('idle');
+    setMessage('');
+    setDetail('');
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -15,8 +26,9 @@ export function Newsletter() {
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
 
-    setPending(true);
-    setMessage('');
+    setSubmissionState('pending');
+    setMessage('Joining Kvisl…');
+    setDetail('Saving your subscription.');
 
     try {
       const response = await fetch('/api/newsletter', {
@@ -25,17 +37,31 @@ export function Newsletter() {
         body: JSON.stringify({ email: form.get('email'), website: form.get('website'), frequency })
       });
       const data = await response.json().catch(() => ({}));
-      setMessage(data.message || (response.ok ? 'Subscribed.' : 'Unable to subscribe right now.'));
-      if (response.ok) formElement.reset();
+
+      if (!response.ok) {
+        setSubmissionState('error');
+        setMessage('Subscription failed');
+        setDetail(data.message || 'Unable to subscribe right now. Please try again.');
+        return;
+      }
+
+      setSubmissionState('success');
+      setMessage("You're subscribed");
+      setDetail(
+        data.emailSent
+          ? 'Check your inbox for a Kvisl welcome email.'
+          : `Your address has been saved for the ${frequency} newsletter.`
+      );
+      formElement.reset();
     } catch {
-      setMessage('Unable to subscribe right now. Please try again.');
-    } finally {
-      setPending(false);
+      setSubmissionState('error');
+      setMessage('Subscription failed');
+      setDetail('Unable to subscribe right now. Please try again.');
     }
   }
 
   return (
-    <form id="newsletter" className="newsletter" onSubmit={submit} aria-describedby="newsletter-note newsletter-status" aria-busy={pending}>
+    <form id="newsletter" className={`newsletter newsletter-${submissionState}`} onSubmit={submit} aria-describedby="newsletter-note newsletter-status" aria-busy={pending}>
       <div className="newsletter-copy">
         <label htmlFor="newsletter-email">Subscribe to our newsletter</label>
         <p><span className="notranslate" translate="no">Kvisl</span> latest news.</p>
@@ -49,7 +75,7 @@ export function Newsletter() {
             name="frequency"
             value="daily"
             checked={frequency === 'daily'}
-            onChange={() => setFrequency('daily')}
+            onChange={() => { setFrequency('daily'); clearFeedback(); }}
           />
           <span>Daily</span>
         </label>
@@ -59,7 +85,7 @@ export function Newsletter() {
             name="frequency"
             value="weekly"
             checked={frequency === 'weekly'}
-            onChange={() => setFrequency('weekly')}
+            onChange={() => { setFrequency('weekly'); clearFeedback(); }}
           />
           <span>Weekly</span>
         </label>
@@ -77,15 +103,41 @@ export function Newsletter() {
           placeholder="Your email address"
           required
           maxLength={254}
+          onChange={clearFeedback}
         />
         <button type="submit" disabled={pending} aria-disabled={pending}>
-          <span>{pending ? 'Subscribing…' : 'Subscribe'}</span>
+          <span>{pending ? 'Subscribing…' : submissionState === 'success' ? 'Subscribed' : 'Subscribe'}</span>
         </button>
       </div>
 
       <input className="honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <p id="newsletter-note" className="newsletter-note">See our <a href="/newsletter-privacy">newsletter privacy policy</a>.</p>
-      <p id="newsletter-status" className="newsletter-status" role="status" aria-live="polite" aria-atomic="true">{message}</p>
+
+      <div
+        id="newsletter-status"
+        className={`newsletter-feedback is-${submissionState}`}
+        role={submissionState === 'error' ? 'alert' : 'status'}
+        aria-live="polite"
+        aria-atomic="true"
+        hidden={submissionState === 'idle'}
+      >
+        <span className="newsletter-feedback-icon" aria-hidden="true">
+          {submissionState === 'success' ? (
+            <svg viewBox="0 0 32 32" focusable="false">
+              <circle className="newsletter-check-circle" cx="16" cy="16" r="14" />
+              <path className="newsletter-check-path" d="m9.5 16.4 4.1 4.1 8.9-9" />
+            </svg>
+          ) : submissionState === 'pending' ? (
+            <span className="newsletter-spinner" />
+          ) : (
+            <span className="newsletter-error-mark">!</span>
+          )}
+        </span>
+        <span className="newsletter-feedback-copy">
+          <strong>{message}</strong>
+          <span>{detail}</span>
+        </span>
+      </div>
     </form>
   );
 }

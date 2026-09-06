@@ -1,0 +1,149 @@
+.newsletter-feedback {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 66px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--text) 4%, var(--bg));
+  text-align: left;
+  animation: newsletter-feedback-in 220ms ease-out both;
+}
+
+.newsletter-feedback[hidden] { display: none; }
+
+.newsletter-feedback.is-success {
+  border-color: color-mix(in srgb, var(--text) 32%, var(--line));
+}
+
+.newsletter-feedback.is-error {
+  border-color: color-mix(in srgb, var(--danger) 68%, var(--line));
+  background: color-mix(in srgb, var(--danger) 6%, var(--bg));
+  animation: newsletter-feedback-in 220ms ease-out both, newsletter-feedback-shake 280ms ease-out 1;
+}
+
+.newsletter-feedback-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+}
+
+.newsletter-feedback-icon svg {
+  width: 34px;
+  height: 34px;
+  overflow: visible;
+}
+
+.newsletter-check-circle,
+.newsletter-check-path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.newsletter-check-circle {
+  transform-origin: center;
+  animation: newsletter-check-circle 320ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.newsletter-check-path {
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  animation: newsletter-check-draw 360ms ease-out 130ms forwards;
+}
+
+.newsletter-spinner {
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid color-mix(in srgb, var(--text) 24%, transparent);
+  border-top-color: var(--text);
+  border-radius: 50%;
+  animation: newsletter-spin 680ms linear infinite;
+}
+
+.newsletter-error-mark {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  color: var(--danger);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.newsletter-feedback-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.newsletter-feedback-copy strong {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.newsletter-feedback-copy > span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.newsletter-pending .newsletter-row button {
+  cursor: wait;
+}
+
+.newsletter-success .newsletter-row button {
+  background: color-mix(in srgb, var(--text) 88%, var(--bg));
+}
+
+@keyframes newsletter-feedback-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes newsletter-check-circle {
+  from { opacity: 0; transform: scale(.68); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes newsletter-check-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes newsletter-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes newsletter-feedback-shake {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-3px); }
+  70% { transform: translateX(3px); }
+}
+
+@media (max-width: 560px) {
+  .newsletter-feedback {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 10px;
+    padding: 11px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newsletter-feedback,
+  .newsletter-check-circle,
+  .newsletter-check-path,
+  .newsletter-spinner {
+    animation: none !important;
+  }
+
+  .newsletter-check-path { stroke-dashoffset: 0; }
+}
