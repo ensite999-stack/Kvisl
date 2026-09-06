@@ -7,38 +7,34 @@ import { absoluteUrl } from '@/lib/utils';
 
 export const revalidate = 60;
 
-function latestByPublishedAt<T extends { publishedAt: string }>(items: T[]) {
-  return [...items].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())[0];
-}
+const title = `${SITE_NAME} — ${SITE_MOTTO}`;
+const socialImage = absoluteUrl('/opengraph-image');
 
-export async function generateMetadata(): Promise<Metadata> {
-  const articles = await getPublishedArticles(40);
-  const latest = latestByPublishedAt(articles);
-  const latestImage = latest ? publicImageUrl(latest.coverImage) : undefined;
-  const title = `${SITE_NAME} — ${SITE_MOTTO}`;
-
-  return {
-    title: { absolute: title },
+export const metadata: Metadata = {
+  title: { absolute: title },
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    title,
     description: SITE_DESCRIPTION,
-    alternates: { canonical: '/' },
-    openGraph: {
-      type: 'website',
-      siteName: SITE_NAME,
-      title,
-      description: SITE_DESCRIPTION,
-      url: SITE_URL,
-      images: latestImage
-        ? [{ url: latestImage, alt: latest?.coverAlt || latest?.title || SITE_NAME }]
-        : undefined
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description: SITE_DESCRIPTION,
-      images: latestImage ? [latestImage] : undefined
-    }
-  };
-}
+    url: SITE_URL,
+    images: [{
+      url: socialImage,
+      width: 1200,
+      height: 630,
+      type: 'image/png',
+      alt: title
+    }]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title,
+    description: SITE_DESCRIPTION,
+    images: [socialImage]
+  }
+};
 
 function BookmarkMark() {
   return (
