@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import { getArticleBySlug } from '@/lib/db';
 import { publicImageUrl } from '@/lib/media-url';
 import { SITE_MOTTO, SITE_NAME } from '@/lib/site-meta';
+import { absoluteUrl } from '@/lib/utils';
 
 export const alt = 'Kvisl article preview';
 export const size = { width: 1200, height: 630 };
@@ -29,7 +30,7 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ slu
   const description = article
     ? article.dek || article.subtitle || plainTextExcerpt(article.body)
     : SITE_MOTTO;
-  const coverImage = article ? publicImageUrl(article.coverImage) : undefined;
+  const coverImage = article ? absoluteUrl(publicImageUrl(article.coverImage)) : undefined;
 
   return new ImageResponse(
     (
