@@ -8,7 +8,7 @@ a:hover,button:hover{transform:none!important}.article-card-link:hover,.lead-lin
 :focus-visible{outline:2px solid currentColor;outline-offset:3px}
 button,a,input{touch-action:manipulation}
 .site-header{position:sticky;top:0;z-index:100;background:transparent;border-bottom:1px solid transparent;backdrop-filter:none;transition:background-color .16s ease,border-color .16s ease}
-.site-header.is-scrolled{background:color-mix(in srgb,var(--bg) 96%,transparent);border-bottom-color:var(--line);backdrop-filter:blur(10px)}
+.site-header.is-scrolled{background:var(--bg);border-bottom-color:var(--line);backdrop-filter:none}
 .header-inner{min-height:66px;padding:8px 20px}.wordmark{width:146px;height:38px}.header-actions{gap:0}.search-button,.menu-button{width:44px;height:44px;min-width:44px;min-height:44px}.menu-button{gap:3px}.menu-button span{height:1.4px}.menu-button span:nth-child(1),.menu-button span:nth-child(3){width:17px}.menu-button span:nth-child(2){width:23px}
 .header-panel{position:absolute;top:100%;right:20px;width:min(360px,calc(100vw - 40px));background:var(--bg);color:var(--text);border:1px solid var(--strong-line);box-shadow:0 12px 28px color-mix(in srgb,var(--text) 10%,transparent);padding:18px;animation:none}
 .search-panel{width:min(520px,calc(100vw - 40px))}.site-search-form{margin:0;display:grid;grid-template-columns:minmax(0,1fr) auto}.site-search-form input{font-size:24px;padding:8px 0;border-bottom:1px solid var(--strong-line)}.site-search-form button{padding:0 0 9px 18px;min-height:44px}
