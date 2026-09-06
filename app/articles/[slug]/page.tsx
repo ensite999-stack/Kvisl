@@ -43,7 +43,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonical = `/articles/${article.slug}`;
   const socialVersion = encodeURIComponent(`2-${article.updatedAt || article.publishedAt}`);
   const socialUrl = absoluteUrl(`${canonical}?v=${socialVersion}`);
-  const socialImage = absoluteUrl(`/articles/${article.slug}/opengraph-image?v=${socialVersion}`);
+  const coverImage = publicImageUrl(article.coverImage);
+  const socialImage = coverImage ? absoluteUrl(coverImage) : undefined;
   const keywords = [article.section, ...article.tags].filter(Boolean);
 
   return {
@@ -78,19 +79,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       authors: [article.author],
       section: article.section,
       tags: article.tags,
-      images: [{
-        url: socialImage,
-        width: 1200,
-        height: 630,
-        type: 'image/png',
-        alt: article.coverAlt || article.title
-      }]
+      images: socialImage
+        ? [{ url: socialImage, alt: article.coverAlt || article.title }]
+        : undefined
     },
     twitter: {
       card: 'summary_large_image',
       title: article.title,
       description,
-      images: [socialImage]
+      images: socialImage ? [socialImage] : undefined
     }
   };
 }
