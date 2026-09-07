@@ -12,7 +12,13 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: '#ffffff',
     icons: [
       {
-        src: '/kvisl-bimi.svg',
+        src: '/kvisl-icon.png?v=3',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any'
+      },
+      {
+        src: '/icon.svg?v=3',
         sizes: 'any',
         type: 'image/svg+xml',
         purpose: 'any'

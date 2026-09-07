@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import type { NewsletterFrequency } from '@/lib/types';
 
 type SubmissionState = 'idle' | 'pending' | 'success' | 'error';
@@ -11,6 +11,18 @@ export function Newsletter() {
   const [detail, setDetail] = useState('');
   const [frequency, setFrequency] = useState<NewsletterFrequency>('weekly');
   const pending = submissionState === 'pending';
+
+  useEffect(() => {
+    if (submissionState !== 'success') return;
+
+    const timer = window.setTimeout(() => {
+      setSubmissionState('idle');
+      setMessage('');
+      setDetail('');
+    }, 5000);
+
+    return () => window.clearTimeout(timer);
+  }, [submissionState]);
 
   function clearFeedback() {
     if (submissionState === 'idle' || pending) return;

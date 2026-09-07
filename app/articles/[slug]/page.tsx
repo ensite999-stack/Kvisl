@@ -73,8 +73,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     publisher: SITE_NAME,
     category: article.section,
     icons: {
-      icon: [{ url: '/icon.svg?v=2', type: 'image/svg+xml', sizes: 'any' }],
-      shortcut: ['/icon.svg?v=2']
+      icon: [
+        { url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' },
+        { url: '/icon.svg?v=3', type: 'image/svg+xml', sizes: 'any' }
+      ],
+      shortcut: ['/kvisl-icon.png?v=3'],
+      apple: [{ url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' }]
     },
     alternates: { canonical },
     robots: {

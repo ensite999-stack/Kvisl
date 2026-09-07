@@ -6,7 +6,6 @@ import { Footer } from '@/components/footer';
 import { ThemeProvider } from '@/components/theme-provider';
 import { JsonLd } from '@/components/json-ld';
 import { BrowserTitle } from '@/components/browser-title';
-import { SecondaryClose } from '@/components/secondary-close';
 import { absoluteUrl } from '@/lib/utils';
 import { SITE_DESCRIPTION, SITE_LANGUAGE, SITE_LOCALE, SITE_MOTTO, SITE_NAME, SITE_URL } from '@/lib/site-meta';
 import './globals.css';
@@ -60,8 +59,12 @@ export const metadata: Metadata = {
     ? { google: process.env.GOOGLE_SITE_VERIFICATION }
     : undefined,
   icons: {
-    icon: [{ url: '/icon.svg?v=2', type: 'image/svg+xml', sizes: 'any' }],
-    shortcut: ['/icon.svg?v=2']
+    icon: [
+      { url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' },
+      { url: '/icon.svg?v=3', type: 'image/svg+xml', sizes: 'any' }
+    ],
+    shortcut: ['/kvisl-icon.png?v=3'],
+    apple: [{ url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' }]
   },
   category: 'magazine'
 };
@@ -112,7 +115,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           }
         ]} />
         <Header />
-        <SecondaryClose />
         <main id="main-content">{children}</main>
         <Footer />
         <Analytics />
