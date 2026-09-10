@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SITE_EMAIL } from '@/lib/site-meta';
 
 export const metadata: Metadata = {
   title: 'Accessibility Statement',
@@ -11,7 +12,7 @@ export default function AccessibilityPage() {
       <header className="static-hero">
         <p className="eyebrow">Accessibility</p>
         <h1>Reading should not depend on a particular body, browser or input device.</h1>
-        <p>Last reviewed: 5 September 2026.</p>
+        <p>Last reviewed: 10 September 2026.</p>
       </header>
 
       <div className="prose narrow">
@@ -43,7 +44,7 @@ export default function AccessibilityPage() {
         <p>Accessibility is an ongoing engineering and editorial process. Third-party destinations, linked media and user-supplied descriptions can vary in quality. We prioritise defects that block reading, navigation, subscription, search or other core tasks.</p>
 
         <h2>Feedback and accommodation</h2>
-        <p>If you encounter a barrier, email <a href="mailto:distributary@kvisl.com">distributary@kvisl.com</a> with the page URL and a short description of the problem. If useful, include the browser, operating system or assistive technology involved. We will use that information to investigate the barrier and, where practical, provide an accessible alternative while it is being corrected.</p>
+        <p>If you encounter a barrier, email <a href={`mailto:${SITE_EMAIL}`}>{SITE_EMAIL}</a> with the page URL and a short description of the problem. If useful, include the browser, operating system or assistive technology involved. We will use that information to investigate the barrier and, where practical, provide an accessible alternative while it is being corrected.</p>
       </div>
     </article>
   );
