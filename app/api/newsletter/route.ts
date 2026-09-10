@@ -29,9 +29,9 @@ async function sendSubscriptionReceipt(email: string, frequency: NewsletterFrequ
   if (!apiKey || !unsubscribe) return false;
 
   const cadence = frequency === 'daily' ? 'daily' : 'weekly';
-  const bodyHtml = `<p style="margin-top:0;margin-right:0;margin-bottom:16px;margin-left:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:25px;color:#333333;">Your Kvisl newsletter subscription is active.</p><table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#666666;padding-top:10px;padding-right:0;padding-bottom:10px;padding-left:0;border-top-width:1px;border-top-style:solid;border-top-color:#e5e5e5;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:#e5e5e5;">Delivery frequency: <strong style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#333333;font-weight:600;">${cadence}</strong></td></tr></table><p style="margin-top:16px;margin-right:0;margin-bottom:0;margin-left:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:21px;color:#666666;">No further action is required. You can unsubscribe at any time using the link below.</p>`;
+  const bodyHtml = `<p style="margin-top:0;margin-right:0;margin-bottom:16px;margin-left:0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:25px;color:#333333;">Your Crawe newsletter subscription is active.</p><table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#666666;padding-top:10px;padding-right:0;padding-bottom:10px;padding-left:0;border-top-width:1px;border-top-style:solid;border-top-color:#e5e5e5;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:#e5e5e5;">Delivery frequency: <strong style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#333333;font-weight:600;">${cadence}</strong></td></tr></table><p style="margin-top:16px;margin-right:0;margin-bottom:0;margin-left:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:21px;color:#666666;">No further action is required. You can unsubscribe at any time using the link below.</p>`;
   const text = brandedEmailText(
-    `Kvisl subscription active\n\nYour Kvisl newsletter subscription is active.\nDelivery frequency: ${cadence}\n\nNo further action is required.`,
+    `Crawe subscription active\n\nYour Crawe newsletter subscription is active.\nDelivery frequency: ${cadence}\n\nNo further action is required.`,
     unsubscribe.visible
   );
 
@@ -42,10 +42,10 @@ async function sendSubscriptionReceipt(email: string, frequency: NewsletterFrequ
       from: KVISL_NEWSLETTER_FROM,
       to: [email],
       reply_to: KVISL_REPLY_TO,
-      subject: 'Kvisl subscription active',
+      subject: 'Crawe subscription active',
       text,
       html: brandedEmailHtml({
-        preheader: 'Your Kvisl newsletter subscription is active.',
+        preheader: 'Your Crawe newsletter subscription is active.',
         eyebrow: 'Subscription',
         title: 'Subscription active',
         bodyHtml,
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      message: `Subscribed to the ${frequency} Kvisl newsletter.`,
+      message: `Subscribed to the ${frequency} Crawe newsletter.`,
       emailSent,
       confirmationRequired: false
     });
