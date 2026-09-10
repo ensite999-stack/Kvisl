@@ -1,0 +1,66 @@
+.wordmark-link{
+  grid-column:2;
+  display:inline-flex;
+  align-items:center;
+  justify-self:center;
+  gap:9px;
+  line-height:1;
+  text-decoration:none;
+}
+
+.header-actions{
+  grid-column:3;
+  justify-self:end;
+}
+
+.crawe-mark{
+  display:block;
+  width:28px;
+  height:28px;
+  flex:0 0 auto;
+  object-fit:contain;
+  filter:brightness(0);
+}
+
+.crawe-name{
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:20px;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+html[data-theme="dark"] .crawe-mark{
+  filter:invert(1);
+}
+
+html[data-theme="comfort"] .crawe-mark{
+  filter:brightness(.22);
+}
+
+.footer-brand-lockup{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:11px;
+}
+
+.footer-brand-lockup .crawe-mark{
+  width:38px;
+  height:38px;
+}
+
+.footer-brand-lockup .crawe-name{
+  font-size:28px;
+  letter-spacing:.09em;
+}
+
+@media(max-width:800px){
+  .wordmark-link{gap:8px}
+  .crawe-mark{width:25px;height:25px}
+  .crawe-name{font-size:18px;letter-spacing:.07em}
+  .footer-brand-lockup .crawe-mark{width:34px;height:34px}
+  .footer-brand-lockup .crawe-name{font-size:25px}
+}
