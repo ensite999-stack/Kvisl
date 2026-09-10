@@ -18,6 +18,7 @@ import './editor-v2.css';
 import './article.css';
 import './header-overlay.css';
 import './newsletter-feedback.css';
+import './crawe-brand.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -60,11 +61,11 @@ export const metadata: Metadata = {
     : undefined,
   icons: {
     icon: [
-      { url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' },
-      { url: '/icon.svg?v=3', type: 'image/svg+xml', sizes: 'any' }
+      { url: '/crawe-icon.png?v=1', type: 'image/png', sizes: '512x512' },
+      { url: '/icon.svg?v=4', type: 'image/svg+xml', sizes: 'any' }
     ],
-    shortcut: ['/kvisl-icon.png?v=3'],
-    apple: [{ url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' }]
+    shortcut: ['/crawe-icon.png?v=1'],
+    apple: [{ url: '/crawe-icon.png?v=1', type: 'image/png', sizes: '512x512' }]
   },
   category: 'magazine'
 };
@@ -94,7 +95,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             slogan: SITE_MOTTO,
             logo: {
               '@type': 'ImageObject',
-              url: absoluteUrl('/kvisl-bimi.svg')
+              url: absoluteUrl('/crawe-icon.png?v=1')
             },
             email: 'distributary@kvisl.com'
           },

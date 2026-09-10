@@ -49,7 +49,7 @@ export async function sendNewsletterDigest(frequency: NewsletterFrequency) {
   const [article] = await getPublishedArticles(1);
   if (!article) return { sent: 0 };
 
-  const edition = frequency === 'daily' ? 'Kvisl Daily' : 'Kvisl Weekly';
+  const edition = frequency === 'daily' ? 'Crawe Daily' : 'Crawe Weekly';
   const subject = `${edition} — ${article.title}`;
   const articleUrl = `${siteUrl}/articles/${article.slug}`;
   const safeDek = escapeEmailHtml(article.dek);

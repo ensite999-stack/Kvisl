@@ -48,7 +48,7 @@ export default async function SearchPage({
   return (
     <div className="search-page">
       <header className="search-page-header">
-        <p className="eyebrow">Search Kvisl</p>
+        <p className="eyebrow">Search Crawe</p>
         <form className="search-page-form" action="/search" method="get">
           <label className="sr-only" htmlFor="search-page-input">Search articles</label>
           <input id="search-page-input" name="q" type="search" defaultValue={term} placeholder="Search articles" autoFocus />

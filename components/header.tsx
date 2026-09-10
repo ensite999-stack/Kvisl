@@ -5,7 +5,7 @@ import { applyTheme, type ThemeName } from './theme-provider';
 import { InstagramIcon } from './instagram-icon';
 
 const navigation = [
-  ['/about', 'About Kvisl'],
+  ['/about', 'About Crawe'],
   ['/submissions', 'Pitch an essay'],
   ['/donate', 'Donate'],
   ['/privacy', 'Privacy Policy'],
@@ -75,15 +75,16 @@ export function Header() {
     <header className={`site-header${scrolled || panel ? ' is-scrolled' : ''}`}>
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="header-inner">
-        <a className="wordmark-link notranslate" translate="no" href="/" aria-label="Kvisl home">
-          <img className="wordmark" src="/kvisl-wordmark.svg" alt="Kvisl" />
+        <a className="wordmark-link notranslate" translate="no" href="/" aria-label="Crawe home">
+          <img className="crawe-mark" src="/crawe-mark.svg" alt="" aria-hidden="true" />
+          <span className="crawe-name">Crawe</span>
         </a>
 
         <div className="header-actions">
           <button
             className="search-button"
             type="button"
-            aria-label="Search Kvisl"
+            aria-label="Search Crawe"
             aria-expanded={panel === 'search'}
             onClick={() => setPanel(panel === 'search' ? null : 'search')}
           >
@@ -102,10 +103,10 @@ export function Header() {
       </div>
 
       {panel === 'search' && (
-        <div className="header-panel search-panel" role="dialog" aria-label="Search Kvisl">
+        <div className="header-panel search-panel" role="dialog" aria-label="Search Crawe">
           <form className="site-search-form" action="/search" method="get">
             <label className="sr-only" htmlFor="site-search-input">Search articles</label>
-            <input ref={searchRef} id="site-search-input" name="q" type="search" placeholder="Search Kvisl" autoComplete="off" />
+            <input ref={searchRef} id="site-search-input" name="q" type="search" placeholder="Search Crawe" autoComplete="off" />
             <button type="submit">Search</button>
           </form>
 
@@ -148,7 +149,7 @@ export function Header() {
             ))}
           </nav>
           <div className="menu-utility">
-            <a className="menu-instagram" href="https://www.instagram.com/kvisl_?igsi=MW1wNTVscXl5c3ozbw==" target="_blank" rel="noreferrer" aria-label="Kvisl on Instagram">
+            <a className="menu-instagram" href="https://www.instagram.com/kvisl_?igsi=MW1wNTVscXl5c3ozbw==" target="_blank" rel="noreferrer" aria-label="Crawe on Instagram">
               <InstagramIcon /><span>Instagram</span>
             </a>
             <div className="menu-theme" aria-label="Theme">

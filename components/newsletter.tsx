@@ -76,7 +76,7 @@ export function Newsletter() {
     <form id="newsletter" className={`newsletter newsletter-${submissionState}`} onSubmit={submit} aria-describedby="newsletter-note newsletter-status" aria-busy={pending}>
       <div className="newsletter-copy">
         <label htmlFor="newsletter-email">Subscribe to our newsletter</label>
-        <p><span className="notranslate" translate="no">Kvisl</span> latest news.</p>
+        <p><span className="notranslate" translate="no">Crawe</span> latest news.</p>
       </div>
 
       <fieldset className="newsletter-frequency">

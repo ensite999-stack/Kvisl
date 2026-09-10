@@ -74,11 +74,11 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     category: article.section,
     icons: {
       icon: [
-        { url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' },
-        { url: '/icon.svg?v=3', type: 'image/svg+xml', sizes: 'any' }
+        { url: '/crawe-icon.png?v=1', type: 'image/png', sizes: '512x512' },
+        { url: '/icon.svg?v=4', type: 'image/svg+xml', sizes: 'any' }
       ],
-      shortcut: ['/kvisl-icon.png?v=3'],
-      apple: [{ url: '/kvisl-icon.png?v=3', type: 'image/png', sizes: '512x512' }]
+      shortcut: ['/crawe-icon.png?v=1'],
+      apple: [{ url: '/crawe-icon.png?v=1', type: 'image/png', sizes: '512x512' }]
     },
     alternates: { canonical },
     robots: {
@@ -157,7 +157,7 @@ export default async function ArticlePage({ params }: Props) {
           url: SITE_URL,
           logo: {
             '@type': 'ImageObject',
-            url: absoluteUrl('/kvisl-bimi.svg')
+            url: absoluteUrl('/crawe-icon.png?v=1')
           }
         },
         copyrightHolder: { '@id': `${SITE_URL}/#organization` },

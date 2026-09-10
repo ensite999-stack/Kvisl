@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
-const browserTitle = 'Sparking Thought, Growing Wild';
+const browserTitle = 'Crawe';
 
 export function BrowserTitle() {
   const pathname = usePathname();
