@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SITE_EMAIL } from '@/lib/site-meta';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -11,7 +12,7 @@ export default function PrivacyPage() {
       <header className="static-hero">
         <p className="eyebrow">Privacy Policy</p>
         <h1>Read without being profiled.</h1>
-        <p>Last updated: 4 September 2026.</p>
+        <p>Last updated: 10 September 2026.</p>
       </header>
       <div className="prose narrow">
         <p>Crawe is designed to collect as little personal information as reasonably possible. We do not use advertising pixels, cross-site trackers, behavioural advertising systems or third-party marketing analytics.</p>
@@ -32,7 +33,7 @@ export default function PrivacyPage() {
         <h2>Children</h2>
         <p>Crawe is a general-audience publication and is not directed to children under the age at which parental consent is required by applicable law.</p>
         <h2>Contact</h2>
-        <p>Privacy requests can be sent to <a href="mailto:distributary@kvisl.com">distributary@kvisl.com</a>. Please write “Privacy” in the subject line.</p>
+        <p>Privacy requests can be sent to <a href={`mailto:${SITE_EMAIL}`}>{SITE_EMAIL}</a>. Please write “Privacy” in the subject line.</p>
         <p className="fine-print">This policy describes the site configuration supplied with Crawe. Legal obligations can vary by jurisdiction and by future service choices; review the policy when infrastructure or publishing practices change.</p>
       </div>
     </article>

@@ -1,7 +1,9 @@
+import { SITE_EMAIL } from './site-meta';
+
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com').replace(/\/$/, '');
 
-export const KVISL_NEWSLETTER_FROM = 'Crawe <newsletter@kvisl.com>';
-export const KVISL_REPLY_TO = 'distributary@kvisl.com';
+export const KVISL_NEWSLETTER_FROM = `Crawe <${SITE_EMAIL}>`;
+export const KVISL_REPLY_TO = SITE_EMAIL;
 export const KVISL_LIST_ID = 'Crawe Newsletter <newsletter.kvisl.com>';
 
 export function escapeEmailHtml(value: string) {

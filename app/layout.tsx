@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { JsonLd } from '@/components/json-ld';
 import { BrowserTitle } from '@/components/browser-title';
 import { absoluteUrl } from '@/lib/utils';
-import { SITE_DESCRIPTION, SITE_LANGUAGE, SITE_LOCALE, SITE_MOTTO, SITE_NAME, SITE_URL } from '@/lib/site-meta';
+import { SITE_DESCRIPTION, SITE_EMAIL, SITE_LANGUAGE, SITE_LOCALE, SITE_MOTTO, SITE_NAME, SITE_URL } from '@/lib/site-meta';
 import './globals.css';
 import './aeon-refresh.css';
 import './kvisl-v2.css';
@@ -97,7 +97,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               '@type': 'ImageObject',
               url: absoluteUrl('/crawe-icon.png?v=1')
             },
-            email: 'distributary@kvisl.com'
+            email: SITE_EMAIL
           },
           {
             '@context': 'https://schema.org',

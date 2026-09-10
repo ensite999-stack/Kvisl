@@ -1,6 +1,8 @@
+import { SITE_EMAIL } from '@/lib/site-meta';
+
 export function GET() {
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://kvisl.com';
-  return new Response(`Contact: mailto:distributary@kvisl.com
+  return new Response(`Contact: mailto:${SITE_EMAIL}
 Canonical: ${base}/.well-known/security.txt
 Preferred-Languages: en
 Policy: ${base}/privacy
