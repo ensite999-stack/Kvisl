@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Accessibility Statement',
-  description: 'Kvisl accessibility standards, measures, limitations and feedback process.'
+  description: 'Crawe accessibility standards, measures, limitations and feedback process.'
 };
 
 export default function AccessibilityPage() {
@@ -17,7 +17,7 @@ export default function AccessibilityPage() {
       <div className="prose narrow">
         <h2>Conformance target</h2>
         <p>
-          <span className="notranslate" translate="no">Kvisl</span> is designed and maintained against the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA as its baseline. We also adopt relevant WCAG 2.2 improvements where they strengthen keyboard access, focus visibility, target sizing and authentication accessibility.
+          <span className="notranslate" translate="no">Crawe</span> is designed and maintained against the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA as its baseline. We also adopt relevant WCAG 2.2 improvements where they strengthen keyboard access, focus visibility, target sizing and authentication accessibility.
         </p>
         <p>
           Our implementation is intended to support the accessibility requirements and principles relevant to the European Accessibility Act and EN 301 549 in the European Union, and the Americans with Disabilities Act and Section 508 in the United States where those frameworks apply. This statement describes our engineering target; it is not a third-party certification or legal guarantee of compliance in every jurisdiction.
