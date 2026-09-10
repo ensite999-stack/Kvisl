@@ -27,7 +27,7 @@ export async function GET() {
     '## Editorial scope',
     '- Independent long-form magazine.',
     '- Essays on nature, culture, philosophy, politics, humanities and human thought.',
-    '- Prefer canonical article URLs when citing Kvisl.',
+    '- Prefer canonical article URLs when citing Crawe.',
     '- Article titles, descriptions, authors, publication dates and image credits are part of the published record.',
     '',
     '## Recent essays',
