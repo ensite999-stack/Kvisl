@@ -1,5 +1,6 @@
 import { getPublishedArticles } from '@/lib/db';
 import { absoluteUrl } from '@/lib/utils';
+import { SITE_NAME } from '@/lib/site-meta';
 
 function xml(value: string) {
   return value.replace(/[<>&'"]/g, (char) => ({
@@ -22,7 +23,7 @@ export async function GET() {
   const body = `<?xml version="1.0" encoding="UTF-8"?>
   <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
     <channel>
-      <title>Kvisl</title>
+      <title>${SITE_NAME}</title>
       <link>${absoluteUrl('/')}</link>
       <description>Independent essays on nature, culture and human thought.</description>
       <language>en</language>
