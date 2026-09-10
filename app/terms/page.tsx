@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SITE_EMAIL } from '@/lib/site-meta';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -11,7 +12,7 @@ export default function TermsPage() {
       <header className="static-hero">
         <p className="eyebrow">Terms of Service</p>
         <h1>Terms for using Crawe.</h1>
-        <p>Last updated: 4 September 2026.</p>
+        <p>Last updated: 10 September 2026.</p>
       </header>
       <div className="prose narrow">
         <p>By using this website, you agree to use it lawfully and in a way that does not interfere with the site, its infrastructure, its authors, or other readers.</p>
@@ -28,7 +29,7 @@ export default function TermsPage() {
         <h2>Donations</h2>
         <p>Digital-asset transfers are made at the sender’s discretion. Verify the network, asset and address before sending. Unless required by law, mistaken or incompatible blockchain transfers may not be recoverable.</p>
         <h2>Contact</h2>
-        <p>Questions about these terms: <a href="mailto:distributary@kvisl.com">distributary@kvisl.com</a>.</p>
+        <p>Questions about these terms: <a href={`mailto:${SITE_EMAIL}`}>{SITE_EMAIL}</a>.</p>
       </div>
     </article>
   );
