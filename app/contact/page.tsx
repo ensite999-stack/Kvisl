@@ -2,16 +2,16 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Contact Kvisl',
-  description: 'Contact Kvisl for editorial correspondence, rights, accessibility requests and general enquiries.'
+  title: 'Contact Crawe',
+  description: 'Contact Crawe for editorial correspondence, rights, accessibility requests and general enquiries.'
 };
 
 export default function ContactPage() {
   return (
     <article className="static-page">
       <header className="static-hero">
-        <p className="eyebrow">Contact Kvisl</p>
-        <h1>Write to Kvisl.</h1>
+        <p className="eyebrow">Contact Crawe</p>
+        <h1>Write to Crawe.</h1>
       </header>
       <div className="prose narrow">
         <p>For editorial correspondence, rights, accessibility requests and general enquiries, email <a href="mailto:distributary@kvisl.com">distributary@kvisl.com</a>.</p>
