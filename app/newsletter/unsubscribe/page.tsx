@@ -13,7 +13,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
   return (
     <article className="static-page">
       <header className="static-hero"><p className="eyebrow">Newsletter</p><h1>{valid ? 'You are unsubscribed.' : 'This unsubscribe link is invalid.'}</h1></header>
-      <div className="prose narrow"><p>{valid ? 'You will no longer receive Kvisl newsletters at this address.' : 'The link may have expired or been altered. You can contact Kvisl if you need help with your subscription.'}</p></div>
+      <div className="prose narrow"><p>{valid ? 'You will no longer receive Crawe newsletters at this address.' : 'The link may have expired or been altered. You can contact Crawe if you need help with your subscription.'}</p></div>
     </article>
   );
 }
