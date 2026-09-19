@@ -1413,3 +1413,116 @@ html.menu-open { overflow: hidden; }
     min-height: 42px;
   }
 }
+
+
+/* Header v4 */
+.header-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+}
+.header-actions {
+  gap: 12px;
+}
+.header-search-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+}
+.site-header .header-search-link {
+  color: #fff;
+}
+
+/* Homepage scroll rail: never overlays editorial content */
+.home-content-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  grid-template-areas: "main rail";
+  column-gap: clamp(12px, 1.5vw, 24px);
+  align-items: stretch;
+}
+.home-content-main {
+  grid-area: main;
+  min-width: 0;
+}
+.home-scroll-rail {
+  grid-area: rail;
+  position: relative;
+  min-width: 44px;
+}
+.home-scroll-rail .scroll-jump {
+  position: sticky;
+  top: calc(50dvh - 20px);
+  width: 40px;
+  height: 44px;
+  margin-top: clamp(44px, 7vw, 96px);
+  display: grid;
+  place-items: center;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  opacity: .72;
+  transform: none;
+  cursor: pointer;
+}
+.home-scroll-rail .scroll-jump:hover {
+  color: var(--ink);
+  opacity: 1;
+}
+.home-scroll-rail .scroll-jump:active {
+  transform: scale(.95);
+}
+.home-scroll-rail .scroll-jump-icon {
+  width: 16px;
+  height: 25px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: none;
+}
+.home-scroll-rail .scroll-jump.is-up .scroll-jump-icon {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 760px) {
+  .header-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 7px;
+  }
+  .header-actions {
+    gap: 7px;
+  }
+  .header-search-link {
+    font-size: .62rem;
+    letter-spacing: .07em;
+  }
+  .home-content-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "rail"
+      "main";
+    row-gap: 0;
+  }
+  .home-scroll-rail {
+    min-width: 0;
+    height: 48px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .home-scroll-rail .scroll-jump {
+    position: static;
+    width: 36px;
+    height: 40px;
+    margin: 4px 0 0;
+  }
+  .home-scroll-rail .scroll-jump-icon {
+    width: 15px;
+    height: 23px;
+  }
+}

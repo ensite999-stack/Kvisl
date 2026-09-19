@@ -1,10 +1,7 @@
----
-import ScrollToBottom from './ScrollToBottom.astro';
----
 <header class="site-header" id="site-header">
   <div class="container header-inner header-shell">
     <a class="header-logo" href="/" aria-label="Kvisl home" translate="no">
-      <img src="/icon.svg" alt="" width="36" height="36" />
+      <img src="/icon.svg" alt="" width="44" height="44" />
     </a>
 
     <div class="header-actions">
@@ -13,14 +10,7 @@ import ScrollToBottom from './ScrollToBottom.astro';
         <a class="header-link" href="/subscribe">Subscribe</a>
       </nav>
 
-      <a class="header-icon-link" href="/search" aria-label="Search">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="10.5" cy="10.5" r="6.5"></circle>
-          <path d="m15.5 15.5 5 5"></path>
-        </svg>
-      </a>
-
-      <ScrollToBottom />
+      <a class="header-link header-search-link" href="/search">Search</a>
 
       <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false">
         <span></span><span></span><span></span>
