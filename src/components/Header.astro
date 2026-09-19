@@ -52,7 +52,7 @@ const isHome = Astro.url.pathname === '/';
     });
   };
 
-  const setTheme = (theme) => {
+  const setTheme = (theme: string | undefined) => {
     if (theme !== 'light' && theme !== 'dark') return;
     document.documentElement.dataset.theme = theme;
     try { localStorage.setItem('kvisl-theme', theme); } catch {}
