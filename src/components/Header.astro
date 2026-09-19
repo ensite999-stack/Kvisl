@@ -1,25 +1,29 @@
 <header class="site-header" id="site-header">
-  <div class="container header-inner header-brand-only">
+  <div class="container header-inner">
+    <nav class="header-side header-left" aria-label="Subscription">
+      <a class="header-link" href="/subscribe">Subscribe</a>
+    </nav>
     <a class="wordmark notranslate" href="/" aria-label="Kvisl home" translate="no">Kvisl</a>
+    <nav class="header-side header-right" aria-label="Primary">
+      <a class="header-link" href="/search">Search</a>
+      <a class="header-link" href="/archive">Archive</a>
+    </nav>
   </div>
 </header>
 
 <script>
   const header = document.querySelector('#site-header');
   let lastY = window.scrollY;
-
   const onScroll = () => {
     if (!(header instanceof HTMLElement)) return;
     const y = window.scrollY;
     header.classList.toggle('scrolled', y > 18);
-
     if (Math.abs(y - lastY) > 8) {
       if (y > lastY && y > 120) header.classList.add('hidden');
       else header.classList.remove('hidden');
       lastY = y;
     }
   };
-
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 </script>
