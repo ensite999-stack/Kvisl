@@ -1,5 +1,5 @@
 import { defineConfig } from 'astro/config';
-import netlify from '@astrojs/netlify';
+import vercel from '@astrojs/vercel';
 
 function normalizeSiteUrl(value) {
   if (!value) return undefined;
@@ -26,15 +26,13 @@ function normalizeSiteUrl(value) {
 
 const site =
   normalizeSiteUrl(process.env.SITE_URL) ??
-  normalizeSiteUrl(process.env.URL) ??
-  normalizeSiteUrl(process.env.DEPLOY_PRIME_URL) ??
   normalizeSiteUrl(process.env.VERCEL_PROJECT_PRODUCTION_URL) ??
   normalizeSiteUrl(process.env.VERCEL_URL);
 
 export default defineConfig({
   site,
   output: 'server',
-  adapter: netlify(),
+  adapter: vercel(),
   compressHTML: true,
   security: {
     checkOrigin: true
