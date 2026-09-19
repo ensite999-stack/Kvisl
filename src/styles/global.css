@@ -1526,3 +1526,18 @@ html.menu-open { overflow: hidden; }
     height: 23px;
   }
 }
+
+
+/* Larger header logo */
+.header-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 9px;
+}
+@media (max-width: 760px) {
+  .header-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+}
