@@ -32,11 +32,10 @@ const organizationLd = {
 };
 ---
 <!doctype html>
-<html lang={site.locale} translate="no" class="notranslate">
+<html lang={site.locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="google" content="notranslate" />
     <meta name="theme-color" content={site.color} />
     <meta name="description" content={description} />
     <meta name="application-name" content="Kvisl" />
@@ -60,7 +59,7 @@ const organizationLd = {
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
-    <title translate="no">{title}</title>
+    <title>{title}</title>
     <script is:inline>
       try {
         const saved = localStorage.getItem('kvisl-theme');
