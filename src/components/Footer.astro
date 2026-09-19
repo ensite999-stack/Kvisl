@@ -2,17 +2,17 @@
 import SubscribeForm from './SubscribeForm.astro';
 ---
 <footer class="site-footer">
-  <div class="container">
-    <div class="footer-primary">
-      <div>
-        <a class="footer-brand" href="/">Kvisl</a>
-        <p class="footer-motto">To attend is to inhabit.</p>
-      </div>
-      <div class="footer-subscribe">
-        <p>New essays, occasionally.</p>
-        <SubscribeForm variant="footer" />
-      </div>
+  <div class="container footer-stack">
+    <div class="footer-identity">
+      <a class="footer-brand" href="/">Kvisl</a>
+      <p class="footer-motto">To attend is to inhabit.</p>
     </div>
+
+    <div class="footer-subscribe">
+      <p class="footer-label">New essays, occasionally.</p>
+      <SubscribeForm variant="footer" />
+    </div>
+
     <nav class="footer-nav" aria-label="Footer navigation">
       <a href="/about">About</a>
       <a href="/archive">Archive</a>
@@ -22,6 +22,41 @@ import SubscribeForm from './SubscribeForm.astro';
       <a href="/rss.xml">RSS</a>
       <a href="/donate">Donate</a>
     </nav>
+
+    <div class="footer-theme" aria-label="Appearance">
+      <p class="footer-label">Appearance</p>
+      <div class="footer-theme-actions">
+        <button type="button" data-theme-choice="light">Light</button>
+        <button type="button" data-theme-choice="dark">Dark</button>
+      </div>
+    </div>
+
     <div class="footer-bottom">©2026 Kvisl.</div>
   </div>
 </footer>
+
+<script>
+  const themeButtons = document.querySelectorAll('[data-theme-choice]');
+
+  const syncThemeButtons = () => {
+    const current = document.documentElement.dataset.theme || 'light';
+    themeButtons.forEach((button) => {
+      if (button instanceof HTMLButtonElement) {
+        button.setAttribute('aria-pressed', String(button.dataset.themeChoice === current));
+      }
+    });
+  };
+
+  const setTheme = (theme: string | undefined) => {
+    if (theme !== 'light' && theme !== 'dark') return;
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('kvisl-theme', theme); } catch {}
+    syncThemeButtons();
+  };
+
+  themeButtons.forEach((button) => button.addEventListener('click', () => {
+    if (button instanceof HTMLButtonElement) setTheme(button.dataset.themeChoice);
+  }));
+
+  syncThemeButtons();
+</script>

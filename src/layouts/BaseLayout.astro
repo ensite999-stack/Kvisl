@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import BackRail from '../components/BackRail.astro';
 import '../styles/global.css';
 import { site } from '../lib/site';
 
@@ -20,6 +21,7 @@ const {
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
 const absoluteImage = image ? new URL(image, Astro.site ?? Astro.url.origin).toString() : undefined;
+const showBackRail = Astro.url.pathname !== '/';
 const organizationLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -69,6 +71,7 @@ const organizationLd = {
   </head>
   <body>
     <Header />
+    {showBackRail && <BackRail />}
     <slot />
     <Footer />
     <script is:inline>
