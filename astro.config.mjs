@@ -33,11 +33,6 @@ export default defineConfig({
   site,
   output: 'server',
   adapter: vercel(),
-  vite: {
-    ssr: {
-      noExternal: ['sanitize-html']
-    }
-  },
   compressHTML: true,
   security: {
     checkOrigin: true

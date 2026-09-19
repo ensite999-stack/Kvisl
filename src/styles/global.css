@@ -85,51 +85,48 @@ img { display: block; max-width: 100%; }
 }
 
 
-/* One-click vertical arrow to the bottom of the page. */
-.scroll-to-bottom {
+/* One-click vertical page jump. */
+.scroll-jump {
   position: fixed;
-  right: max(14px, env(safe-area-inset-right));
+  right: max(16px, env(safe-area-inset-right));
   top: 50%;
   top: 50dvh;
   z-index: 43;
   width: 44px;
-  height: 92px;
+  height: 84px;
   transform: translateY(-50%);
   appearance: none;
   border: 0;
   padding: 0;
   background: transparent;
-  color: #fff;
-  opacity: .52;
+  color: color-mix(in srgb, var(--ink) 64%, transparent);
+  opacity: .58;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  mix-blend-mode: difference;
+  display: grid;
+  place-items: center;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition: opacity 180ms ease, transform 180ms ease;
 }
-.scroll-to-bottom[hidden] { display: none; }
-.scroll-to-bottom:hover { opacity: .9; }
-.scroll-to-bottom:active { transform: translateY(-50%) translateY(2px); }
-.scroll-arrow-line {
-  width: 1.5px;
-  height: 36px;
-  background: currentColor;
+.scroll-jump[hidden] { display: none; }
+.scroll-jump:hover { opacity: .95; }
+.scroll-jump:active { transform: translateY(-50%) scale(.96); }
+.scroll-jump-icon {
+  width: 24px;
+  height: 64px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--paper) 82%, transparent));
+  transition: transform 260ms cubic-bezier(.2,.75,.25,1);
 }
-.scroll-arrow-head {
-  width: 12px;
-  height: 12px;
-  margin-top: -7px;
-  border-right: 1.8px solid currentColor;
-  border-bottom: 1.8px solid currentColor;
-  transform: rotate(45deg);
-}
-.scroll-to-bottom:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: -7px;
+.scroll-jump.is-up .scroll-jump-icon { transform: rotate(180deg); }
+.scroll-jump:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: -6px;
   border-radius: 999px;
 }
 
@@ -545,8 +542,8 @@ img { display: block; max-width: 100%; }
 
   .container { width: calc(100% - 28px); }
   .wordmark { font-size: 2.05rem; }
-  .scroll-to-bottom { right: max(6px, env(safe-area-inset-right)); width: 40px; height: 82px; }
-  .scroll-arrow-line { height: 32px; }
+  .scroll-jump { right: max(7px, env(safe-area-inset-right)); width: 40px; height: 78px; }
+  .scroll-jump-icon { width: 22px; height: 58px; }
   .latest-image img,
   .article-cover { aspect-ratio: 16 / 9; }
 

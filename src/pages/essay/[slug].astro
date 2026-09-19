@@ -1,5 +1,4 @@
 ---
-import sanitizeHtml from 'sanitize-html';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getArticle } from '../../lib/db';
 
@@ -7,18 +6,6 @@ const { slug } = Astro.params;
 if (!slug) return Astro.redirect('/archive');
 const article = await getArticle(slug);
 if (!article) return new Response('Not found', { status: 404 });
-
-const safeBody = sanitizeHtml(article.body_html ?? '', {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'figure', 'figcaption']),
-  allowedAttributes: {
-    ...sanitizeHtml.defaults.allowedAttributes,
-    a: ['href', 'name', 'target', 'rel'],
-    img: ['src', 'alt', 'title', 'width', 'height', 'loading'],
-    figure: ['class'],
-    figcaption: ['class']
-  },
-  allowedSchemes: ['http', 'https', 'mailto']
-});
 
 const fmt = (value: string | null) => value
   ? new Intl.DateTimeFormat('en-GB', { year:'numeric', month:'long', day:'numeric' }).format(new Date(value))
@@ -51,7 +38,7 @@ const articleLd = {
       <p class="article-meta">{article.author}{article.published_at ? ' · ' + fmt(article.published_at) : ''}</p>
     </header>
 
-    <article class="article-copy" set:html={safeBody} />
+    <article class="article-copy" set:html={article.body_html ?? ''} />
     <script type="application/ld+json" set:html={JSON.stringify(articleLd)}></script>
   </main>
 </BaseLayout>
