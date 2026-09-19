@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ArticleLabel from '../../../components/ArticleLabel.astro';
+import { getAdminArticle } from '../../../lib/db';
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/admin');
+const article = await getAdminArticle(slug);
+if (!article) return new Response('Not found', { status: 404 });
+
+const fmt = (value: string | null) => value
+  ? new Intl.DateTimeFormat('en-GB', { year:'numeric', month:'long', day:'numeric' }).format(new Date(value))
+  : '';
+---
+<BaseLayout title={'Preview: ' + article.title + ' | Kvisl'} description={article.dek} image={article.cover_url} article noindex>
+  <div class="preview-banner">
+    Preview · {article.status}
+    <a href={'/admin?edit=' + encodeURIComponent(article.slug)}>Back to editor</a>
+  </div>
+
+  <main class="article-page admin-article-preview">
+    {article.cover_url && (
+      <figure class="article-cover-wrap">
+        <img class="article-cover" src={article.cover_url} alt={article.cover_alt} />
+        {article.cover_credit && <figcaption>{article.cover_credit}</figcaption>}
+      </figure>
+    )}
+
+    <header class="article-head container">
+      <ArticleLabel type={article.article_type} category={article.topic} />
+      <h1>{article.title}</h1>
+      <p class="dek">{article.dek}</p>
+    </header>
+
+    <div class="article-copy">
+      <div class="article-body" set:html={article.body_html ?? ''} />
+    </div>
+
+    <footer class="article-end">
+      <div class="article-end-tags">
+        <span>{article.article_type}</span>
+        {article.topic && <span>{article.topic}</span>}
+        {article.tags.slice(0, 10).map((tag) => <span>{tag}</span>)}
+      </div>
+      <p class="article-end-author">By {article.author}</p>
+      {article.published_at && <time datetime={article.published_at}>{fmt(article.published_at)}</time>}
+    </footer>
+  </main>
+</BaseLayout>

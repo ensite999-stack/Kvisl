@@ -9,17 +9,23 @@ interface Props {
   description?: string;
   image?: string | null;
   article?: boolean;
+  noindex?: boolean;
 }
 
 const {
   title = site.title,
   description = site.description,
   image = '/icons/icon-512.png',
-  article = false
+  article = false,
+  noindex = false
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
-const absoluteImage = image ? new URL(image, Astro.site ?? Astro.url.origin).toString() : undefined;
+const absoluteImage = image
+  ? image.startsWith('data:')
+    ? new URL('/icons/icon-512.png', Astro.site ?? Astro.url.origin).toString()
+    : new URL(image, Astro.site ?? Astro.url.origin).toString()
+  : undefined;
 const organizationLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -37,6 +43,7 @@ const organizationLd = {
     <meta name="viewport" content="width=device-width" />
     <meta name="theme-color" content={site.color} />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex,nofollow,noarchive" />}
     <meta name="application-name" content="Kvisl" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />

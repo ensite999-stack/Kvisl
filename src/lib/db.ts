@@ -221,51 +221,113 @@ export async function subscribe(email: string): Promise<void> {
 }
 
 
-export type AdminArticle = {
-  slug: string;
-  title: string;
-  status: string;
-  article_type: string;
-  topic: string;
-  tags: string[];
-  published_at: string | null;
+export type AdminArticle = Article & {
+  status: 'draft' | 'published' | 'deleted';
+  body_html: string;
+  sources: string;
 };
 
 export async function getAdminArticles(): Promise<AdminArticle[]> {
   const sql = client();
   if (!sql) return [];
   const rows = await sql`
-    SELECT slug, title, status, article_type, topic, tags, published_at
+    SELECT slug, title, dek, body_html, topic, article_type, tags, status, published_at, featured,
+           cover_url, cover_alt, cover_credit, sources, author
     FROM public.kvisl_articles
     WHERE deleted_at IS NULL
+      AND status <> 'deleted'
     ORDER BY updated_at DESC, created_at DESC
   `;
   return rows as AdminArticle[];
 }
 
-export async function updateArticleClassification(
-  slug: string,
-  articleType: 'Essay' | 'Note',
-  topic: string,
-  tags: string[]
-): Promise<void> {
+export async function getAdminArticle(slug: string): Promise<AdminArticle | null> {
+  const sql = client();
+  if (!sql) return null;
+  const rows = await sql`
+    SELECT slug, title, dek, body_html, topic, article_type, tags, status, published_at, featured,
+           cover_url, cover_alt, cover_credit, sources, author
+    FROM public.kvisl_articles
+    WHERE slug = ${slug}
+      AND deleted_at IS NULL
+      AND status <> 'deleted'
+    LIMIT 1
+  `;
+  return (rows[0] as AdminArticle | undefined) ?? null;
+}
+
+export type AdminArticleInput = {
+  slug?: string;
+  title: string;
+  dek: string;
+  bodyHtml: string;
+  topic: string;
+  articleType: 'Essay' | 'Note';
+  tags: string[];
+  status: 'draft' | 'published';
+  publishedAt: string | null;
+  coverUrl: string | null;
+  coverAlt: string;
+  coverCredit: string;
+  sources: string;
+  author: string;
+};
+
+const newArticleSlug = (articleType: 'Essay' | 'Note') =>
+  `${articleType.toLowerCase()}-${Date.now().toString(36)}`;
+
+export async function saveAdminArticle(input: AdminArticleInput): Promise<string> {
   const sql = client();
   if (!sql) throw new Error('DATABASE_URL is not configured');
 
-  const normalizedTags = tags
+  const slug = input.slug?.trim() || newArticleSlug(input.articleType);
+  const normalizedTags = input.tags
     .map((tag) => tag.trim())
     .filter(Boolean)
+    .filter((tag, index, all) => all.findIndex((item) => item.toLowerCase() === tag.toLowerCase()) === index)
     .slice(0, 10);
   const tagPayload = normalizedTags.join('|||');
+  const publishedAt = input.publishedAt || null;
 
   await sql`
+    INSERT INTO public.kvisl_articles (
+      slug, title, dek, body_html, topic, article_type, tags, status, published_at,
+      cover_url, cover_alt, cover_credit, sources, author, updated_at
+    )
+    VALUES (
+      ${slug}, ${input.title}, ${input.dek}, ${input.bodyHtml}, ${input.topic},
+      ${input.articleType}, CASE WHEN ${tagPayload} = '' THEN '{}'::text[] ELSE string_to_array(${tagPayload}, '|||') END,
+      ${input.status}, ${publishedAt}::timestamptz, ${input.coverUrl}, ${input.coverAlt},
+      ${input.coverCredit}, ${input.sources}, ${input.author}, now()
+    )
+    ON CONFLICT (slug) DO UPDATE SET
+      title = EXCLUDED.title,
+      dek = EXCLUDED.dek,
+      body_html = EXCLUDED.body_html,
+      topic = EXCLUDED.topic,
+      article_type = EXCLUDED.article_type,
+      tags = EXCLUDED.tags,
+      status = EXCLUDED.status,
+      published_at = EXCLUDED.published_at,
+      cover_url = EXCLUDED.cover_url,
+      cover_alt = EXCLUDED.cover_alt,
+      cover_credit = EXCLUDED.cover_credit,
+      sources = EXCLUDED.sources,
+      author = EXCLUDED.author,
+      deleted_at = NULL,
+      updated_at = now()
+  `;
+
+  return slug;
+}
+
+export async function deleteAdminArticle(slug: string): Promise<void> {
+  const sql = client();
+  if (!sql) throw new Error('DATABASE_URL is not configured');
+  await sql`
     UPDATE public.kvisl_articles
-    SET article_type = ${articleType},
-        topic = ${topic},
-        tags = CASE
-          WHEN ${tagPayload} = '' THEN '{}'::text[]
-          ELSE string_to_array(${tagPayload}, '|||')
-        END,
+    SET status = 'deleted',
+        deleted_at = now(),
         updated_at = now()
     WHERE slug = ${slug}
       AND deleted_at IS NULL
