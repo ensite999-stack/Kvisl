@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getAdminArticles, updateArticleClassification } from '../lib/db';
+
+const configuredToken = import.meta.env.ADMIN_TOKEN;
+const cookieName = 'kvisl-admin';
+let authorized = Boolean(configuredToken && (Astro.cookies.get(cookieName)?.value ?? '') === configuredToken);
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = String(form.get('action') ?? '');
+
+  if (action === 'login') {
+    const token = String(form.get('token') ?? '');
+    if (configuredToken && token === configuredToken) {
+      Astro.cookies.set(cookieName, token, {
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 12
+      });
+      return Astro.redirect('/admin', 303);
+    }
+    error = 'Invalid admin token.';
+  }
+
+  if (action === 'logout') {
+    Astro.cookies.delete(cookieName, { path: '/' });
+    return Astro.redirect('/admin', 303);
+  }
+
+  if (action === 'classification' && authorized) {
+    const slug = String(form.get('slug') ?? '');
+    const articleType = String(form.get('article_type') ?? '');
+    const topic = String(form.get('topic') ?? '').trim();
+
+    if (slug && (articleType === 'Essay' || articleType === 'Note') && topic) {
+      await updateArticleClassification(slug, articleType, topic);
+      return Astro.redirect('/admin?saved=1', 303);
+    }
+    error = 'Choose a form and enter a category.';
+  }
+}
+
+authorized = Boolean(configuredToken && (Astro.cookies.get(cookieName)?.value ?? '') === configuredToken);
+const articles = authorized ? await getAdminArticles() : [];
+const saved = Astro.url.searchParams.get('saved') === '1';
+---
+<BaseLayout title="Editorial | Kvisl" description="Kvisl editorial controls.">
+  <main class="container page-main">
+    <div class="narrow-page">
+      <p class="eyebrow">Editorial</p>
+      <h1 class="page-title">Articles</h1>
+
+      {!configuredToken ? (
+        <p class="page-lede">Set <code>ADMIN_TOKEN</code> in the Netlify preview environment to enable editorial controls.</p>
+      ) : !authorized ? (
+        <form class="admin-login" method="post">
+          <input type="hidden" name="action" value="login" />
+          <label><span>Admin token</span><input type="password" name="token" required autocomplete="current-password" /></label>
+          {error && <p class="form-error">{error}</p>}
+          <button type="submit">Sign in</button>
+        </form>
+      ) : (
+        <>
+          <div class="admin-toolbar">
+            <p>{saved ? 'Saved.' : 'Set the article form and its finer category.'}</p>
+            <form method="post"><input type="hidden" name="action" value="logout" /><button type="submit">Sign out</button></form>
+          </div>
+
+          <div class="admin-articles">
+            {articles.map((item) => (
+              <form class="admin-article" method="post">
+                <input type="hidden" name="action" value="classification" />
+                <input type="hidden" name="slug" value={item.slug} />
+                <div class="admin-article-title"><strong>{item.title}</strong><span>{item.status}</span></div>
+                <label>
+                  <span>Form</span>
+                  <select name="article_type">
+                    <option value="Essay" selected={item.article_type === 'Essay'}>Essay</option>
+                    <option value="Note" selected={item.article_type === 'Note'}>Note</option>
+                  </select>
+                </label>
+                <label><span>Category</span><input name="topic" value={item.topic} required /></label>
+                <button type="submit">Save</button>
+              </form>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  </main>
+</BaseLayout>
