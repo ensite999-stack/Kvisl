@@ -1,13 +1,71 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const donationAddress = '0xFc71525c448cD9a7DDA6995F2898a8cB7959763A';
 ---
 <BaseLayout title="Donate | Kvisl" description="Support independent publishing at Kvisl.">
   <main class="container page-main narrow-page">
     <p class="eyebrow">Donate</p>
     <h1 class="page-title">Donate</h1>
-    <div class="policy-copy">
-      <p><span class="notranslate" translate="no">Kvisl</span> is an independent, member-run nonprofit. Donations will support editing, publishing, and the infrastructure that keeps the site available.</p>
-      <p>Our donation channel is not open yet. When it is, the official option will appear here. We will never ask for donations to personal accounts, cryptocurrency addresses, or unofficial payment links.</p>
+
+    <div class="policy-copy donate-copy">
+      <p><span class="notranslate" translate="no">Kvisl</span> is an independent, member-run nonprofit. Donations support editing, publishing, and the infrastructure that keeps our work available.</p>
+
+      <section class="donation-card" aria-labelledby="donation-usdc-title">
+        <div class="donation-card-head">
+          <div>
+            <p class="donation-kicker">EVM ecosystem</p>
+            <h2 id="donation-usdc-title">USDC stablecoin</h2>
+          </div>
+          <span class="donation-token">USDC</span>
+        </div>
+
+        <p class="donation-network-note">Send only USDC on a supported EVM-compatible network. Confirm the network and address before sending.</p>
+
+        <div class="donation-address-row">
+          <code data-donation-address>{donationAddress}</code>
+          <button
+            class="copy-address"
+            type="button"
+            data-copy-address={donationAddress}
+            aria-label="Copy donation address"
+          >
+            Copy
+          </button>
+        </div>
+        <p class="copy-status" data-copy-status aria-live="polite"></p>
+      </section>
     </div>
   </main>
+
+  <script>
+    const copyButton = document.querySelector('[data-copy-address]');
+    const status = document.querySelector('[data-copy-status]');
+
+    copyButton?.addEventListener('click', async () => {
+      if (!(copyButton instanceof HTMLButtonElement)) return;
+      const address = copyButton.dataset.copyAddress;
+      if (!address) return;
+
+      try {
+        await navigator.clipboard.writeText(address);
+      } catch {
+        const textarea = document.createElement('textarea');
+        textarea.value = address;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }
+
+      copyButton.textContent = 'Copied';
+      if (status instanceof HTMLElement) status.textContent = 'Address copied.';
+      window.setTimeout(() => {
+        copyButton.textContent = 'Copy';
+        if (status instanceof HTMLElement) status.textContent = '';
+      }, 1800);
+    });
+  </script>
 </BaseLayout>
