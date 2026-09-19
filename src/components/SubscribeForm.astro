@@ -1,0 +1,36 @@
+<form class="subscribe-form" data-subscribe>
+  <label class="sr-only" for="newsletter-email">电子邮箱</label>
+  <input id="newsletter-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required />
+  <button type="submit">订阅</button>
+</form>
+<p class="form-status" data-status aria-live="polite"></p>
+
+<script>
+  document.querySelectorAll('[data-subscribe]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!(form instanceof HTMLFormElement)) return;
+      const status = form.parentElement?.querySelector('[data-status]');
+      const data = new FormData(form);
+      const email = String(data.get('email') || '').trim();
+      if (status) status.textContent = '正在提交…';
+      try {
+        const response = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result?.message || '订阅失败');
+        if (status) status.textContent = '已加入。下一篇长文见。';
+        form.reset();
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : '订阅失败，请稍后重试。';
+      }
+    });
+  });
+</script>
+
+<style>
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+</style>

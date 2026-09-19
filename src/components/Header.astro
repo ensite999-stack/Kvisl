@@ -1,0 +1,76 @@
+---
+---
+<header class="site-header" id="site-header">
+  <div class="container header-inner">
+    <div class="header-side">
+      <a class="header-link icon-link" href="/search" aria-label="搜索">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
+        <span class="desktop-label">搜索</span>
+      </a>
+      <a class="header-link archive-link" href="/archive">档案</a>
+    </div>
+
+    <a class="wordmark" href="/" aria-label="Kvisl 首页">Kvisl</a>
+
+    <div class="header-side right">
+      <a class="header-link" href="/#subscribe">订阅</a>
+      <button class="header-button menu-trigger icon-link" type="button" id="menu-trigger" aria-expanded="false" aria-controls="menu-panel">
+        <span class="desktop-label">菜单</span>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16M4 16h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="menu-panel" id="menu-panel" aria-hidden="true">
+  <div class="container">
+    <nav class="menu-links" aria-label="主菜单">
+      <a href="/archive">档案 Archive</a>
+      <a href="/about">关于 About</a>
+      <a href="/membership">成员 Membership</a>
+      <a href="/search">搜索 Search</a>
+    </nav>
+    <div class="menu-meta">
+      <span>To attend is to inhabit.</span>
+      <span>Independent · Non-profit · Member-run</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const header = document.querySelector('#site-header');
+  const trigger = document.querySelector('#menu-trigger');
+  const panel = document.querySelector('#menu-panel');
+  let lastY = window.scrollY;
+
+  const onScroll = () => {
+    if (!(header instanceof HTMLElement)) return;
+    const y = window.scrollY;
+    header.classList.toggle('scrolled', y > 18);
+    if (Math.abs(y - lastY) > 8) {
+      if (y > lastY && y > 120) header.classList.add('hidden');
+      else header.classList.remove('hidden');
+      lastY = y;
+    }
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  trigger?.addEventListener('click', () => {
+    if (!(trigger instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
+    const open = !panel.classList.contains('open');
+    panel.classList.toggle('open', open);
+    panel.setAttribute('aria-hidden', String(!open));
+    trigger.setAttribute('aria-expanded', String(open));
+    document.body.classList.toggle('menu-open', open);
+    header?.classList.remove('hidden');
+  });
+
+  panel?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    trigger?.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('menu-open');
+  }));
+</script>
