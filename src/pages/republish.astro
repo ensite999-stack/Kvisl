@@ -9,7 +9,7 @@ const sent = Astro.url.searchParams.get('sent') === '1';
 <BaseLayout title="Republish | Kvisl" description="Request a paid licence to republish Kvisl work.">
   <main class="container page-main">
     <div class="narrow-page">
-      <p class="eyebrow">Republish</p>
+      <p class="eyebrow">Rights & Licensing</p>
       <h1 class="page-title">Republish</h1>
       <p class="page-lede">
         {article
@@ -18,9 +18,34 @@ const sent = Astro.url.searchParams.get('sent') === '1';
       </p>
 
       <div class="republish-terms">
-        <p class="republish-fee"><strong>Licensing starts at US$600 per article.</strong> The final fee may be higher depending on the work, <span class="notranslate" translate="no">Kvisl</span>'s editorial and creative contribution, the original author's terms, territory, language, medium, and duration.</p>
-        <p>Written permission and payment are required before republication. A licence covers only the rights expressly granted. Images and third-party material require separate clearance unless we confirm otherwise.</p>
-        <p>Credit the author, article title, and <span class="notranslate" translate="no">Kvisl</span>, and link to the canonical article when publishing online. Translation, abridgement, adaptation, syndication, and other material changes require separate written approval.</p>
+        <div class="policy-contact-box">
+          <strong>Licensing contact</strong>
+          <a href="mailto:hello@kvisl.com">hello@kvisl.com</a>
+        </div>
+
+        <h2>Licence fee</h2>
+        <p class="republish-fee"><strong>Licensing starts at US$600 per article.</strong> The final fee may be higher depending on the work, <span class="notranslate" translate="no">Kvisl</span>'s editorial and creative contribution, the original author's terms, language, territory, medium, audience, duration, exclusivity, and intended use.</p>
+
+        <h2>Permission is required first</h2>
+        <p>Do not publish the article until <span class="notranslate" translate="no">Kvisl</span> has approved the use in writing and any required payment has been completed. Submitting this form does not grant permission.</p>
+
+        <h2>Scope of a licence</h2>
+        <p>A licence covers only the rights, language, territory, medium, duration, and edition stated in the written approval. Any additional use requires a new agreement.</p>
+
+        <h2>Attribution</h2>
+        <p>Unless otherwise agreed, republication must clearly credit the original author, article title, and <span class="notranslate" translate="no">Kvisl</span>. Online republication must include a prominent link to the canonical article.</p>
+
+        <h2>Editing and translation</h2>
+        <p>Material edits, abridgements, headline changes, translations, adaptations, and format conversions require separate approval. We may require the author or editor to review the final version before publication.</p>
+
+        <h2>Images and third-party rights</h2>
+        <p>Article-text permission does not automatically include photographs, illustrations, embedded media, quotations, datasets, or other third-party material. You are responsible for obtaining any rights not expressly included in the written licence.</p>
+
+        <h2>Archiving and further syndication</h2>
+        <p>A republication licence does not include sublicensing, resale, onward syndication, permanent database rights, or reuse in another product unless the written agreement expressly includes those uses.</p>
+
+        <h2>Unauthorised use</h2>
+        <p>Publication outside the agreed scope may be treated as unauthorised use and may require removal, correction, additional licensing fees, or other remedies available to the relevant rights holder.</p>
       </div>
 
       {sent ? (
@@ -33,10 +58,10 @@ const sent = Astro.url.searchParams.get('sent') === '1';
           <label><span>Contact name</span><input name="contact_name" autocomplete="name" /></label>
           <label><span>Email</span><input name="email" type="email" required autocomplete="email" /></label>
           <label><span>Where will it appear?</span><input name="destination" placeholder="Publication URL, platform, or edition" /></label>
-          <label><span>Notes</span><textarea name="notes" rows="5" placeholder="Language, territory, planned date, format, and other details"></textarea></label>
+          <label><span>Notes</span><textarea name="notes" rows="6" placeholder="Language, territory, medium, planned date, duration, audience, and any requested edits"></textarea></label>
           <label class="republish-consent">
             <input type="checkbox" name="fee_ack" value="yes" required />
-            <span>I understand that republication requires a paid licence starting at US$600 per article.</span>
+            <span>I understand that republication requires prior written permission and a paid licence starting at US$600 per article.</span>
           </label>
           <button type="submit">Request a licence</button>
         </form>

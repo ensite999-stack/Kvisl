@@ -5,11 +5,11 @@ const donationAddress = '0xFc71525c448cD9a7DDA6995F2898a8cB7959763A';
 ---
 <BaseLayout title="Donate | Kvisl" description="Support independent publishing at Kvisl.">
   <main class="container page-main narrow-page">
-    <p class="eyebrow">Donate</p>
+    <p class="eyebrow">Support</p>
     <h1 class="page-title">Donate</h1>
 
     <div class="policy-copy donate-copy">
-      <p><span class="notranslate" translate="no">Kvisl</span> is an independent, member-run nonprofit. Donations support editing, publishing, and the infrastructure that keeps our work available.</p>
+      <p><span class="notranslate" translate="no">Kvisl</span> is an independent, member-run nonprofit. Donations support editing, publishing, contributor work, and the infrastructure that keeps the publication available.</p>
 
       <section class="donation-card" aria-labelledby="donation-usdc-title">
         <div class="donation-card-head">
@@ -20,21 +20,26 @@ const donationAddress = '0xFc71525c448cD9a7DDA6995F2898a8cB7959763A';
           <span class="donation-token">USDC</span>
         </div>
 
-        <p class="donation-network-note">Send only USDC on a supported EVM-compatible network. Confirm the network and address before sending.</p>
+        <p class="donation-network-note">Send only USDC using an EVM-compatible network that you have independently verified is appropriate for the transfer. Confirm the token, network, and address before sending. Blockchain transactions are normally irreversible.</p>
 
         <div class="donation-address-row">
           <code data-donation-address>{donationAddress}</code>
-          <button
-            class="copy-address"
-            type="button"
-            data-copy-address={donationAddress}
-            aria-label="Copy donation address"
-          >
-            Copy
-          </button>
+          <button class="copy-address" type="button" data-copy-address={donationAddress} aria-label="Copy donation address">Copy</button>
         </div>
         <p class="copy-status" data-copy-status aria-live="polite"></p>
       </section>
+
+      <h2>Donation terms</h2>
+      <p>A donation does not purchase publication, editorial influence, favourable coverage, access to authors, advertising, sponsorship, or rights in any <span class="notranslate" translate="no">Kvisl</span> work.</p>
+
+      <h2>Blockchain transfers</h2>
+      <p>You are responsible for confirming the wallet address, token contract, network, wallet compatibility, and transaction details before sending. We cannot reverse or recover a blockchain transaction merely because it was sent on the wrong network, to the wrong address, or using the wrong token.</p>
+
+      <h2>Taxes and receipts</h2>
+      <p>Do not assume that a donation is tax-deductible in your jurisdiction unless <span class="notranslate" translate="no">Kvisl</span> provides written confirmation that applies to your circumstances. You are responsible for obtaining independent tax advice where needed.</p>
+
+      <h2>Questions</h2>
+      <p>For donation questions or to verify payment details before sending, email <a href="mailto:hello@kvisl.com">hello@kvisl.com</a>.</p>
     </div>
   </main>
 

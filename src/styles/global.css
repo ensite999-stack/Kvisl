@@ -1687,3 +1687,40 @@ html.menu-open { overflow: hidden; }
   text-decoration: underline;
   text-underline-offset: .16em;
 }
+
+
+/* Detailed policy layouts */
+.policy-contact-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 22px;
+  margin: 2rem 0 2.4rem;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--sans);
+  font-size: .78rem;
+}
+.policy-contact-box strong {
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.policy-contact-box a {
+  font-family: var(--sans);
+  font-size: .82rem;
+}
+.republish-terms h2 {
+  margin: 2.15em 0 .6em;
+  font-family: var(--serif);
+  font-size: clamp(1.45rem, 2.1vw, 2rem);
+  font-weight: 500;
+  line-height: 1.1;
+}
+.footer-contact a {
+  font-size: .76rem;
+  letter-spacing: .02em;
+}
+.footer-contact a:hover { opacity: .58; }
