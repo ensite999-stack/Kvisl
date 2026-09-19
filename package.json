@@ -16,5 +16,7 @@
     "typescript": "^5.9.2",
     "@astrojs/vercel": "8.2.7"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "^22.15.0"
+  }
 }
