@@ -84,46 +84,6 @@ img { display: block; max-width: 100%; }
   letter-spacing: -.05em;
 }
 
-/* Fixed back control: a translucent, flattened white chevron. */
-.back-rail {
-  position: fixed;
-  left: max(8px, env(safe-area-inset-left));
-  top: 50%;
-  top: 50dvh;
-  z-index: 44;
-  width: 54px;
-  height: 88px;
-  transform: translateY(-50%);
-  appearance: none;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: rgba(255, 255, 255, .82);
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-}
-.back-rail-chevron {
-  width: 29px;
-  height: 29px;
-  border-left: 3.2px solid currentColor;
-  border-bottom: 3.2px solid currentColor;
-  transform: rotate(45deg) scaleX(.58);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .68)) drop-shadow(0 0 6px rgba(0, 0, 0, .28));
-  transition: opacity 150ms ease, transform 150ms ease;
-}
-.back-rail:hover .back-rail-chevron {
-  color: rgba(255, 255, 255, .98);
-  transform: rotate(45deg) scaleX(.66);
-}
-.back-rail:focus-visible {
-  outline: 2px solid var(--kvisl);
-  outline-offset: -2px;
-  border-radius: 6px;
-}
-
 /* Home */
 .home-main { padding-top: var(--header-h); }
 .latest-image { display: block; width: 100%; background: var(--paper-2); overflow: hidden; }
@@ -536,20 +496,6 @@ img { display: block; max-width: 100%; }
 
   .container { width: calc(100% - 28px); }
   .wordmark { font-size: 2.05rem; }
-
-  .back-rail {
-    left: max(4px, env(safe-area-inset-left));
-    width: 50px;
-    height: 80px;
-  }
-  .back-rail-chevron {
-    width: 26px;
-    height: 26px;
-    border-left-width: 3px;
-    border-bottom-width: 3px;
-    transform: rotate(45deg) scaleX(.56);
-  }
-
   .latest-image img,
   .article-cover { aspect-ratio: 16 / 9; }
 
