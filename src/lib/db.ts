@@ -7,6 +7,7 @@ export type Article = {
   body_html?: string;
   topic: string;
   article_type: string;
+  tags: string[];
   published_at: string | null;
   featured: boolean;
   cover_url: string | null;
@@ -82,6 +83,7 @@ const fallbackArticle: Article = {
   `,
   topic: 'Society & Culture',
   article_type: 'Essay',
+  tags: ['Ethics', 'Animal Welfare', 'Food Systems'],
   published_at: '2026-09-14T03:28:00.000Z',
   featured: false,
   cover_url: 'https://images.pexels.com/photos/19174595/pexels-photo-19174595.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1200&w=1800',
@@ -101,7 +103,7 @@ export async function getPublishedArticles(limit = 12): Promise<Article[]> {
   if (!sql) return [fallbackArticle];
 
   const rows = await sql`
-    SELECT slug, title, dek, topic, article_type, published_at, featured,
+    SELECT slug, title, dek, topic, article_type, tags, published_at, featured,
            cover_url, cover_alt, cover_credit, author
     FROM public.kvisl_articles
     WHERE status = 'published'
@@ -119,7 +121,7 @@ export async function getArticle(slug: string): Promise<Article | null> {
   if (!sql) return slug === fallbackArticle.slug ? fallbackArticle : null;
 
   const rows = await sql`
-    SELECT slug, title, dek, body_html, topic, article_type, published_at, featured,
+    SELECT slug, title, dek, body_html, topic, article_type, tags, published_at, featured,
            cover_url, cover_alt, cover_credit, sources, author
     FROM public.kvisl_articles
     WHERE slug = ${slug}
@@ -132,29 +134,80 @@ export async function getArticle(slug: string): Promise<Article | null> {
   return (rows[0] as Article | undefined) ?? null;
 }
 
-export async function searchArticles(query: string, limit = 30): Promise<Article[]> {
+export async function searchArticles(
+  filters: { query?: string; category?: string; tag?: string },
+  limit = 30
+): Promise<Article[]> {
+  const query = filters.query?.trim() ?? '';
+  const category = filters.category?.trim() ?? '';
+  const tag = filters.tag?.trim() ?? '';
   const sql = client();
+
   if (!sql) {
     const q = query.toLowerCase();
-    return [fallbackArticle].filter((a) =>
-      `${a.title} ${a.dek} ${a.article_type} ${a.topic} ${a.author}`.toLowerCase().includes(q)
-    );
+    return [fallbackArticle].filter((article) => {
+      const matchesQuery = !q || `${article.title} ${article.dek} ${article.article_type} ${article.topic} ${article.author} ${article.tags.join(' ')}`
+        .toLowerCase().includes(q);
+      const matchesCategory = !category || article.topic === category;
+      const matchesTag = !tag || article.tags.includes(tag);
+      return matchesQuery && matchesCategory && matchesTag;
+    });
   }
 
-  const q = `%${query.trim()}%`;
+  const like = `%${query}%`;
   const rows = await sql`
-    SELECT slug, title, dek, topic, article_type, published_at, featured,
+    SELECT slug, title, dek, topic, article_type, tags, published_at, featured,
            cover_url, cover_alt, cover_credit, author
     FROM public.kvisl_articles
     WHERE status = 'published'
       AND deleted_at IS NULL
       AND (published_at IS NULL OR published_at <= now())
-      AND (title ILIKE ${q} OR dek ILIKE ${q} OR article_type ILIKE ${q} OR topic ILIKE ${q} OR author ILIKE ${q})
+      AND (
+        ${query} = ''
+        OR title ILIKE ${like}
+        OR dek ILIKE ${like}
+        OR article_type ILIKE ${like}
+        OR topic ILIKE ${like}
+        OR author ILIKE ${like}
+        OR EXISTS (SELECT 1 FROM unnest(tags) AS t WHERE t ILIKE ${like})
+      )
+      AND (${category} = '' OR topic = ${category})
+      AND (${tag} = '' OR ${tag} = ANY(tags))
     ORDER BY published_at DESC NULLS LAST
     LIMIT ${limit}
   `;
 
   return rows as Article[];
+}
+
+export async function getSearchFacets(): Promise<{ categories: string[]; tags: string[] }> {
+  const sql = client();
+  if (!sql) return { categories: [fallbackArticle.topic], tags: fallbackArticle.tags.slice(0, 10) };
+
+  const categories = await sql`
+    SELECT DISTINCT topic
+    FROM public.kvisl_articles
+    WHERE status = 'published'
+      AND deleted_at IS NULL
+      AND topic <> ''
+    ORDER BY topic
+  `;
+
+  const tags = await sql`
+    SELECT tag, count(*)::int AS count
+    FROM public.kvisl_articles, unnest(tags) AS tag
+    WHERE status = 'published'
+      AND deleted_at IS NULL
+      AND tag <> ''
+    GROUP BY tag
+    ORDER BY count DESC, tag ASC
+    LIMIT 10
+  `;
+
+  return {
+    categories: categories.map((row) => String(row.topic)),
+    tags: tags.map((row) => String(row.tag))
+  };
 }
 
 export async function subscribe(email: string): Promise<void> {
@@ -174,6 +227,7 @@ export type AdminArticle = {
   status: string;
   article_type: string;
   topic: string;
+  tags: string[];
   published_at: string | null;
 };
 
@@ -181,7 +235,7 @@ export async function getAdminArticles(): Promise<AdminArticle[]> {
   const sql = client();
   if (!sql) return [];
   const rows = await sql`
-    SELECT slug, title, status, article_type, topic, published_at
+    SELECT slug, title, status, article_type, topic, tags, published_at
     FROM public.kvisl_articles
     WHERE deleted_at IS NULL
     ORDER BY updated_at DESC, created_at DESC
@@ -192,14 +246,26 @@ export async function getAdminArticles(): Promise<AdminArticle[]> {
 export async function updateArticleClassification(
   slug: string,
   articleType: 'Essay' | 'Note',
-  topic: string
+  topic: string,
+  tags: string[]
 ): Promise<void> {
   const sql = client();
   if (!sql) throw new Error('DATABASE_URL is not configured');
+
+  const normalizedTags = tags
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 10);
+  const tagPayload = normalizedTags.join('|||');
+
   await sql`
     UPDATE public.kvisl_articles
     SET article_type = ${articleType},
         topic = ${topic},
+        tags = CASE
+          WHEN ${tagPayload} = '' THEN '{}'::text[]
+          ELSE string_to_array(${tagPayload}, '|||')
+        END,
         updated_at = now()
     WHERE slug = ${slug}
       AND deleted_at IS NULL

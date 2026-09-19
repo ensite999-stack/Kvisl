@@ -1,29 +1,91 @@
 <header class="site-header" id="site-header">
-  <div class="container header-inner">
-    <nav class="header-side header-left" aria-label="Subscription">
-      <a class="header-link" href="/subscribe">Subscribe</a>
-    </nav>
+  <div class="container header-inner header-shell">
     <a class="wordmark notranslate" href="/" aria-label="Kvisl home" translate="no">Kvisl</a>
-    <nav class="header-side header-right" aria-label="Primary">
+
+    <nav class="desktop-header-nav" aria-label="Primary">
       <a class="header-link" href="/search">Search</a>
       <a class="header-link" href="/archive">Archive</a>
+      <a class="header-link" href="/subscribe">Subscribe</a>
     </nav>
+
+    <div class="mobile-header-actions">
+      <a class="header-icon-link" href="/search" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle>
+          <path d="m15.5 15.5 5 5"></path>
+        </svg>
+      </a>
+      <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" data-mobile-menu hidden>
+    <nav aria-label="Mobile">
+      <a href="/about">About</a>
+      <a href="/subscribe">Subscribe</a>
+      <a href="/archive">Archive</a>
+      <a href="/donate">Donate</a>
+    </nav>
+    <div class="mobile-menu-theme" aria-label="Appearance">
+      <button type="button" data-mobile-theme="light">Light</button>
+      <button type="button" data-mobile-theme="dark">Dark</button>
+    </div>
   </div>
 </header>
 
 <script>
   const header = document.querySelector('#site-header');
+  const menuToggle = document.querySelector('[data-menu-toggle]');
+  const mobileMenu = document.querySelector('[data-mobile-menu]');
   let lastY = window.scrollY;
+
+  const closeMenu = () => {
+    if (!(menuToggle instanceof HTMLButtonElement) || !(mobileMenu instanceof HTMLElement)) return;
+    menuToggle.setAttribute('aria-expanded', 'false');
+    menuToggle.setAttribute('aria-label', 'Open menu');
+    mobileMenu.hidden = true;
+    document.documentElement.classList.remove('menu-open');
+  };
+
+  menuToggle?.addEventListener('click', () => {
+    if (!(menuToggle instanceof HTMLButtonElement) || !(mobileMenu instanceof HTMLElement)) return;
+    const open = menuToggle.getAttribute('aria-expanded') !== 'true';
+    menuToggle.setAttribute('aria-expanded', String(open));
+    menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    mobileMenu.hidden = !open;
+    document.documentElement.classList.toggle('menu-open', open);
+  });
+
+  mobileMenu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+
+  document.querySelectorAll('[data-mobile-theme]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!(button instanceof HTMLButtonElement)) return;
+      const theme = button.dataset.mobileTheme;
+      if (theme !== 'light' && theme !== 'dark') return;
+      document.documentElement.dataset.theme = theme;
+      try { localStorage.setItem('kvisl-theme', theme); } catch {}
+      closeMenu();
+    });
+  });
+
   const onScroll = () => {
     if (!(header instanceof HTMLElement)) return;
     const y = window.scrollY;
     header.classList.toggle('scrolled', y > 18);
+    if (document.documentElement.classList.contains('menu-open')) return;
     if (Math.abs(y - lastY) > 8) {
       if (y > lastY && y > 120) header.classList.add('hidden');
       else header.classList.remove('hidden');
       lastY = y;
     }
   };
+
   window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 760) closeMenu();
+  }, { passive: true });
   onScroll();
 </script>

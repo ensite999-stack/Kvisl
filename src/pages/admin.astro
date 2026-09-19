@@ -35,9 +35,14 @@ if (Astro.request.method === 'POST') {
     const slug = String(form.get('slug') ?? '');
     const articleType = String(form.get('article_type') ?? '');
     const topic = String(form.get('topic') ?? '').trim();
+    const tags = String(form.get('tags') ?? '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 10);
 
     if (slug && (articleType === 'Essay' || articleType === 'Note') && topic) {
-      await updateArticleClassification(slug, articleType, topic);
+      await updateArticleClassification(slug, articleType, topic, tags);
       return Astro.redirect('/admin?saved=1', 303);
     }
     error = 'Choose a form and enter a category.';
@@ -66,13 +71,13 @@ const saved = Astro.url.searchParams.get('saved') === '1';
       ) : (
         <>
           <div class="admin-toolbar">
-            <p>{saved ? 'Saved.' : 'Set the article form and its finer category.'}</p>
+            <p>{saved ? 'Saved.' : 'Set the form, category and up to 10 tags.'}</p>
             <form method="post"><input type="hidden" name="action" value="logout" /><button type="submit">Sign out</button></form>
           </div>
 
           <div class="admin-articles">
             {articles.map((item) => (
-              <form class="admin-article" method="post">
+              <form class="admin-article admin-article-tags" method="post">
                 <input type="hidden" name="action" value="classification" />
                 <input type="hidden" name="slug" value={item.slug} />
                 <div class="admin-article-title"><strong>{item.title}</strong><span>{item.status}</span></div>
@@ -84,6 +89,7 @@ const saved = Astro.url.searchParams.get('saved') === '1';
                   </select>
                 </label>
                 <label><span>Category</span><input name="topic" value={item.topic} required /></label>
+                <label class="admin-tags-field"><span>Tags · max 10</span><input name="tags" value={item.tags.join(', ')} placeholder="Ethics, Nature, Science" /></label>
                 <button type="submit">Save</button>
               </form>
             ))}
