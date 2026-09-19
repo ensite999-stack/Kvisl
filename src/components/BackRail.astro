@@ -6,7 +6,7 @@ interface Props {
 const { fallback = '/', label = 'Back' } = Astro.props;
 ---
 <button class="back-rail" type="button" data-back-rail data-fallback={fallback} aria-label={label} title={label}>
-  <span class="back-rail-triangle" aria-hidden="true"></span>
+  <span class="back-rail-chevron" aria-hidden="true"></span>
 </button>
 
 <script>
