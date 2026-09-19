@@ -10,8 +10,16 @@ export const POST: APIRoute = async ({ request, redirect }) => {
   const email = String(form.get('email') ?? '').trim();
   const destination = String(form.get('destination') ?? '').trim();
   const notes = String(form.get('notes') ?? '').trim();
+  const feeAcknowledged = String(form.get('fee_ack') ?? '') === 'yes';
 
-  if (!articleSlug || !articleTitle || !publicationName || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (
+    !articleSlug ||
+    !articleTitle ||
+    !publicationName ||
+    !email ||
+    !feeAcknowledged ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  ) {
     return new Response('Invalid request', { status: 400 });
   }
 

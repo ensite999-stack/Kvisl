@@ -29,6 +29,7 @@ const articleLd = {
     {article.cover_url && (
       <figure class="article-cover-wrap">
         <img class="article-cover" src={article.cover_url} alt={article.cover_alt} fetchpriority="high" />
+        {article.cover_credit && <figcaption>{article.cover_credit}</figcaption>}
       </figure>
     )}
 
@@ -36,11 +37,9 @@ const articleLd = {
       <ArticleLabel type={article.article_type} category={article.topic} />
       <h1>{article.title}</h1>
       <p class="dek">{article.dek}</p>
-      <p class="article-meta">{article.author}</p>
     </header>
 
     <div class="article-copy">
-      {article.cover_credit && <p class="article-photo-credit">{article.cover_credit}</p>}
       <div class="article-body" set:html={article.body_html ?? ''} />
     </div>
 
@@ -48,7 +47,9 @@ const articleLd = {
       <div class="article-end-tags" aria-label="Article classification">
         <span>{article.article_type || 'Essay'}</span>
         {article.topic && <span>{article.topic}</span>}
+        {article.tags.slice(0, 10).map((tag) => <span>{tag}</span>)}
       </div>
+      <p class="article-end-author">By {article.author}</p>
       {article.published_at && <time datetime={article.published_at}>{fmt(article.published_at)}</time>}
       <div class="article-end-actions">
         <button type="button" data-share-article data-title={article.title}>Share</button>

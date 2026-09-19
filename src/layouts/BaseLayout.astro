@@ -1,7 +1,6 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import ScrollToBottom from '../components/ScrollToBottom.astro';
 import '../styles/global.css';
 import { site } from '../lib/site';
 
@@ -71,7 +70,6 @@ const organizationLd = {
   <body>
     <Header />
     <slot />
-    <ScrollToBottom />
     <Footer />
     <script is:inline>
       if ('serviceWorker' in navigator) {

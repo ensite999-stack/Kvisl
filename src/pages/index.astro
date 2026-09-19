@@ -3,9 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ArticleLabel from '../components/ArticleLabel.astro';
 import { getPublishedArticles } from '../lib/db';
 
-const articles = await getPublishedArticles(8);
+const articles = await getPublishedArticles(20);
 const latest = articles[0];
-const stories = articles.slice(1, 7);
+const stories = articles.slice(1, 20);
 ---
 <BaseLayout>
   <main class="home-main">
@@ -29,7 +29,6 @@ const stories = articles.slice(1, 7);
       <section class="container home-essays">
         <div class="section-heading">
           <h2>Essays</h2>
-          <a href="/archive">View archive →</a>
         </div>
         <div class="story-grid">
           {stories.map((story) => (
@@ -47,8 +46,8 @@ const stories = articles.slice(1, 7);
       </section>
     )}
 
-    <section class="container home-archive-strip">
-      <a href="/archive"><span>Archive</span><strong>View all essays</strong><span>→</span></a>
-    </section>
+    <div class="container home-more">
+      <a href="/archive">More</a>
+    </div>
   </main>
 </BaseLayout>

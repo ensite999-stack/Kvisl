@@ -6,25 +6,25 @@ const slug = Astro.url.searchParams.get('article') ?? '';
 const article = slug ? await getArticle(slug) : null;
 const sent = Astro.url.searchParams.get('sent') === '1';
 ---
-<BaseLayout title="Republish | Kvisl" description="Request permission to republish a Kvisl essay.">
+<BaseLayout title="Republish | Kvisl" description="Request a paid licence to republish Kvisl work.">
   <main class="container page-main">
     <div class="narrow-page">
       <p class="eyebrow">Republish</p>
       <h1 class="page-title">Republish</h1>
       <p class="page-lede">
         {article
-          ? <>Request permission to republish <em>{article.title}</em>.</>
-          : <>Request permission to republish a <span class="notranslate" translate="no">Kvisl</span> article.</>}
+          ? <>Request a licence to republish <em>{article.title}</em>.</>
+          : <>Request a licence to republish a <span class="notranslate" translate="no">Kvisl</span> article.</>}
       </p>
 
       <div class="republish-terms">
-        <p>Republication requires written permission from <span class="notranslate" translate="no">Kvisl</span> before publication.</p>
-        <p>Permission covers the article text only unless image rights are separately confirmed. The author, article title and <span class="notranslate" translate="no">Kvisl</span> must be credited, with a link to the original page and its canonical URL preserved online.</p>
-        <p>Material edits, abridgements and translations require separate approval.</p>
+        <p class="republish-fee"><strong>Licensing starts at US$600 per article.</strong> The final fee may be higher depending on the work, <span class="notranslate" translate="no">Kvisl</span>'s editorial and creative contribution, the original author's terms, territory, language, medium, and duration.</p>
+        <p>Written permission and payment are required before republication. A licence covers only the rights expressly granted. Images and third-party material require separate clearance unless we confirm otherwise.</p>
+        <p>Credit the author, article title, and <span class="notranslate" translate="no">Kvisl</span>, and link to the canonical article when publishing online. Translation, abridgement, adaptation, syndication, and other material changes require separate written approval.</p>
       </div>
 
       {sent ? (
-        <p class="republish-success">Request received. We will review it before any republication takes place.</p>
+        <p class="republish-success">Request received. We will review the proposed use and send licensing terms if it can be approved.</p>
       ) : (
         <form class="republish-form" method="post" action="/api/republish">
           <input type="hidden" name="article_slug" value={article?.slug ?? ''} />
@@ -32,9 +32,13 @@ const sent = Astro.url.searchParams.get('sent') === '1';
           <label><span>Publication</span><input name="publication_name" required autocomplete="organization" /></label>
           <label><span>Contact name</span><input name="contact_name" autocomplete="name" /></label>
           <label><span>Email</span><input name="email" type="email" required autocomplete="email" /></label>
-          <label><span>Where will it appear?</span><input name="destination" placeholder="Publication URL or edition" /></label>
-          <label><span>Notes</span><textarea name="notes" rows="5" placeholder="Language, planned publication date, or other details"></textarea></label>
-          <button type="submit">Request republication</button>
+          <label><span>Where will it appear?</span><input name="destination" placeholder="Publication URL, platform, or edition" /></label>
+          <label><span>Notes</span><textarea name="notes" rows="5" placeholder="Language, territory, planned date, format, and other details"></textarea></label>
+          <label class="republish-consent">
+            <input type="checkbox" name="fee_ack" value="yes" required />
+            <span>I understand that republication requires a paid licence starting at US$600 per article.</span>
+          </label>
+          <button type="submit">Request a licence</button>
         </form>
       )}
     </div>

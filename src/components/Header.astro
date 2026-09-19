@@ -1,74 +1,101 @@
+---
+import ScrollToBottom from './ScrollToBottom.astro';
+---
 <header class="site-header" id="site-header">
   <div class="container header-inner header-shell">
-    <a class="wordmark notranslate" href="/" aria-label="Kvisl home" translate="no">Kvisl</a>
+    <a class="header-logo" href="/" aria-label="Kvisl home" translate="no">
+      <img src="/icon.svg" alt="" width="36" height="36" />
+    </a>
 
-    <nav class="desktop-header-nav" aria-label="Primary">
-      <a class="header-link" href="/search">Search</a>
-      <a class="header-link" href="/archive">Archive</a>
-      <a class="header-link" href="/subscribe">Subscribe</a>
-    </nav>
+    <div class="header-actions">
+      <nav class="desktop-header-nav" aria-label="Primary">
+        <a class="header-link" href="/archive">Archive</a>
+        <a class="header-link" href="/subscribe">Subscribe</a>
+      </nav>
 
-    <div class="mobile-header-actions">
       <a class="header-icon-link" href="/search" aria-label="Search">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="10.5" cy="10.5" r="6.5"></circle>
           <path d="m15.5 15.5 5 5"></path>
         </svg>
       </a>
+
+      <ScrollToBottom />
+
       <button class="menu-toggle" type="button" data-menu-toggle aria-label="Open menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     </div>
   </div>
 
-  <div class="mobile-menu" data-mobile-menu hidden>
-    <nav aria-label="Mobile">
+  <div class="site-menu" data-site-menu hidden>
+    <nav aria-label="Menu">
       <a href="/about">About</a>
       <a href="/subscribe">Subscribe</a>
       <a href="/archive">Archive</a>
       <a href="/donate">Donate</a>
     </nav>
-    <div class="mobile-menu-theme" aria-label="Appearance">
-      <button type="button" data-mobile-theme="light">Light</button>
-      <button type="button" data-mobile-theme="dark">Dark</button>
+
+    <div class="site-menu-appearance" aria-label="Appearance">
+      <button type="button" data-menu-theme="light">Light</button>
+      <button type="button" data-menu-theme="dark">Dark</button>
     </div>
+
+    <a
+      class="menu-instagram"
+      href="https://www.instagram.com/hollis.jiang?stkn=MW1wNTVscXl5c3ozbw=="
+      target="_blank"
+      rel="me noopener noreferrer"
+      aria-label="Instagram"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="5"></rect>
+        <circle cx="12" cy="12" r="4"></circle>
+        <circle cx="17.6" cy="6.7" r="1"></circle>
+      </svg>
+      <span>Instagram</span>
+    </a>
   </div>
 </header>
 
 <script>
   const header = document.querySelector('#site-header');
   const menuToggle = document.querySelector('[data-menu-toggle]');
-  const mobileMenu = document.querySelector('[data-mobile-menu]');
+  const siteMenu = document.querySelector('[data-site-menu]');
   let lastY = window.scrollY;
 
   const closeMenu = () => {
-    if (!(menuToggle instanceof HTMLButtonElement) || !(mobileMenu instanceof HTMLElement)) return;
+    if (!(menuToggle instanceof HTMLButtonElement) || !(siteMenu instanceof HTMLElement)) return;
     menuToggle.setAttribute('aria-expanded', 'false');
     menuToggle.setAttribute('aria-label', 'Open menu');
-    mobileMenu.hidden = true;
+    siteMenu.hidden = true;
     document.documentElement.classList.remove('menu-open');
   };
 
   menuToggle?.addEventListener('click', () => {
-    if (!(menuToggle instanceof HTMLButtonElement) || !(mobileMenu instanceof HTMLElement)) return;
+    if (!(menuToggle instanceof HTMLButtonElement) || !(siteMenu instanceof HTMLElement)) return;
     const open = menuToggle.getAttribute('aria-expanded') !== 'true';
     menuToggle.setAttribute('aria-expanded', String(open));
     menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    mobileMenu.hidden = !open;
+    siteMenu.hidden = !open;
     document.documentElement.classList.toggle('menu-open', open);
   });
 
-  mobileMenu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+  siteMenu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
 
-  document.querySelectorAll('[data-mobile-theme]').forEach((button) => {
+  document.querySelectorAll('[data-menu-theme]').forEach((button) => {
     button.addEventListener('click', () => {
       if (!(button instanceof HTMLButtonElement)) return;
-      const theme = button.dataset.mobileTheme;
+      const theme = button.dataset.menuTheme;
       if (theme !== 'light' && theme !== 'dark') return;
       document.documentElement.dataset.theme = theme;
       try { localStorage.setItem('kvisl-theme', theme); } catch {}
       closeMenu();
     });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMenu();
   });
 
   const onScroll = () => {
@@ -84,8 +111,5 @@
   };
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 760) closeMenu();
-  }, { passive: true });
   onScroll();
 </script>
