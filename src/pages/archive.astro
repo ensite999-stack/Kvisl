@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleLabel from '../components/ArticleLabel.astro';
 import { getPublishedArticles } from '../lib/db';
 
 const articles = await getPublishedArticles(100);
@@ -15,7 +16,7 @@ const fmt = (value: string | null) => value
     <div>
       {articles.map((article) => (
         <a class="archive-row" href={'/essay/' + article.slug}>
-          <span class="topic">{article.topic}</span>
+          <ArticleLabel type={article.article_type} category={article.topic} />
           <h2>{article.title}</h2>
           <span class="date">{article.author} · {fmt(article.published_at)}</span>
         </a>
