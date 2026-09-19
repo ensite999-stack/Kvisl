@@ -1,15 +1,10 @@
----
-const isHome = Astro.url.pathname === '/';
----
-<header class:list={['site-header', { 'home-header': isHome }]} id="site-header">
+<header class="site-header" id="site-header">
   <div class="container header-inner">
-    <div class="header-side">
-      <a class="header-link archive-link" href="/archive">档案</a>
-    </div>
-    <a class="wordmark" href="/" aria-label="Kvisl 首页">Kvisl</a>
+    <div class="header-empty" aria-hidden="true"></div>
+    <a class="wordmark" href="/" aria-label="Kvisl home">Kvisl</a>
     <div class="header-side right">
-      <a class="header-link subscribe-link" href="/subscribe">订阅</a>
-      <button class="header-button menu-trigger" type="button" id="menu-trigger" aria-label="菜单" aria-expanded="false" aria-controls="menu-panel">
+      <a class="header-link subscribe-link" href="/subscribe">Subscribe</a>
+      <button class="header-button menu-trigger" type="button" id="menu-trigger" aria-label="Open menu" aria-expanded="false" aria-controls="menu-panel">
         <svg class="hamburger" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
           <path d="M3 6h18" />
           <path d="M8 12h13" />
@@ -20,25 +15,29 @@ const isHome = Astro.url.pathname === '/';
   </div>
 </header>
 
-<div class="menu-panel" id="menu-panel" aria-hidden="true">
-  <div class="container menu-inner">
-    <nav class="menu-links" aria-label="主菜单">
-      <a href="/about">关于</a>
-      <a href="/archive">档案</a>
-      <a href="/contact">联系</a>
-      <a href="/search">搜索</a>
-    </nav>
-    <div class="theme-switcher" aria-label="外观">
-      <button type="button" data-theme-choice="light">浅色模式</button>
-      <button type="button" data-theme-choice="dark">深色模式</button>
-    </div>
-    <div class="menu-meta"><span>To attend is to inhabit.</span></div>
+<aside class="menu-panel" id="menu-panel" aria-hidden="true" aria-label="Site menu">
+  <div class="menu-panel-head">
+    <span>Menu</span>
+    <button class="menu-close" id="menu-close" type="button" aria-label="Close menu">
+      <span>Close</span><span aria-hidden="true">×</span>
+    </button>
   </div>
-</div>
+  <nav class="menu-links" aria-label="Main navigation">
+    <a href="/about">About</a>
+    <a href="/archive">Archive</a>
+    <a href="/contact">Contact</a>
+    <a href="/search">Search</a>
+  </nav>
+  <div class="theme-switcher" aria-label="Appearance">
+    <button type="button" data-theme-choice="light">Light mode</button>
+    <button type="button" data-theme-choice="dark">Dark mode</button>
+  </div>
+</aside>
 
 <script>
   const header = document.querySelector('#site-header');
   const trigger = document.querySelector('#menu-trigger');
+  const closeButton = document.querySelector('#menu-close');
   const panel = document.querySelector('#menu-panel');
   const themeButtons = document.querySelectorAll('[data-theme-choice]');
   let lastY = window.scrollY;
@@ -59,12 +58,20 @@ const isHome = Astro.url.pathname === '/';
     syncThemeButtons();
   };
 
+  const closeMenu = () => {
+    if (!(panel instanceof HTMLElement)) return;
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    trigger?.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('menu-open');
+  };
+
   const onScroll = () => {
     if (!(header instanceof HTMLElement)) return;
     const y = window.scrollY;
     header.classList.toggle('scrolled', y > 18);
     if (Math.abs(y - lastY) > 8) {
-      if (y > lastY && y > 120) header.classList.add('hidden');
+      if (y > lastY && y > 120 && !document.body.classList.contains('menu-open')) header.classList.add('hidden');
       else header.classList.remove('hidden');
       lastY = y;
     }
@@ -84,12 +91,11 @@ const isHome = Astro.url.pathname === '/';
     header?.classList.remove('hidden');
   });
 
-  panel?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
-    panel.classList.remove('open');
-    panel.setAttribute('aria-hidden', 'true');
-    trigger?.setAttribute('aria-expanded', 'false');
-    document.body.classList.remove('menu-open');
-  }));
+  closeButton?.addEventListener('click', closeMenu);
+  panel?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMenu();
+  });
 
   themeButtons.forEach((button) => button.addEventListener('click', () => {
     if (button instanceof HTMLButtonElement) setTheme(button.dataset.themeChoice);

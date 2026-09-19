@@ -6,37 +6,38 @@ const articles = await getPublishedArticles(8);
 const latest = articles[0];
 const stories = articles.slice(1, 7);
 const fmt = (value: string | null) => value
-  ? new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
+  ? new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
   : '';
 ---
 <BaseLayout>
   <main class="home-main">
     {latest && (
-      <a class="home-hero" href={`/essay/${latest.slug}`} aria-label={`阅读：${latest.title}`}>
-        {latest.cover_url
-          ? <img src={latest.cover_url} alt={latest.cover_alt} loading="eager" fetchpriority="high" />
-          : <img src="/icon.svg" alt="Kvisl" loading="eager" />}
-        <div class="home-hero-shade"></div>
-        <div class="container home-hero-content">
-          <p class="home-hero-kicker">{latest.topic}</p>
-          <h1>{latest.title}</h1>
-          <p class="home-hero-dek">{latest.dek}</p>
-          <p class="home-hero-meta">{latest.author}{latest.published_at ? ` · ${fmt(latest.published_at)}` : ''}</p>
+      <section class="latest-feature">
+        <a class="latest-image" href={'/essay/' + latest.slug} aria-label={'Read ' + latest.title}>
+          {latest.cover_url
+            ? <img src={latest.cover_url} alt={latest.cover_alt} loading="eager" fetchpriority="high" />
+            : <img src="/icon.svg" alt="Kvisl" loading="eager" />}
+        </a>
+        <div class="container latest-copy">
+          <p class="latest-topic">{latest.topic}</p>
+          <h1><a href={'/essay/' + latest.slug}>{latest.title}</a></h1>
+          <p class="latest-dek">{latest.dek}</p>
+          <p class="latest-meta">{latest.author}{latest.published_at ? ' · ' + fmt(latest.published_at) : ''}</p>
+          {latest.cover_credit && <p class="latest-credit">{latest.cover_credit}</p>}
         </div>
-        {latest.cover_credit && <span class="home-credit">{latest.cover_credit}</span>}
-      </a>
+      </section>
     )}
 
     {stories.length > 0 && (
       <section class="container home-essays">
         <div class="section-heading">
-          <h2>Essays / 长文</h2>
-          <a href="/archive">档案 →</a>
+          <h2>Essays</h2>
+          <a href="/archive">View archive →</a>
         </div>
         <div class="story-grid">
           {stories.map((story) => (
             <article class="story-card">
-              <a href={`/essay/${story.slug}`}>
+              <a href={'/essay/' + story.slug}>
                 {story.cover_url && <img src={story.cover_url} alt={story.cover_alt} loading="lazy" />}
                 <div class="eyebrow">{story.topic}</div>
                 <h3>{story.title}</h3>
@@ -50,7 +51,7 @@ const fmt = (value: string | null) => value
     )}
 
     <section class="container home-archive-strip">
-      <a href="/archive"><span>Archive</span><strong>查看全部文章</strong><span>→</span></a>
+      <a href="/archive"><span>Archive</span><strong>View all essays</strong><span>→</span></a>
     </section>
   </main>
 </BaseLayout>

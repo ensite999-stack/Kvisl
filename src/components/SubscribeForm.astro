@@ -4,13 +4,13 @@ interface Props {
 }
 const { variant = 'default' } = Astro.props;
 ---
-<div class:list={['subscribe-wrap', `subscribe-${variant}`]}>
+<div class:list={['subscribe-wrap', 'subscribe-' + variant]}>
   <form class="subscribe-form" data-subscribe>
     <label class="subscribe-field">
-      <span class="sr-only">电子邮箱</span>
+      <span class="sr-only">Email address</span>
       <input name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" required />
     </label>
-    <button type="submit">订阅</button>
+    <button type="submit">Subscribe</button>
   </form>
   <p class="form-status" data-status aria-live="polite"></p>
 </div>
@@ -23,7 +23,7 @@ const { variant = 'default' } = Astro.props;
       const status = form.parentElement?.querySelector('[data-status]');
       const data = new FormData(form);
       const email = String(data.get('email') || '').trim();
-      if (status) status.textContent = '正在提交…';
+      if (status) status.textContent = 'Submitting…';
       try {
         const response = await fetch('/api/subscribe', {
           method: 'POST',
@@ -31,11 +31,11 @@ const { variant = 'default' } = Astro.props;
           body: JSON.stringify({ email })
         });
         const result = await response.json();
-        if (!response.ok) throw new Error(result?.message || '订阅失败');
-        if (status) status.textContent = '已加入。下一篇长文见。';
+        if (!response.ok) throw new Error(result?.message || 'Unable to subscribe.');
+        if (status) status.textContent = 'You are subscribed.';
         form.reset();
       } catch (error) {
-        if (status) status.textContent = error instanceof Error ? error.message : '订阅失败，请稍后重试。';
+        if (status) status.textContent = error instanceof Error ? error.message : 'Unable to subscribe. Please try again.';
       }
     });
   });
