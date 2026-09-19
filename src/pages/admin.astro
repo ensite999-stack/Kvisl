@@ -233,17 +233,18 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
                     <span>Color</span>
                     <input type="color" value="#702963" data-text-color />
                   </label>
+                  <select aria-label="Image insertion position" data-image-position>
+                    <option value="cursor">Image: at cursor</option>
+                  </select>
                   <button type="button" data-image-url>Image link</button>
                   <label class="toolbar-upload">
                     Upload image
                     <input type="file" accept="image/*" data-body-image hidden />
                   </label>
-                  <select aria-label="Blank lines" data-space-lines>
-                    <option value="1">1 line</option>
-                    <option value="2">2 lines</option>
-                    <option value="3">3 lines</option>
-                    <option value="4">4 lines</option>
-                  </select>
+                  <label class="toolbar-lines" title="Blank lines">
+                    <span>Lines</span>
+                    <input type="number" min="1" step="1" value="1" inputmode="numeric" data-space-lines />
+                  </label>
                   <button type="button" data-insert-space>Insert space</button>
                   <button type="button" data-auto-format>Auto format</button>
                 </div>
@@ -293,6 +294,7 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
     const coverHidden = document.querySelector('[data-cover-hidden]');
     const coverLink = document.querySelector('[data-cover-link]');
     const coverPreviewWrap = document.querySelector('[data-cover-preview-wrap]');
+    const imagePosition = document.querySelector('[data-image-position]');
 
     let savedRange: Range | null = null;
 
@@ -306,6 +308,30 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
 
     document.addEventListener('selectionchange', rememberSelection);
 
+    const getBodyBlocks = () => {
+      if (!(editor instanceof HTMLElement)) return [];
+      return Array.from(editor.children).filter((node) =>
+        node.matches('p, h2, h3, blockquote, figure, .article-spacer')
+      ) as HTMLElement[];
+    };
+
+    const refreshImagePositions = () => {
+      if (!(imagePosition instanceof HTMLSelectElement)) return;
+      const current = imagePosition.value;
+      const options = ['<option value="cursor">Image: at cursor</option>'];
+      getBodyBlocks().forEach((block, index) => {
+        const label = (block.textContent || block.tagName.toLowerCase())
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 30);
+        options.push(`<option value="after:${index}">After ${index + 1}: ${escapeHtml(label || block.tagName.toLowerCase())}</option>`);
+      });
+      imagePosition.innerHTML = options.join('');
+      if (Array.from(imagePosition.options).some((option) => option.value === current)) {
+        imagePosition.value = current;
+      }
+    };
+
     const insertHtml = (html: string) => {
       if (!(editor instanceof HTMLElement)) return;
       editor.focus();
@@ -316,6 +342,21 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       }
       document.execCommand('insertHTML', false, html);
       rememberSelection();
+      refreshImagePositions();
+    };
+
+    const insertImageHtml = (html: string) => {
+      if (imagePosition instanceof HTMLSelectElement && imagePosition.value.startsWith('after:')) {
+        const index = Number(imagePosition.value.split(':')[1]);
+        const target = getBodyBlocks()[index];
+        if (target) {
+          target.insertAdjacentHTML('afterend', html);
+          imagePosition.value = 'cursor';
+          refreshImagePositions();
+          return;
+        }
+      }
+      insertHtml(html);
     };
 
     const escapeHtml = (value: string) => value
@@ -340,6 +381,7 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       editor.querySelectorAll('p').forEach((p) => {
         if (!p.textContent?.trim() && !p.querySelector('img, br')) p.remove();
       });
+      refreshImagePositions();
     };
 
     const syncBody = () => {
@@ -408,7 +450,7 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       const src = window.prompt('Image URL');
       if (!src) return;
       const credit = window.prompt('Caption / credit (optional)') || '';
-      insertHtml(`<figure><img src="${escapeHtml(src)}" alt=""><figcaption>${escapeHtml(credit)}</figcaption></figure><p><br></p>`);
+      insertImageHtml(`<figure><img src="${escapeHtml(src)}" alt=""><figcaption>${escapeHtml(credit)}</figcaption></figure><p><br></p>`);
     });
 
     const compressImage = async (file: File, maxEdge = 1800, quality = 0.82): Promise<string> => {
@@ -468,7 +510,7 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       try {
         const src = await compressImage(bodyImage.files[0], 1600, 0.8);
         const credit = window.prompt('Caption / credit (optional)') || '';
-        insertHtml(`<figure><img src="${src}" alt=""><figcaption>${escapeHtml(credit)}</figcaption></figure><p><br></p>`);
+        insertImageHtml(`<figure><img src="${src}" alt=""><figcaption>${escapeHtml(credit)}</figcaption></figure><p><br></p>`);
         bodyImage.value = '';
       } catch (error) {
         window.alert(error instanceof Error ? error.message : 'Could not process image.');
@@ -476,9 +518,10 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
     });
 
     document.querySelector('[data-insert-space]')?.addEventListener('click', () => {
-      const select = document.querySelector('[data-space-lines]');
-      const lines = select instanceof HTMLSelectElement ? Number(select.value) : 1;
-      insertHtml(`<div class="article-spacer" data-lines="${Math.min(4, Math.max(1, lines))}"></div><p><br></p>`);
+      const input = document.querySelector('[data-space-lines]');
+      const raw = input instanceof HTMLInputElement ? Number(input.value) : 1;
+      const lines = Number.isFinite(raw) ? Math.max(1, Math.floor(raw)) : 1;
+      insertHtml(`<div class="article-spacer" data-lines="${lines}" style="height:${lines * 1.5}em"></div><p><br></p>`);
     });
 
     document.querySelector('[data-auto-format]')?.addEventListener('click', () => {
@@ -491,6 +534,9 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       const folded = richShell.classList.toggle('folded');
       toggleBody.textContent = folded ? 'Expand editor' : 'Fold editor';
     });
+
+    editor?.addEventListener('input', refreshImagePositions);
+    refreshImagePositions();
 
     document.querySelector('[data-delete-article]')?.addEventListener('click', (event) => {
       if (!window.confirm('Delete this article? This removes it from the site.')) event.preventDefault();
