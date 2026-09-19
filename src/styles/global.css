@@ -1657,3 +1657,33 @@ html.menu-open { overflow: hidden; }
     margin-right: 0;
   }
 }
+
+
+/* Policy pages */
+.policy-updated {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: .7rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.policy-copy h2 {
+  margin: 2.25em 0 .65em;
+  font-family: var(--serif);
+  font-size: clamp(1.55rem, 2.3vw, 2.25rem);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -.025em;
+}
+.policy-copy ul {
+  margin: 0 0 1.5em;
+  padding-left: 1.25em;
+}
+.policy-copy li {
+  margin: 0 0 .55em;
+}
+.policy-copy a {
+  color: var(--kvisl);
+  text-decoration: underline;
+  text-underline-offset: .16em;
+}
