@@ -2404,3 +2404,16 @@ html.menu-open { overflow: hidden; }
     gap: 2px;
   }
 }
+
+
+/* Explicit cover removal control */
+.cover-remove-button {
+  justify-self: start;
+  color: #9b2626;
+}
+@media (max-width: 820px) {
+  .cover-remove-button {
+    width: 100%;
+    min-height: 42px;
+  }
+}

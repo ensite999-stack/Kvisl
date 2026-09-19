@@ -250,14 +250,14 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
                     <span>Upload image</span>
                     <input type="file" accept="image/*" data-cover-file />
                   </label>
-                  <button class="subtle-button" type="button" data-clear-cover>Remove cover</button>
+                  <button class="subtle-button cover-remove-button" type="button" data-clear-cover>Remove cover image</button>
                   <label>
                     <span>Alt text</span>
-                    <input name="cover_alt" value={article?.cover_alt ?? ''} placeholder="Describe the image for accessibility" />
+                    <input name="cover_alt" value={article?.cover_alt ?? ''} placeholder="Describe the image for accessibility" data-cover-alt />
                   </label>
                   <label>
                     <span>Photo / image credit</span>
-                    <input name="cover_credit" value={article?.cover_credit ?? ''} placeholder="Photo by…" />
+                    <input name="cover_credit" value={article?.cover_credit ?? ''} placeholder="Photo by…" data-cover-credit />
                   </label>
                 </div>
               </div>
@@ -570,6 +570,11 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       setCover('');
       if (coverLink instanceof HTMLInputElement) coverLink.value = '';
       if (coverFile instanceof HTMLInputElement) coverFile.value = '';
+
+      const alt = document.querySelector('[data-cover-alt]');
+      const credit = document.querySelector('[data-cover-credit]');
+      if (alt instanceof HTMLInputElement) alt.value = '';
+      if (credit instanceof HTMLInputElement) credit.value = '';
     });
 
     editor?.addEventListener('click', (event) => {
