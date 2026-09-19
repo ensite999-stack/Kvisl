@@ -1541,3 +1541,32 @@ html.menu-open { overflow: hidden; }
     border-radius: 8px;
   }
 }
+
+
+/* Header edge alignment */
+.site-header .header-shell {
+  width: 100%;
+  max-width: none;
+  padding-left: max(10px, env(safe-area-inset-left));
+  padding-right: max(10px, env(safe-area-inset-right));
+}
+.site-header .header-logo {
+  width: 62px;
+  height: 62px;
+  border-radius: 10px;
+}
+.site-header .header-actions {
+  margin-left: auto;
+}
+
+@media (max-width: 760px) {
+  .site-header .header-shell {
+    padding-left: max(7px, env(safe-area-inset-left));
+    padding-right: max(7px, env(safe-area-inset-right));
+  }
+  .site-header .header-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 9px;
+  }
+}
