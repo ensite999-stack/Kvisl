@@ -1625,3 +1625,35 @@ html.menu-open { overflow: hidden; }
     margin-right: -4px;
   }
 }
+
+
+/* Balance header side spacing */
+.site-header .header-shell {
+  padding-left: max(8px, env(safe-area-inset-left));
+  padding-right: max(8px, env(safe-area-inset-right));
+}
+.site-header .header-logo {
+  margin-left: 0;
+}
+.site-header .header-actions {
+  margin-right: 0;
+}
+.site-header .menu-toggle {
+  margin-right: 0;
+}
+
+@media (max-width: 760px) {
+  .site-header .header-shell {
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
+  .site-header .header-logo {
+    margin-left: 0;
+  }
+  .site-header .header-actions {
+    margin-right: 0;
+  }
+  .site-header .menu-toggle {
+    margin-right: 0;
+  }
+}
