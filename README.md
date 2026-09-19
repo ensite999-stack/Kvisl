@@ -24,7 +24,7 @@ Set:
 
 ```env
 DATABASE_URL=postgresql://...
-SITE_URL=https://kvisl.org
+SITE_URL=https://kvisl.org # optional canonical override
 ```
 
 Without `DATABASE_URL`, the site renders a local fallback article so visual work can continue.
@@ -37,7 +37,7 @@ The frontend reads published rows from `public.kvisl_articles` and newsletter si
 
 1. Import this GitHub repository into Vercel.
 2. Add `DATABASE_URL` to the required environments.
-3. Add `SITE_URL` with the canonical production origin.
+3. `SITE_URL` is optional; when omitted, the site uses Vercel’s production URL for canonical metadata.
 4. Deploy. Astro is configured with `@astrojs/vercel` in server mode.
 
 ## Brand assets
