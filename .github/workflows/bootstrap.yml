@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - '.bootstrap/kvisl-site.zip'
       - '.github/workflows/bootstrap.yml'
 
 permissions:
@@ -15,12 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Unpack source
+      - name: Rebuild and unpack source
         run: |
           rm -rf .bootstrap-work
-          mkdir .bootstrap-work
-          unzip -q .bootstrap/kvisl-site.zip -d .bootstrap-work
-          cp -a .bootstrap-work/kvisl-site/. .
+          mkdir -p .bootstrap-work/unpacked
+          cat .bootstrap/slim-* | base64 -d > .bootstrap-work/kvisl-site.zip
+          unzip -q .bootstrap-work/kvisl-site.zip -d .bootstrap-work/unpacked
+          cp -a .bootstrap-work/unpacked/kvisl-site/. .
           rm -rf .bootstrap .bootstrap-work .github/workflows/bootstrap.yml
       - name: Commit source
         run: |
