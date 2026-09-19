@@ -1,7 +1,6 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import ScrollToBottom from '../components/ScrollToBottom.astro';
 import '../styles/global.css';
 import { site } from '../lib/site';
 
@@ -10,17 +9,23 @@ interface Props {
   description?: string;
   image?: string | null;
   article?: boolean;
+  noindex?: boolean;
 }
 
 const {
   title = site.title,
   description = site.description,
   image = '/icons/icon-512.png',
-  article = false
+  article = false,
+  noindex = false
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
-const absoluteImage = image ? new URL(image, Astro.site ?? Astro.url.origin).toString() : undefined;
+const absoluteImage = image
+  ? image.startsWith('data:')
+    ? new URL('/icons/icon-512.png', Astro.site ?? Astro.url.origin).toString()
+    : new URL(image, Astro.site ?? Astro.url.origin).toString()
+  : undefined;
 const organizationLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -32,13 +37,13 @@ const organizationLd = {
 };
 ---
 <!doctype html>
-<html lang={site.locale} translate="no" class="notranslate">
+<html lang={site.locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <meta name="google" content="notranslate" />
     <meta name="theme-color" content={site.color} />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex,nofollow,noarchive" />}
     <meta name="application-name" content="Kvisl" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -60,7 +65,7 @@ const organizationLd = {
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
-    <title translate="no">{title}</title>
+    <title>{title}</title>
     <script is:inline>
       try {
         const saved = localStorage.getItem('kvisl-theme');
@@ -72,7 +77,6 @@ const organizationLd = {
   <body>
     <Header />
     <slot />
-    <ScrollToBottom />
     <Footer />
     <script is:inline>
       if ('serviceWorker' in navigator) {

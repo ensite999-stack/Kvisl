@@ -1,13 +1,76 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const donationAddress = '0xFc71525c448cD9a7DDA6995F2898a8cB7959763A';
 ---
 <BaseLayout title="Donate | Kvisl" description="Support independent publishing at Kvisl.">
   <main class="container page-main narrow-page">
-    <p class="eyebrow">Donate</p>
+    <p class="eyebrow">Support</p>
     <h1 class="page-title">Donate</h1>
-    <div class="policy-copy">
-      <p>Kvisl is member-run and publishes independently as a nonprofit.</p>
-      <p>The formal donation channel is not open yet. Kvisl will not ask you to send money to a personal account, cryptocurrency address, or unofficial payment link. The official option will appear on this page when it is ready.</p>
+
+    <div class="policy-copy donate-copy">
+      <p><span class="notranslate" translate="no">Kvisl</span> is an independent, member-run nonprofit. Donations support editing, publishing, contributor work, and the infrastructure that keeps the publication available.</p>
+
+      <section class="donation-card" aria-labelledby="donation-usdc-title">
+        <div class="donation-card-head">
+          <div>
+            <p class="donation-kicker">EVM ecosystem</p>
+            <h2 id="donation-usdc-title">USDC stablecoin</h2>
+          </div>
+          <span class="donation-token">USDC</span>
+        </div>
+
+        <p class="donation-network-note">Send only USDC over an EVM-compatible network that you have independently verified for the transfer. Check the token, network, and address before sending. Blockchain transactions are generally irreversible.</p>
+
+        <div class="donation-address-row">
+          <code data-donation-address>{donationAddress}</code>
+          <button class="copy-address" type="button" data-copy-address={donationAddress} aria-label="Copy donation address">Copy</button>
+        </div>
+        <p class="copy-status" data-copy-status aria-live="polite"></p>
+      </section>
+
+      <h2>Donation terms</h2>
+      <p>A donation does not purchase publication, editorial influence, favourable coverage, access to authors, advertising, sponsorship, or rights in any <span class="notranslate" translate="no">Kvisl</span> work.</p>
+
+      <h2>Blockchain transfers</h2>
+      <p>You are responsible for confirming the wallet address, token contract, network, wallet compatibility, and transaction details before sending. We may be unable to recover funds sent using the wrong token, network, or address.</p>
+
+      <h2>Taxes and receipts</h2>
+      <p>Do not assume a donation is tax-deductible in your jurisdiction unless <span class="notranslate" translate="no">Kvisl</span> provides written confirmation that applies to your circumstances. Seek independent tax advice where appropriate.</p>
+
+      <h2>Questions</h2>
+      <p>To verify payment details or ask about donations, email <a href="mailto:hello@kvisl.com">hello@kvisl.com</a>.</p>
     </div>
   </main>
+
+  <script>
+    const copyButton = document.querySelector('[data-copy-address]');
+    const status = document.querySelector('[data-copy-status]');
+
+    copyButton?.addEventListener('click', async () => {
+      if (!(copyButton instanceof HTMLButtonElement)) return;
+      const address = copyButton.dataset.copyAddress;
+      if (!address) return;
+
+      try {
+        await navigator.clipboard.writeText(address);
+      } catch {
+        const textarea = document.createElement('textarea');
+        textarea.value = address;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }
+
+      copyButton.textContent = 'Copied';
+      if (status instanceof HTMLElement) status.textContent = 'Address copied.';
+      window.setTimeout(() => {
+        copyButton.textContent = 'Copy';
+        if (status instanceof HTMLElement) status.textContent = '';
+      }, 1800);
+    });
+  </script>
 </BaseLayout>

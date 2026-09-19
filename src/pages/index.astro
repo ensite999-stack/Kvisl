@@ -1,13 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleLabel from '../components/ArticleLabel.astro';
+import ScrollToBottom from '../components/ScrollToBottom.astro';
 import { getPublishedArticles } from '../lib/db';
 
-const articles = await getPublishedArticles(8);
+const articles = await getPublishedArticles(20);
 const latest = articles[0];
-const stories = articles.slice(1, 7);
-const fmt = (value: string | null) => value
-  ? new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
-  : '';
+const stories = articles.slice(1, 20);
 ---
 <BaseLayout>
   <main class="home-main">
@@ -18,40 +17,49 @@ const fmt = (value: string | null) => value
             ? <img src={latest.cover_url} alt={latest.cover_alt} loading="eager" fetchpriority="high" />
             : <img src="/icon.svg" alt="Kvisl" loading="eager" />}
         </a>
-        <div class="container latest-copy">
-          <p class="latest-topic">{latest.topic}</p>
-          <h1><a href={'/essay/' + latest.slug}>{latest.title}</a></h1>
-          <p class="latest-dek">{latest.dek}</p>
-          <p class="latest-meta">{latest.author}{latest.published_at ? ' · ' + fmt(latest.published_at) : ''}</p>
-          {latest.cover_credit && <p class="latest-credit">{latest.cover_credit}</p>}
-        </div>
       </section>
     )}
 
-    {stories.length > 0 && (
-      <section class="container home-essays">
-        <div class="section-heading">
-          <h2>Essays</h2>
-          <a href="/archive">View archive →</a>
-        </div>
-        <div class="story-grid">
-          {stories.map((story) => (
-            <article class="story-card">
-              <a href={'/essay/' + story.slug}>
-                {story.cover_url && <img src={story.cover_url} alt={story.cover_alt} loading="lazy" />}
-                <div class="eyebrow">{story.topic}</div>
-                <h3>{story.title}</h3>
-                <p>{story.dek}</p>
-                <div class="story-meta"><span>{story.author}</span><span>{fmt(story.published_at)}</span></div>
-              </a>
-            </article>
-          ))}
-        </div>
-      </section>
-    )}
+    <div class="container home-content-shell">
+      <aside class="home-scroll-rail" aria-label="Page navigation">
+        <ScrollToBottom />
+      </aside>
 
-    <section class="container home-archive-strip">
-      <a href="/archive"><span>Archive</span><strong>View all essays</strong><span>→</span></a>
-    </section>
+      <div class="home-content-main">
+        {latest && (
+          <section class="latest-copy">
+            <ArticleLabel type={latest.article_type} category={latest.topic} />
+            <h1><a href={'/essay/' + latest.slug}>{latest.title}</a></h1>
+            <p class="latest-dek">{latest.dek}</p>
+            <p class="latest-meta">{latest.author}</p>
+          </section>
+        )}
+
+        {stories.length > 0 && (
+          <section class="home-essays">
+            <div class="section-heading">
+              <h2>Essays</h2>
+            </div>
+            <div class="story-grid">
+              {stories.map((story) => (
+                <article class="story-card">
+                  <a href={'/essay/' + story.slug}>
+                    {story.cover_url && <img src={story.cover_url} alt={story.cover_alt} loading="lazy" />}
+                    <ArticleLabel type={story.article_type} category={story.topic} />
+                    <h3>{story.title}</h3>
+                    <p>{story.dek}</p>
+                    <div class="story-meta"><span>{story.author}</span></div>
+                  </a>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div class="home-more">
+          <a href="/archive">More</a>
+        </div>
+      </div>
+    </div>
   </main>
 </BaseLayout>

@@ -1,8 +1,7 @@
-<!-- Kvisl page-jump control -->
 <button class="scroll-jump" type="button" data-scroll-jump aria-label="Scroll to bottom" title="Scroll to bottom">
-  <svg class="scroll-jump-icon" viewBox="0 0 24 64" aria-hidden="true">
-    <path d="M12 4v48" />
-    <path d="M5.5 45.5 12 52l6.5-6.5" />
+  <svg class="scroll-jump-icon" viewBox="0 0 20 30" aria-hidden="true">
+    <path d="M10 3v20"></path>
+    <path d="m5.5 18.5 4.5 4.5 4.5-4.5"></path>
   </svg>
 </button>
 
@@ -26,7 +25,6 @@
     button.addEventListener('click', () => {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const goUp = button.dataset.direction === 'up';
-
       window.scrollTo({
         top: goUp ? 0 : document.documentElement.scrollHeight,
         behavior: reduceMotion ? 'auto' : 'smooth'

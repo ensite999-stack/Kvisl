@@ -6,6 +6,8 @@ export type Article = {
   dek: string;
   body_html?: string;
   topic: string;
+  article_type: string;
+  tags: string[];
   published_at: string | null;
   featured: boolean;
   cover_url: string | null;
@@ -80,6 +82,8 @@ const fallbackArticle: Article = {
 <p><strong>Is there a way to make that suffering less?</strong></p>
   `,
   topic: 'Society & Culture',
+  article_type: 'Essay',
+  tags: ['Ethics', 'Animal Welfare', 'Food Systems'],
   published_at: '2026-09-14T03:28:00.000Z',
   featured: false,
   cover_url: 'https://images.pexels.com/photos/19174595/pexels-photo-19174595.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=1200&w=1800',
@@ -99,7 +103,7 @@ export async function getPublishedArticles(limit = 12): Promise<Article[]> {
   if (!sql) return [fallbackArticle];
 
   const rows = await sql`
-    SELECT slug, title, dek, topic, published_at, featured,
+    SELECT slug, title, dek, topic, article_type, tags, published_at, featured,
            cover_url, cover_alt, cover_credit, author
     FROM public.kvisl_articles
     WHERE status = 'published'
@@ -117,7 +121,7 @@ export async function getArticle(slug: string): Promise<Article | null> {
   if (!sql) return slug === fallbackArticle.slug ? fallbackArticle : null;
 
   const rows = await sql`
-    SELECT slug, title, dek, body_html, topic, published_at, featured,
+    SELECT slug, title, dek, body_html, topic, article_type, tags, published_at, featured,
            cover_url, cover_alt, cover_credit, sources, author
     FROM public.kvisl_articles
     WHERE slug = ${slug}
@@ -130,29 +134,80 @@ export async function getArticle(slug: string): Promise<Article | null> {
   return (rows[0] as Article | undefined) ?? null;
 }
 
-export async function searchArticles(query: string, limit = 30): Promise<Article[]> {
+export async function searchArticles(
+  filters: { query?: string; category?: string; tag?: string },
+  limit = 30
+): Promise<Article[]> {
+  const query = filters.query?.trim() ?? '';
+  const category = filters.category?.trim() ?? '';
+  const tag = filters.tag?.trim() ?? '';
   const sql = client();
+
   if (!sql) {
     const q = query.toLowerCase();
-    return [fallbackArticle].filter((a) =>
-      `${a.title} ${a.dek} ${a.topic} ${a.author}`.toLowerCase().includes(q)
-    );
+    return [fallbackArticle].filter((article) => {
+      const matchesQuery = !q || `${article.title} ${article.dek} ${article.article_type} ${article.topic} ${article.author} ${article.tags.join(' ')}`
+        .toLowerCase().includes(q);
+      const matchesCategory = !category || article.topic === category;
+      const matchesTag = !tag || article.tags.includes(tag);
+      return matchesQuery && matchesCategory && matchesTag;
+    });
   }
 
-  const q = `%${query.trim()}%`;
+  const like = `%${query}%`;
   const rows = await sql`
-    SELECT slug, title, dek, topic, published_at, featured,
+    SELECT slug, title, dek, topic, article_type, tags, published_at, featured,
            cover_url, cover_alt, cover_credit, author
     FROM public.kvisl_articles
     WHERE status = 'published'
       AND deleted_at IS NULL
       AND (published_at IS NULL OR published_at <= now())
-      AND (title ILIKE ${q} OR dek ILIKE ${q} OR topic ILIKE ${q} OR author ILIKE ${q})
+      AND (
+        ${query} = ''
+        OR title ILIKE ${like}
+        OR dek ILIKE ${like}
+        OR article_type ILIKE ${like}
+        OR topic ILIKE ${like}
+        OR author ILIKE ${like}
+        OR EXISTS (SELECT 1 FROM unnest(tags) AS t WHERE t ILIKE ${like})
+      )
+      AND (${category} = '' OR topic = ${category})
+      AND (${tag} = '' OR ${tag} = ANY(tags))
     ORDER BY published_at DESC NULLS LAST
     LIMIT ${limit}
   `;
 
   return rows as Article[];
+}
+
+export async function getSearchFacets(): Promise<{ categories: string[]; tags: string[] }> {
+  const sql = client();
+  if (!sql) return { categories: [fallbackArticle.topic], tags: fallbackArticle.tags.slice(0, 10) };
+
+  const categories = await sql`
+    SELECT DISTINCT topic
+    FROM public.kvisl_articles
+    WHERE status = 'published'
+      AND deleted_at IS NULL
+      AND topic <> ''
+    ORDER BY topic
+  `;
+
+  const tags = await sql`
+    SELECT tag, count(*)::int AS count
+    FROM public.kvisl_articles, unnest(tags) AS tag
+    WHERE status = 'published'
+      AND deleted_at IS NULL
+      AND tag <> ''
+    GROUP BY tag
+    ORDER BY count DESC, tag ASC
+    LIMIT 10
+  `;
+
+  return {
+    categories: categories.map((row) => String(row.topic)),
+    tags: tags.map((row) => String(row.tag))
+  };
 }
 
 export async function subscribe(email: string): Promise<void> {
@@ -162,5 +217,139 @@ export async function subscribe(email: string): Promise<void> {
     INSERT INTO public.kvisl_subscribers (email)
     VALUES (${email})
     ON CONFLICT (email) DO NOTHING
+  `;
+}
+
+
+export type AdminArticle = Article & {
+  status: 'draft' | 'published' | 'deleted';
+  body_html: string;
+  sources: string;
+};
+
+export async function getAdminArticles(): Promise<AdminArticle[]> {
+  const sql = client();
+  if (!sql) return [];
+  const rows = await sql`
+    SELECT slug, title, dek, body_html, topic, article_type, tags, status, published_at, featured,
+           cover_url, cover_alt, cover_credit, sources, author
+    FROM public.kvisl_articles
+    WHERE deleted_at IS NULL
+      AND status <> 'deleted'
+    ORDER BY updated_at DESC, created_at DESC
+  `;
+  return rows as AdminArticle[];
+}
+
+export async function getAdminArticle(slug: string): Promise<AdminArticle | null> {
+  const sql = client();
+  if (!sql) return null;
+  const rows = await sql`
+    SELECT slug, title, dek, body_html, topic, article_type, tags, status, published_at, featured,
+           cover_url, cover_alt, cover_credit, sources, author
+    FROM public.kvisl_articles
+    WHERE slug = ${slug}
+      AND deleted_at IS NULL
+      AND status <> 'deleted'
+    LIMIT 1
+  `;
+  return (rows[0] as AdminArticle | undefined) ?? null;
+}
+
+export type AdminArticleInput = {
+  slug?: string;
+  title: string;
+  dek: string;
+  bodyHtml: string;
+  topic: string;
+  articleType: 'Essay' | 'Note';
+  tags: string[];
+  status: 'draft' | 'published';
+  publishedAt: string | null;
+  coverUrl: string | null;
+  coverAlt: string;
+  coverCredit: string;
+  sources: string;
+  author: string;
+};
+
+const newArticleSlug = (articleType: 'Essay' | 'Note') =>
+  `${articleType.toLowerCase()}-${Date.now().toString(36)}`;
+
+export async function saveAdminArticle(input: AdminArticleInput): Promise<string> {
+  const sql = client();
+  if (!sql) throw new Error('DATABASE_URL is not configured');
+
+  const slug = input.slug?.trim() || newArticleSlug(input.articleType);
+  const normalizedTags = input.tags
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .filter((tag, index, all) => all.findIndex((item) => item.toLowerCase() === tag.toLowerCase()) === index)
+    .slice(0, 10);
+  const tagPayload = normalizedTags.join('|||');
+  const publishedAt = input.publishedAt || null;
+
+  await sql`
+    INSERT INTO public.kvisl_articles (
+      slug, title, dek, body_html, topic, article_type, tags, status, published_at,
+      cover_url, cover_alt, cover_credit, sources, author, updated_at
+    )
+    VALUES (
+      ${slug}, ${input.title}, ${input.dek}, ${input.bodyHtml}, ${input.topic},
+      ${input.articleType}, CASE WHEN ${tagPayload} = '' THEN '{}'::text[] ELSE string_to_array(${tagPayload}, '|||') END,
+      ${input.status}, ${publishedAt}::timestamptz, ${input.coverUrl}, ${input.coverAlt},
+      ${input.coverCredit}, ${input.sources}, ${input.author}, now()
+    )
+    ON CONFLICT (slug) DO UPDATE SET
+      title = EXCLUDED.title,
+      dek = EXCLUDED.dek,
+      body_html = EXCLUDED.body_html,
+      topic = EXCLUDED.topic,
+      article_type = EXCLUDED.article_type,
+      tags = EXCLUDED.tags,
+      status = EXCLUDED.status,
+      published_at = EXCLUDED.published_at,
+      cover_url = EXCLUDED.cover_url,
+      cover_alt = EXCLUDED.cover_alt,
+      cover_credit = EXCLUDED.cover_credit,
+      sources = EXCLUDED.sources,
+      author = EXCLUDED.author,
+      deleted_at = NULL,
+      updated_at = now()
+  `;
+
+  return slug;
+}
+
+export async function deleteAdminArticle(slug: string): Promise<void> {
+  const sql = client();
+  if (!sql) throw new Error('DATABASE_URL is not configured');
+  await sql`
+    UPDATE public.kvisl_articles
+    SET status = 'deleted',
+        deleted_at = now(),
+        updated_at = now()
+    WHERE slug = ${slug}
+      AND deleted_at IS NULL
+  `;
+}
+
+export async function createRepublishRequest(input: {
+  articleSlug: string;
+  articleTitle: string;
+  publicationName: string;
+  contactName: string;
+  email: string;
+  destination: string;
+  notes: string;
+}): Promise<void> {
+  const sql = client();
+  if (!sql) throw new Error('DATABASE_URL is not configured');
+  await sql`
+    INSERT INTO public.kvisl_republish_requests
+      (article_slug, article_title, publication_name, contact_name, email, destination, notes)
+    VALUES
+      (${input.articleSlug}, ${input.articleTitle}, ${input.publicationName}, ${input.contactName},
+       ${input.email}, ${input.destination}, ${input.notes})
   `;
 }

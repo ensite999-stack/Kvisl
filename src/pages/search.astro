@@ -1,28 +1,63 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { searchArticles } from '../lib/db';
+import ArticleLabel from '../components/ArticleLabel.astro';
+import { getSearchFacets, searchArticles } from '../lib/db';
 
 const q = Astro.url.searchParams.get('q')?.trim() ?? '';
-const articles = q ? await searchArticles(q) : [];
+const category = Astro.url.searchParams.get('category')?.trim() ?? '';
+const tag = Astro.url.searchParams.get('tag')?.trim() ?? '';
+const active = Boolean(q || category || tag);
+const facets = await getSearchFacets();
+const articles = active ? await searchArticles({ query: q, category, tag }) : [];
 ---
-<BaseLayout title="Search | Kvisl" description="Search Kvisl essays, authors, and subjects.">
+<BaseLayout title="Search | Kvisl" description="Search Kvisl essays, authors, categories, and tags.">
   <main class="container page-main">
     <p class="eyebrow">Search</p>
     <h1 class="page-title">Search</h1>
-    <form class="search-form" method="get" action="/search">
+
+    <form class="search-form search-form-advanced" method="get" action="/search">
       <input type="search" name="q" value={q} placeholder="A question, author, or subject" autofocus aria-label="Search Kvisl" />
+      <select name="category" aria-label="Category">
+        <option value="">All categories</option>
+        {facets.categories.map((item) => <option value={item} selected={category === item}>{item}</option>)}
+      </select>
+      {tag && <input type="hidden" name="tag" value={tag} />}
       <button type="submit">Search</button>
     </form>
-    {q && <p class="eyebrow">“{q}” · {articles.length} result{articles.length === 1 ? '' : 's'}</p>}
+
+    <section class="search-facets" aria-labelledby="search-tags-title">
+      <div class="search-facet-heading">
+        <h2 id="search-tags-title">Tags</h2>
+        {(category || tag) && <a href={q ? '/search?q=' + encodeURIComponent(q) : '/search'}>Clear filters</a>}
+      </div>
+      <div class="search-tag-list">
+        {facets.tags.slice(0, 10).map((item) => {
+          const params = new URLSearchParams();
+          if (q) params.set('q', q);
+          if (category) params.set('category', category);
+          params.set('tag', item);
+          return <a class:list={['search-tag', { active: tag === item }]} href={'/search?' + params.toString()}>{item}</a>;
+        })}
+      </div>
+    </section>
+
+    {active && (
+      <p class="eyebrow search-summary">
+        {articles.length} result{articles.length === 1 ? '' : 's'}
+        {category ? ' · ' + category : ''}
+        {tag ? ' · #' + tag : ''}
+      </p>
+    )}
+
     <div>
       {articles.map((article) => (
         <a class="archive-row" href={'/essay/' + article.slug}>
-          <span class="topic">{article.topic}</span>
+          <ArticleLabel type={article.article_type} category={article.topic} />
           <h2>{article.title}</h2>
           <span class="date">{article.author}</span>
         </a>
       ))}
-      {q && articles.length === 0 && <p class="page-lede">No results. Try a broader term.</p>}
+      {active && articles.length === 0 && <p class="page-lede">No results. Try a broader term or another tag.</p>}
     </div>
   </main>
 </BaseLayout>

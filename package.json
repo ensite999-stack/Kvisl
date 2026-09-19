@@ -14,7 +14,9 @@
     "@neondatabase/serverless": "^1.0.1",
     "astro": "^5.13.5",
     "typescript": "^5.9.2",
-    "@astrojs/netlify": "^6.6.5"
+    "@astrojs/vercel": "8.2.7"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/node": "^22.15.0"
+  }
 }

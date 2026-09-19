@@ -1,8 +1,39 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleLabel from '../components/ArticleLabel.astro';
 import { getPublishedArticles } from '../lib/db';
 
-const articles = await getPublishedArticles(100);
+const allArticles = await getPublishedArticles(500);
+const yearParam = Astro.url.searchParams.get('year') ?? '';
+const monthParam = Astro.url.searchParams.get('month') ?? '';
+const order = Astro.url.searchParams.get('order') === 'oldest' ? 'oldest' : 'newest';
+
+const years = [...new Set(
+  allArticles
+    .map((article) => article.published_at ? new Date(article.published_at).getUTCFullYear() : null)
+    .filter((year): year is number => year !== null)
+)].sort((a, b) => b - a);
+
+const months = [
+  ['01','January'], ['02','February'], ['03','March'], ['04','April'],
+  ['05','May'], ['06','June'], ['07','July'], ['08','August'],
+  ['09','September'], ['10','October'], ['11','November'], ['12','December']
+];
+
+let articles = allArticles.filter((article) => {
+  if (!article.published_at) return !yearParam && !monthParam;
+  const date = new Date(article.published_at);
+  const matchesYear = !yearParam || String(date.getUTCFullYear()) === yearParam;
+  const matchesMonth = !monthParam || String(date.getUTCMonth() + 1).padStart(2, '0') === monthParam;
+  return matchesYear && matchesMonth;
+});
+
+articles = articles.sort((a, b) => {
+  const aTime = a.published_at ? new Date(a.published_at).getTime() : 0;
+  const bTime = b.published_at ? new Date(b.published_at).getTime() : 0;
+  return order === 'oldest' ? aTime - bTime : bTime - aTime;
+});
+
 const fmt = (value: string | null) => value
   ? new Intl.DateTimeFormat('en-GB', { year:'numeric', month:'short', day:'2-digit' }).format(new Date(value))
   : '—';
@@ -11,15 +42,41 @@ const fmt = (value: string | null) => value
   <main class="container page-main">
     <p class="eyebrow">Archive</p>
     <h1 class="page-title">Archive</h1>
-    <p class="page-lede">Not ranked by popularity and not arranged around urgency. A record of Kvisl essays and ongoing questions.</p>
-    <div>
+
+    <form class="archive-filters" method="get" action="/archive">
+      <label>
+        <span>Year</span>
+        <select name="year">
+          <option value="">All years</option>
+          {years.map((year) => <option value={String(year)} selected={yearParam === String(year)}>{year}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>Month</span>
+        <select name="month">
+          <option value="">All months</option>
+          {months.map(([value, name]) => <option value={value} selected={monthParam === value}>{name}</option>)}
+        </select>
+      </label>
+      <label>
+        <span>Date</span>
+        <select name="order">
+          <option value="newest" selected={order === 'newest'}>Newest first</option>
+          <option value="oldest" selected={order === 'oldest'}>Oldest first</option>
+        </select>
+      </label>
+      <button type="submit">View</button>
+    </form>
+
+    <div class="archive-results">
       {articles.map((article) => (
         <a class="archive-row" href={'/essay/' + article.slug}>
-          <span class="topic">{article.topic}</span>
+          <ArticleLabel type={article.article_type} category={article.topic} />
           <h2>{article.title}</h2>
-          <span class="date">{article.author} · {fmt(article.published_at)}</span>
+          <span class="date">{fmt(article.published_at)} · {article.author}</span>
         </a>
       ))}
+      {articles.length === 0 && <p class="page-lede">No articles in this period.</p>}
     </div>
   </main>
 </BaseLayout>

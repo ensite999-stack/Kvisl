@@ -3,6 +3,7 @@ import SubscribeForm from './SubscribeForm.astro';
 ---
 <footer class="site-footer">
   <div class="container footer-stack">
+    <a class="footer-brand notranslate" href="/" translate="no">Kvisl</a>
     <p class="footer-motto">To attend is to inhabit.</p>
 
     <div class="footer-subscribe">
@@ -14,8 +15,10 @@ import SubscribeForm from './SubscribeForm.astro';
       <a href="/about">About</a>
       <a href="/archive">Archive</a>
       <a href="/privacy">Privacy</a>
-      <a href="/use">Use</a>
+      <a href="/use">Terms of Use</a>
       <a href="/copyright">Copyright</a>
+      <a href="/republish">Republish</a>
+      <a href="/contact">Contact</a>
       <a href="/rss.xml">RSS</a>
       <a href="/donate">Donate</a>
     </nav>
@@ -23,9 +26,13 @@ import SubscribeForm from './SubscribeForm.astro';
     <div class="footer-theme" aria-label="Appearance">
       <p class="footer-label">Appearance</p>
       <div class="footer-theme-actions">
-        <button type="button" data-theme-choice="light">Light</button>
-        <button type="button" data-theme-choice="dark">Dark</button>
+        <button type="button" data-theme-choice="light">浅色</button>
+        <button type="button" data-theme-choice="dark">深色</button>
       </div>
+    </div>
+
+    <div class="footer-contact">
+      <a href="mailto:hello@kvisl.com">hello@kvisl.com</a>
     </div>
 
     <div class="footer-bottom">©2026 <span class="notranslate" translate="no">Kvisl</span>.</div>

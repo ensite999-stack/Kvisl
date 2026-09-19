@@ -1,0 +1,636 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ADMIN_COOKIE, adminPasswordValid } from '../lib/admin-auth';
+import { deleteAdminArticle, getAdminArticle, getAdminArticles, saveAdminArticle } from '../lib/db';
+
+let error = '';
+const saved = Astro.url.searchParams.get('saved') === '1';
+const deleted = Astro.url.searchParams.get('deleted') === '1';
+let authorized = adminPasswordValid(Astro.cookies.get(ADMIN_COOKIE)?.value ?? '');
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = String(form.get('action') ?? 'save');
+
+  if (action === 'login') {
+    const password = String(form.get('password') ?? '');
+    if (adminPasswordValid(password)) {
+      Astro.cookies.set(ADMIN_COOKIE, password, {
+        path: '/admin',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 12
+      });
+      return Astro.redirect('/admin', 303);
+    }
+    error = 'Incorrect password.';
+  }
+
+  if (action === 'logout') {
+    Astro.cookies.delete(ADMIN_COOKIE, { path: '/admin' });
+    return Astro.redirect('/admin', 303);
+  }
+
+  if (action !== 'login' && !authorized) {
+    error = 'Sign in to continue.';
+  }
+
+  const slug = String(form.get('slug') ?? '').trim();
+
+  if (authorized && action === 'delete') {
+    if (slug) await deleteAdminArticle(slug);
+    return Astro.redirect('/admin?deleted=1', 303);
+  }
+
+  if (authorized && action !== 'login') {
+  const title = String(form.get('title') ?? '').trim();
+  const author = String(form.get('author') ?? '').trim();
+  const dek = String(form.get('dek') ?? '').trim();
+  const topic = String(form.get('topic') ?? '').trim();
+  const articleTypeRaw = String(form.get('article_type') ?? 'Essay');
+  const articleType = articleTypeRaw === 'Note' ? 'Note' : 'Essay';
+  const bodyHtml = String(form.get('body_html') ?? '').trim();
+  const coverUrl = String(form.get('cover_url') ?? '').trim() || null;
+  const coverAlt = String(form.get('cover_alt') ?? '').trim();
+  const coverCredit = String(form.get('cover_credit') ?? '').trim();
+  const sources = String(form.get('sources') ?? '').trim();
+  const currentStatus = String(form.get('current_status') ?? 'draft');
+  const date = String(form.get('published_date') ?? '').trim();
+  const tags = String(form.get('tags') ?? '')
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 10);
+
+  if (!title || !author || !topic) {
+    error = 'Title, author and category are required.';
+  } else {
+    const status =
+      action === 'publish' ? 'published' :
+      action === 'draft' ? 'draft' :
+      currentStatus === 'published' ? 'published' : 'draft';
+
+    const publishedAt = date
+      ? `${date}T12:00:00.000Z`
+      : status === 'published'
+        ? new Date().toISOString()
+        : null;
+
+    const savedSlug = await saveAdminArticle({
+      slug: slug || undefined,
+      title,
+      author,
+      dek,
+      bodyHtml,
+      topic,
+      articleType,
+      tags,
+      status,
+      publishedAt,
+      coverUrl,
+      coverAlt,
+      coverCredit,
+      sources
+    });
+
+    return Astro.redirect('/admin?edit=' + encodeURIComponent(savedSlug) + '&saved=1', 303);
+  }
+  }
+}
+
+authorized = adminPasswordValid(Astro.cookies.get(ADMIN_COOKIE)?.value ?? '');
+const articles = authorized ? await getAdminArticles() : [];
+const newArticle = Astro.url.searchParams.get('new') === '1';
+const requestedSlug = Astro.url.searchParams.get('edit');
+const selectedSlug = newArticle ? '' : (requestedSlug || articles[0]?.slug || '');
+const article = authorized && selectedSlug ? await getAdminArticle(selectedSlug) : null;
+const today = new Date().toISOString().slice(0, 10);
+const publishedDate = article?.published_at ? new Date(article.published_at).toISOString().slice(0, 10) : today;
+---
+<BaseLayout title="Editorial | Kvisl" description="Kvisl modular editorial workspace." noindex>
+  <main class="admin-page">
+    {!authorized ? (
+      <section class="admin-lock">
+        <div class="admin-lock-card">
+          <p class="eyebrow">Editorial</p>
+          <h1>Sign in</h1>
+          <p>Enter the editorial password to access the Kvisl publishing workspace.</p>
+          <form class="admin-login" method="post">
+            <input type="hidden" name="action" value="login" />
+            <label>
+              <span>Password</span>
+              <input type="password" name="password" required autocomplete="current-password" autofocus />
+            </label>
+            {error && <p class="form-error">{error}</p>}
+            <button type="submit">Sign in</button>
+          </form>
+        </div>
+      </section>
+    ) : (
+    <div class="admin-workspace">
+      <aside class="admin-library">
+        <div class="admin-library-head">
+          <div>
+            <p class="eyebrow">Editorial</p>
+            <h1>Articles</h1>
+          </div>
+          <div class="admin-library-actions">
+            <a class="admin-new" href="/admin?new=1">New</a>
+            <form method="post">
+              <input type="hidden" name="action" value="logout" />
+              <button type="submit">Sign out</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="admin-library-list">
+          {articles.length === 0 ? (
+            <p class="admin-empty">No articles yet.</p>
+          ) : articles.map((item) => (
+            <a class:list={['admin-library-item', { active: item.slug === article?.slug }]} href={'/admin?edit=' + encodeURIComponent(item.slug)}>
+              <strong>{item.title}</strong>
+              <span>{item.status} · {item.article_type} · {item.topic}</span>
+            </a>
+          ))}
+        </div>
+      </aside>
+
+      <section class="admin-editor-panel">
+        <form class="modular-editor" method="post" data-editor-form>
+          <input type="hidden" name="slug" value={article?.slug ?? ''} />
+          <input type="hidden" name="current_status" value={article?.status ?? 'draft'} />
+          <input type="hidden" name="cover_url" value={article?.cover_url ?? ''} data-cover-hidden />
+          <textarea name="body_html" hidden data-body-html>{article?.body_html ?? ''}</textarea>
+
+          <header class="editor-topbar">
+            <div>
+              <p class="editor-status">
+                <span class:list={['status-dot', article?.status === 'published' ? 'published' : 'draft']}></span>
+                {article?.status === 'published' ? 'Published' : 'Draft'}
+              </p>
+              <h2>{article ? 'Edit article' : 'New article'}</h2>
+            </div>
+            <div class="editor-actions">
+              <button type="submit" name="action" value="save">Save</button>
+              <button type="submit" name="action" value="draft">Draft</button>
+              <button class="primary" type="submit" name="action" value="publish">Publish</button>
+              {article?.slug && <a href={'/admin/preview/' + encodeURIComponent(article.slug)} target="_blank" rel="noopener">Preview</a>}
+              {article?.slug && <button class="danger" type="submit" name="action" value="delete" data-delete-article>Delete</button>}
+            </div>
+          </header>
+
+          {(saved || deleted || error) && (
+            <div class:list={['editor-notice', { error: Boolean(error) }]}>
+              {error || (deleted ? 'Article deleted.' : 'Saved.')}
+            </div>
+          )}
+
+          <div class="editor-modules">
+            <section class="editor-module">
+              <div class="module-heading">
+                <span>01</span>
+                <h3>Article</h3>
+              </div>
+              <div class="editor-grid two">
+                <label class="wide">
+                  <span>Title</span>
+                  <input name="title" value={article?.title ?? ''} required placeholder="Article title" />
+                </label>
+                <label>
+                  <span>Author</span>
+                  <input name="author" value={article?.author ?? 'Hollis H. Jiang'} required />
+                </label>
+                <label>
+                  <span>Date</span>
+                  <input type="date" name="published_date" value={publishedDate} />
+                </label>
+                <label>
+                  <span>Form</span>
+                  <select name="article_type">
+                    <option value="Essay" selected={(article?.article_type ?? 'Essay') === 'Essay'}>Essay</option>
+                    <option value="Note" selected={article?.article_type === 'Note'}>Note</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Category</span>
+                  <input name="topic" value={article?.topic ?? 'General'} required placeholder="Society & Culture" />
+                </label>
+                <label class="wide">
+                  <span>Tags · up to 10, separated by commas</span>
+                  <input name="tags" value={(article?.tags ?? []).join(', ')} placeholder="Ethics, Nature, Science" />
+                </label>
+                <label class="wide">
+                  <span>Dek / introduction</span>
+                  <textarea name="dek" rows="4" placeholder="A concise introduction shown beneath the title.">{article?.dek ?? ''}</textarea>
+                </label>
+              </div>
+            </section>
+
+            <section class="editor-module">
+              <div class="module-heading">
+                <span>02</span>
+                <h3>Cover</h3>
+              </div>
+              <div class="cover-editor">
+                <div class="cover-preview" data-cover-preview-wrap>
+                  {article?.cover_url
+                    ? <img src={article.cover_url} alt="" data-cover-preview />
+                    : <div class="cover-placeholder" data-cover-placeholder>No cover selected</div>}
+                </div>
+                <div class="cover-controls">
+                  <label>
+                    <span>Image link</span>
+                    <div class="input-action">
+                      <input type="url" inputmode="url" placeholder="https://…" value={article?.cover_url?.startsWith('http') ? article.cover_url : ''} data-cover-link />
+                      <button type="button" data-use-cover-link>Use link</button>
+                    </div>
+                  </label>
+                  <label>
+                    <span>Upload image</span>
+                    <input type="file" accept="image/*" data-cover-file />
+                  </label>
+                  <button class="subtle-button cover-remove-button" type="button" data-clear-cover>Remove cover image</button>
+                  <label>
+                    <span>Alt text</span>
+                    <input name="cover_alt" value={article?.cover_alt ?? ''} placeholder="Describe the image for accessibility" data-cover-alt />
+                  </label>
+                  <label>
+                    <span>Photo / image credit</span>
+                    <input name="cover_credit" value={article?.cover_credit ?? ''} placeholder="Photo by…" data-cover-credit />
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <section class="editor-module body-module">
+              <div class="module-heading body-module-heading">
+                <div>
+                  <span>03</span>
+                  <h3>Body</h3>
+                </div>
+                <button class="subtle-button" type="button" data-toggle-body>Fold editor</button>
+              </div>
+
+              <div class="rich-editor-shell" data-rich-shell>
+                <div class="rich-toolbar" data-rich-toolbar>
+                  <button type="button" data-command="bold"><strong>B</strong></button>
+                  <button type="button" data-block="p">Paragraph</button>
+                  <button type="button" data-block="h2">Heading</button>
+                  <select aria-label="Text size" data-font-size>
+                    <option value="">Size</option>
+                    <option value="3">Normal</option>
+                    <option value="5">Large</option>
+                    <option value="6">Larger</option>
+                  </select>
+                  <label class="toolbar-color" title="Text colour">
+                    <span>Color</span>
+                    <input type="color" value="#702963" data-text-color />
+                  </label>
+                  <select aria-label="Image insertion position" data-image-position>
+                    <option value="cursor">Image: at cursor</option>
+                  </select>
+                  <button type="button" data-image-url>Image link</button>
+                  <button type="button" data-remove-image disabled>Remove image</button>
+                  <label class="toolbar-upload">
+                    Upload image
+                    <input type="file" accept="image/*" data-body-image hidden />
+                  </label>
+                  <label class="toolbar-lines" title="Blank lines">
+                    <span>Lines</span>
+                    <input type="number" min="1" step="1" value="1" inputmode="numeric" data-space-lines />
+                  </label>
+                  <button type="button" data-insert-space>Insert space</button>
+                  <button type="button" data-auto-format>Auto format</button>
+                </div>
+
+                <div
+                  class="rich-editor"
+                  contenteditable="true"
+                  role="textbox"
+                  aria-multiline="true"
+                  data-rich-editor
+                  set:html={article?.body_html ?? '<p><br></p>'}
+                ></div>
+              </div>
+
+              <p class="editor-help">The body stays inside a fixed scrollable frame. Paste plain text to turn paragraphs into article blocks automatically. Images can be uploaded or inserted from a link. Tap an image to select it, then use Remove image.</p>
+            </section>
+
+            <section class="editor-module">
+              <div class="module-heading">
+                <span>04</span>
+                <h3>Sources & notes</h3>
+              </div>
+              <label>
+                <span>Internal sources / editorial notes</span>
+                <textarea name="sources" rows="5" placeholder="Optional notes, references, source links…">{article?.sources ?? ''}</textarea>
+              </label>
+            </section>
+          </div>
+
+          <footer class="editor-footer-actions">
+            <button type="submit" name="action" value="save">Save</button>
+            <button type="submit" name="action" value="draft">Move to draft</button>
+            <button class="primary" type="submit" name="action" value="publish">Publish</button>
+            {article?.slug && <a href={'/admin/preview/' + encodeURIComponent(article.slug)} target="_blank" rel="noopener">Preview</a>}
+          </footer>
+        </form>
+      </section>
+    </div>
+    )}
+  </main>
+
+  <script>
+    const form = document.querySelector('[data-editor-form]');
+    const editor = document.querySelector('[data-rich-editor]');
+    const bodyField = document.querySelector('[data-body-html]');
+    const richShell = document.querySelector('[data-rich-shell]');
+    const toggleBody = document.querySelector('[data-toggle-body]');
+    const coverHidden = document.querySelector('[data-cover-hidden]');
+    const coverLink = document.querySelector('[data-cover-link]');
+    const coverPreviewWrap = document.querySelector('[data-cover-preview-wrap]');
+    const imagePosition = document.querySelector('[data-image-position]');
+    const removeImageButton = document.querySelector('[data-remove-image]');
+
+    let savedRange: Range | null = null;
+    let selectedFigure: HTMLElement | null = null;
+
+    const rememberSelection = () => {
+      if (!(editor instanceof HTMLElement)) return;
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+      if (editor.contains(range.commonAncestorContainer)) savedRange = range.cloneRange();
+    };
+
+    document.addEventListener('selectionchange', rememberSelection);
+
+    const getBodyBlocks = () => {
+      if (!(editor instanceof HTMLElement)) return [];
+      return Array.from(editor.children).filter((node) =>
+        node.matches('p, h2, h3, blockquote, figure, .article-spacer')
+      ) as HTMLElement[];
+    };
+
+    const refreshImagePositions = () => {
+      if (!(imagePosition instanceof HTMLSelectElement)) return;
+      const current = imagePosition.value;
+      const options = ['<option value="cursor">Image: at cursor</option>'];
+      getBodyBlocks().forEach((block, index) => {
+        const label = (block.textContent || block.tagName.toLowerCase())
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 30);
+        options.push(`<option value="after:${index}">After ${index + 1}: ${escapeHtml(label || block.tagName.toLowerCase())}</option>`);
+      });
+      imagePosition.innerHTML = options.join('');
+      if (Array.from(imagePosition.options).some((option) => option.value === current)) {
+        imagePosition.value = current;
+      }
+    };
+
+    const insertHtml = (html: string) => {
+      if (!(editor instanceof HTMLElement)) return;
+      editor.focus();
+      const selection = window.getSelection();
+      if (selection && savedRange) {
+        selection.removeAllRanges();
+        selection.addRange(savedRange);
+      }
+      document.execCommand('insertHTML', false, html);
+      rememberSelection();
+      refreshImagePositions();
+    };
+
+    const insertImageHtml = (html: string) => {
+      if (imagePosition instanceof HTMLSelectElement && imagePosition.value.startsWith('after:')) {
+        const index = Number(imagePosition.value.split(':')[1]);
+        const target = getBodyBlocks()[index];
+        if (target) {
+          target.insertAdjacentHTML('afterend', html);
+          imagePosition.value = 'cursor';
+          refreshImagePositions();
+          return;
+        }
+      }
+      insertHtml(html);
+    };
+
+    const escapeHtml = (value: string) => value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+
+    const normalizeEditor = () => {
+      if (!(editor instanceof HTMLElement)) return;
+      const children = Array.from(editor.childNodes);
+      for (const node of children) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+          const p = document.createElement('p');
+          p.textContent = node.textContent.trim();
+          editor.replaceChild(p, node);
+        } else if (node instanceof HTMLDivElement && !node.classList.contains('article-spacer')) {
+          const p = document.createElement('p');
+          p.innerHTML = node.innerHTML || '<br>';
+          editor.replaceChild(p, node);
+        }
+      }
+      editor.querySelectorAll('p').forEach((p) => {
+        if (!p.textContent?.trim() && !p.querySelector('img, br')) p.remove();
+      });
+      refreshImagePositions();
+    };
+
+    const setSelectedFigure = (figure: HTMLElement | null) => {
+      selectedFigure?.classList.remove('editor-selected-figure');
+      selectedFigure = figure;
+      selectedFigure?.classList.add('editor-selected-figure');
+      if (removeImageButton instanceof HTMLButtonElement) {
+        removeImageButton.disabled = !selectedFigure;
+      }
+    };
+
+    const syncBody = () => {
+      if (!(editor instanceof HTMLElement) || !(bodyField instanceof HTMLTextAreaElement)) return;
+      normalizeEditor();
+      editor.querySelectorAll('.editor-selected-figure').forEach((node) => node.classList.remove('editor-selected-figure'));
+      bodyField.value = editor.innerHTML.trim();
+    };
+
+    form?.addEventListener('submit', (event) => {
+      const submitter = (event as SubmitEvent).submitter;
+      if (submitter instanceof HTMLButtonElement && submitter.value === 'delete') return;
+      syncBody();
+    });
+
+    editor?.addEventListener('paste', (event) => {
+      if (!(event instanceof ClipboardEvent)) return;
+      const html = event.clipboardData?.getData('text/html');
+      const text = event.clipboardData?.getData('text/plain');
+      if (html || !text) return;
+      event.preventDefault();
+      const blocks = text
+        .trim()
+        .split(/\n\s*\n/)
+        .filter(Boolean)
+        .map((block) => '<p>' + escapeHtml(block).replaceAll('\n', '<br>') + '</p>')
+        .join('');
+      insertHtml(blocks || '<p><br></p>');
+    });
+
+    document.querySelectorAll('[data-rich-toolbar] button').forEach((button) => {
+      button.addEventListener('mousedown', (event) => event.preventDefault());
+    });
+
+    document.querySelectorAll('[data-command]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!(button instanceof HTMLButtonElement)) return;
+        document.execCommand(button.dataset.command || '', false);
+        editor instanceof HTMLElement && editor.focus();
+      });
+    });
+
+    document.querySelectorAll('[data-block]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!(button instanceof HTMLButtonElement)) return;
+        document.execCommand('formatBlock', false, button.dataset.block || 'p');
+        editor instanceof HTMLElement && editor.focus();
+      });
+    });
+
+    const fontSize = document.querySelector('[data-font-size]');
+    fontSize?.addEventListener('change', () => {
+      if (!(fontSize instanceof HTMLSelectElement) || !fontSize.value) return;
+      document.execCommand('fontSize', false, fontSize.value);
+      fontSize.value = '';
+      editor instanceof HTMLElement && editor.focus();
+    });
+
+    const textColor = document.querySelector('[data-text-color]');
+    textColor?.addEventListener('input', () => {
+      if (!(textColor instanceof HTMLInputElement)) return;
+      document.execCommand('foreColor', false, textColor.value);
+      editor instanceof HTMLElement && editor.focus();
+    });
+
+    document.querySelector('[data-image-url]')?.addEventListener('click', () => {
+      const src = window.prompt('Image URL');
+      if (!src) return;
+      const credit = window.prompt('Caption / credit (optional)') || '';
+      insertImageHtml(`<figure><img src="${escapeHtml(src)}" alt=""><figcaption>${escapeHtml(credit)}</figcaption></figure><p><br></p>`);
+    });
+
+    const compressImage = async (file: File, maxEdge = 1800, quality = 0.82): Promise<string> => {
+      if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
+      const objectUrl = URL.createObjectURL(file);
+      try {
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = objectUrl;
+        await image.decode();
+        const scale = Math.min(1, maxEdge / Math.max(image.naturalWidth, image.naturalHeight));
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Image processing is unavailable.');
+        context.drawImage(image, 0, 0, width, height);
+        return canvas.toDataURL('image/webp', quality);
+      } finally {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+
+    const setCover = (src: string) => {
+      if (coverHidden instanceof HTMLInputElement) coverHidden.value = src;
+      if (!(coverPreviewWrap instanceof HTMLElement)) return;
+      coverPreviewWrap.innerHTML = src
+        ? `<img src="${src}" alt="" data-cover-preview>`
+        : '<div class="cover-placeholder" data-cover-placeholder>No cover selected</div>';
+    };
+
+    document.querySelector('[data-use-cover-link]')?.addEventListener('click', () => {
+      if (coverLink instanceof HTMLInputElement) setCover(coverLink.value.trim());
+    });
+
+    const coverFile = document.querySelector('[data-cover-file]');
+    coverFile?.addEventListener('change', async () => {
+      if (!(coverFile instanceof HTMLInputElement) || !coverFile.files?.[0]) return;
+      try {
+        setCover(await compressImage(coverFile.files[0]));
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : 'Could not process image.');
+      }
+    });
+
+    document.querySelector('[data-clear-cover]')?.addEventListener('click', () => {
+      setCover('');
+      if (coverLink instanceof HTMLInputElement) coverLink.value = '';
+      if (coverFile instanceof HTMLInputElement) coverFile.value = '';
+
+      const alt = document.querySelector('[data-cover-alt]');
+      const credit = document.querySelector('[data-cover-credit]');
+      if (alt instanceof HTMLInputElement) alt.value = '';
+      if (credit instanceof HTMLInputElement) credit.value = '';
+    });
+
+    editor?.addEventListener('click', (event) => {
+      if (!(event.target instanceof Element)) return;
+      const figure = event.target.closest('figure');
+      setSelectedFigure(figure instanceof HTMLElement ? figure : null);
+    });
+
+    removeImageButton?.addEventListener('click', () => {
+      if (!selectedFigure) return;
+      const next = selectedFigure.nextElementSibling;
+      selectedFigure.remove();
+      if (next instanceof HTMLParagraphElement && !next.textContent?.trim() && next.querySelector('br')) {
+        next.remove();
+      }
+      setSelectedFigure(null);
+      refreshImagePositions();
+      editor instanceof HTMLElement && editor.focus();
+    });
+
+    const bodyImage = document.querySelector('[data-body-image]');
+    bodyImage?.addEventListener('change', async () => {
+      if (!(bodyImage instanceof HTMLInputElement) || !bodyImage.files?.[0]) return;
+      try {
+        const src = await compressImage(bodyImage.files[0], 1600, 0.8);
+        const credit = window.prompt('Caption / credit (optional)') || '';
+        insertImageHtml(`<figure><img src="${src}" alt=""><figcaption>${escapeHtml(credit)}</figcaption></figure><p><br></p>`);
+        bodyImage.value = '';
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : 'Could not process image.');
+      }
+    });
+
+    document.querySelector('[data-insert-space]')?.addEventListener('click', () => {
+      const input = document.querySelector('[data-space-lines]');
+      const raw = input instanceof HTMLInputElement ? Number(input.value) : 1;
+      const lines = Number.isFinite(raw) ? Math.max(1, Math.floor(raw)) : 1;
+      insertHtml(`<div class="article-spacer" data-lines="${lines}" style="height:${lines * 1.5}em"></div><p><br></p>`);
+    });
+
+    document.querySelector('[data-auto-format]')?.addEventListener('click', () => {
+      normalizeEditor();
+      editor instanceof HTMLElement && editor.focus();
+    });
+
+    toggleBody?.addEventListener('click', () => {
+      if (!(richShell instanceof HTMLElement) || !(toggleBody instanceof HTMLButtonElement)) return;
+      const folded = richShell.classList.toggle('folded');
+      toggleBody.textContent = folded ? 'Expand editor' : 'Fold editor';
+    });
+
+    editor?.addEventListener('input', refreshImagePositions);
+    refreshImagePositions();
+
+    document.querySelector('[data-delete-article]')?.addEventListener('click', (event) => {
+      if (!window.confirm('Delete this article? This removes it from the site.')) event.preventDefault();
+    });
+  </script>
+</BaseLayout>
