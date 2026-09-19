@@ -1,17 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getPublishedArticles } from '../lib/db';
+
 const articles = await getPublishedArticles(100);
-const fmt = (value: string | null) => value ? new Intl.DateTimeFormat('zh-CN', { year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date(value)) : '—';
+const fmt = (value: string | null) => value
+  ? new Intl.DateTimeFormat('en-GB', { year:'numeric', month:'short', day:'2-digit' }).format(new Date(value))
+  : '—';
 ---
-<BaseLayout title="档案 | Kvisl" description="Kvisl 长文档案：关于人、世界与存在的持续探索。">
+<BaseLayout title="Archive | Kvisl" description="The Kvisl archive: long-form essays on people, the world, and questions worth staying with.">
   <main class="container page-main">
     <p class="eyebrow">Archive</p>
-    <h1 class="page-title">档案</h1>
-    <p class="page-lede">不按热度排序，不追逐即时性。这里保存 Kvisl 发表过的长文与持续中的问题。</p>
+    <h1 class="page-title">Archive</h1>
+    <p class="page-lede">Not ranked by popularity and not arranged around urgency. A record of Kvisl essays and ongoing questions.</p>
     <div>
       {articles.map((article) => (
-        <a class="archive-row" href={`/essay/${article.slug}`}>
+        <a class="archive-row" href={'/essay/' + article.slug}>
           <span class="topic">{article.topic}</span>
           <h2>{article.title}</h2>
           <span class="date">{article.author} · {fmt(article.published_at)}</span>

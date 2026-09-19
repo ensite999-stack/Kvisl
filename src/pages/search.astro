@@ -1,27 +1,28 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { searchArticles } from '../lib/db';
+
 const q = Astro.url.searchParams.get('q')?.trim() ?? '';
 const articles = q ? await searchArticles(q) : [];
 ---
-<BaseLayout title="搜索 | Kvisl" description="搜索 Kvisl 的文章、作者与主题。">
+<BaseLayout title="Search | Kvisl" description="Search Kvisl essays, authors, and subjects.">
   <main class="container page-main">
     <p class="eyebrow">Search</p>
-    <h1 class="page-title">搜索</h1>
+    <h1 class="page-title">Search</h1>
     <form class="search-form" method="get" action="/search">
-      <input type="search" name="q" value={q} placeholder="一个问题、作者或主题" autofocus aria-label="搜索 Kvisl" />
-      <button type="submit">查找</button>
+      <input type="search" name="q" value={q} placeholder="A question, author, or subject" autofocus aria-label="Search Kvisl" />
+      <button type="submit">Search</button>
     </form>
-    {q && <p class="eyebrow">“{q}” · {articles.length} 篇</p>}
+    {q && <p class="eyebrow">“{q}” · {articles.length} result{articles.length === 1 ? '' : 's'}</p>}
     <div>
       {articles.map((article) => (
-        <a class="archive-row" href={`/essay/${article.slug}`}>
+        <a class="archive-row" href={'/essay/' + article.slug}>
           <span class="topic">{article.topic}</span>
           <h2>{article.title}</h2>
           <span class="date">{article.author}</span>
         </a>
       ))}
-      {q && articles.length === 0 && <p class="page-lede">没有匹配结果。换一个更宽的词试试。</p>}
+      {q && articles.length === 0 && <p class="page-lede">No results. Try a broader term.</p>}
     </div>
   </main>
 </BaseLayout>
