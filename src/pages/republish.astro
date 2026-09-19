@@ -26,25 +26,25 @@ const sent = Astro.url.searchParams.get('sent') === '1';
         <h2>Licence fee</h2>
         <p class="republish-fee"><strong>Licensing starts at US$600 per article.</strong> The final fee may be higher depending on the work, <span class="notranslate" translate="no">Kvisl</span>'s editorial and creative contribution, the original author's terms, language, territory, medium, audience, duration, exclusivity, and intended use.</p>
 
-        <h2>Permission is required first</h2>
+        <h2>Approval before publication</h2>
         <p>Do not publish the article until <span class="notranslate" translate="no">Kvisl</span> has approved the use in writing and any required payment has been completed. Submitting this form does not grant permission.</p>
 
-        <h2>Scope of a licence</h2>
-        <p>A licence covers only the rights, language, territory, medium, duration, and edition stated in the written approval. Any additional use requires a new agreement.</p>
+        <h2>Scope of the licence</h2>
+        <p>The licence covers only the rights, language, territory, medium, duration, and edition stated in the written approval. Any additional use requires a separate agreement.</p>
 
         <h2>Attribution</h2>
-        <p>Unless otherwise agreed, republication must clearly credit the original author, article title, and <span class="notranslate" translate="no">Kvisl</span>. Online republication must include a prominent link to the canonical article.</p>
+        <p>Unless otherwise agreed, republication must clearly credit the original author, article title, and <span class="notranslate" translate="no">Kvisl</span>. Online versions must include a prominent link to the canonical article.</p>
 
         <h2>Editing and translation</h2>
-        <p>Material edits, abridgements, headline changes, translations, adaptations, and format conversions require separate approval. We may require the author or editor to review the final version before publication.</p>
+        <p>Material edits, abridgements, headline changes, translations, adaptations, and format conversions require separate approval. We may ask the author or editor to review the final version before publication.</p>
 
         <h2>Images and third-party rights</h2>
-        <p>Article-text permission does not automatically include photographs, illustrations, embedded media, quotations, datasets, or other third-party material. You are responsible for obtaining any rights not expressly included in the written licence.</p>
+        <p>Permission to republish the article text does not automatically include photographs, illustrations, embedded media, quotations, datasets, or other third-party material. You are responsible for securing any rights not expressly included in the licence.</p>
 
-        <h2>Archiving and further syndication</h2>
-        <p>A republication licence does not include sublicensing, resale, onward syndication, permanent database rights, or reuse in another product unless the written agreement expressly includes those uses.</p>
+        <h2>Archiving and onward use</h2>
+        <p>A republication licence does not include sublicensing, resale, onward syndication, permanent database rights, or reuse in another product unless the written agreement expressly allows it.</p>
 
-        <h2>Unauthorised use</h2>
+        <h2>Use outside the agreed terms</h2>
         <p>Publication outside the agreed scope may be treated as unauthorised use and may require removal, correction, additional licensing fees, or other remedies available to the relevant rights holder.</p>
       </div>
 
@@ -61,7 +61,7 @@ const sent = Astro.url.searchParams.get('sent') === '1';
           <label><span>Notes</span><textarea name="notes" rows="6" placeholder="Language, territory, medium, planned date, duration, audience, and any requested edits"></textarea></label>
           <label class="republish-consent">
             <input type="checkbox" name="fee_ack" value="yes" required />
-            <span>I understand that republication requires prior written permission and a paid licence starting at US$600 per article.</span>
+            <span>I understand that republication requires prior written approval and a paid licence starting at US$600 per article.</span>
           </label>
           <button type="submit">Request a licence</button>
         </form>
