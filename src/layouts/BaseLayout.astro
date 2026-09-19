@@ -27,8 +27,7 @@ const organizationLd = {
   slogan: site.tagline,
   url: (Astro.site ?? new URL(Astro.url.origin)).toString(),
   logo: new URL('/icons/icon-512.png', Astro.site ?? Astro.url.origin).toString(),
-  description: site.description,
-  nonprofitStatus: 'NonprofitType'
+  description: site.description
 };
 ---
 <!doctype html>
@@ -48,6 +47,7 @@ const organizationLd = {
     <link rel="icon" type="image/png" sizes="48x48" href="/icons/favicon-48.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="alternate" type="application/rss+xml" title="Kvisl RSS" href="/rss.xml" />
     <meta property="og:site_name" content="Kvisl" />
     <meta property="og:type" content={article ? 'article' : 'website'} />
     <meta property="og:title" content={title} />
@@ -59,6 +59,12 @@ const organizationLd = {
     <meta name="twitter:description" content={description} />
     {absoluteImage && <meta name="twitter:image" content={absoluteImage} />}
     <title>{title}</title>
+    <script is:inline>
+      try {
+        const saved = localStorage.getItem('kvisl-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved;
+      } catch {}
+    </script>
     <script type="application/ld+json" set:html={JSON.stringify(organizationLd)}></script>
   </head>
   <body>

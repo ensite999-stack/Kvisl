@@ -1,0 +1,12 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SubscribeForm from '../components/SubscribeForm.astro';
+---
+<BaseLayout title="订阅 | Kvisl" description="订阅 Kvisl 的新文章与编辑来信。">
+  <main class="container page-main narrow-page">
+    <p class="eyebrow">Subscribe</p>
+    <h1 class="page-title">订阅</h1>
+    <p class="page-lede">不做信息流，也不以发送频率为目标。只在有值得占用你注意力的新文章或编辑来信时出现。</p>
+    <div class="page-form-block"><SubscribeForm /></div>
+  </main>
+</BaseLayout>

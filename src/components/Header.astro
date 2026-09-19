@@ -1,39 +1,38 @@
 ---
+const isHome = Astro.url.pathname === '/';
 ---
-<header class="site-header" id="site-header">
+<header class:list={['site-header', { 'home-header': isHome }]} id="site-header">
   <div class="container header-inner">
     <div class="header-side">
-      <a class="header-link icon-link" href="/search" aria-label="搜索">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.2 4.2"/></svg>
-        <span class="desktop-label">搜索</span>
-      </a>
       <a class="header-link archive-link" href="/archive">档案</a>
     </div>
-
     <a class="wordmark" href="/" aria-label="Kvisl 首页">Kvisl</a>
-
     <div class="header-side right">
-      <a class="header-link" href="/#subscribe">订阅</a>
-      <button class="header-button menu-trigger icon-link" type="button" id="menu-trigger" aria-expanded="false" aria-controls="menu-panel">
-        <span class="desktop-label">菜单</span>
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16M4 16h16"/></svg>
+      <a class="header-link subscribe-link" href="/subscribe">订阅</a>
+      <button class="header-button menu-trigger" type="button" id="menu-trigger" aria-label="菜单" aria-expanded="false" aria-controls="menu-panel">
+        <svg class="hamburger" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <path d="M3 6h18" />
+          <path d="M8 12h13" />
+          <path d="M3 18h18" />
+        </svg>
       </button>
     </div>
   </div>
 </header>
 
 <div class="menu-panel" id="menu-panel" aria-hidden="true">
-  <div class="container">
+  <div class="container menu-inner">
     <nav class="menu-links" aria-label="主菜单">
-      <a href="/archive">档案 Archive</a>
-      <a href="/about">关于 About</a>
-      <a href="/membership">成员 Membership</a>
-      <a href="/search">搜索 Search</a>
+      <a href="/about">关于</a>
+      <a href="/archive">档案</a>
+      <a href="/contact">联系</a>
+      <a href="/search">搜索</a>
     </nav>
-    <div class="menu-meta">
-      <span>To attend is to inhabit.</span>
-      <span>Independent · Non-profit · Member-run</span>
+    <div class="theme-switcher" aria-label="外观">
+      <button type="button" data-theme-choice="light">浅色模式</button>
+      <button type="button" data-theme-choice="dark">深色模式</button>
     </div>
+    <div class="menu-meta"><span>To attend is to inhabit.</span></div>
   </div>
 </div>
 
@@ -41,7 +40,24 @@
   const header = document.querySelector('#site-header');
   const trigger = document.querySelector('#menu-trigger');
   const panel = document.querySelector('#menu-panel');
+  const themeButtons = document.querySelectorAll('[data-theme-choice]');
   let lastY = window.scrollY;
+
+  const syncThemeButtons = () => {
+    const current = document.documentElement.dataset.theme || 'light';
+    themeButtons.forEach((button) => {
+      if (button instanceof HTMLButtonElement) {
+        button.setAttribute('aria-pressed', String(button.dataset.themeChoice === current));
+      }
+    });
+  };
+
+  const setTheme = (theme) => {
+    if (theme !== 'light' && theme !== 'dark') return;
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('kvisl-theme', theme); } catch {}
+    syncThemeButtons();
+  };
 
   const onScroll = () => {
     if (!(header instanceof HTMLElement)) return;
@@ -56,6 +72,7 @@
 
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+  syncThemeButtons();
 
   trigger?.addEventListener('click', () => {
     if (!(trigger instanceof HTMLElement) || !(panel instanceof HTMLElement)) return;
@@ -72,5 +89,9 @@
     panel.setAttribute('aria-hidden', 'true');
     trigger?.setAttribute('aria-expanded', 'false');
     document.body.classList.remove('menu-open');
+  }));
+
+  themeButtons.forEach((button) => button.addEventListener('click', () => {
+    if (button instanceof HTMLButtonElement) setTheme(button.dataset.themeChoice);
   }));
 </script>

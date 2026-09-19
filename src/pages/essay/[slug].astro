@@ -7,6 +7,7 @@ const { slug } = Astro.params;
 if (!slug) return Astro.redirect('/archive');
 const article = await getArticle(slug);
 if (!article) return new Response('Not found', { status: 404 });
+
 const safeBody = sanitizeHtml(article.body_html ?? '', {
   allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'figure', 'figcaption']),
   allowedAttributes: {
@@ -18,7 +19,11 @@ const safeBody = sanitizeHtml(article.body_html ?? '', {
   },
   allowedSchemes: ['http', 'https', 'mailto']
 });
-const fmt = (value: string | null) => value ? new Intl.DateTimeFormat('zh-CN', { year:'numeric', month:'long', day:'numeric' }).format(new Date(value)) : '';
+
+const fmt = (value: string | null) => value
+  ? new Intl.DateTimeFormat('zh-CN', { year:'numeric', month:'long', day:'numeric' }).format(new Date(value))
+  : '';
+
 const articleLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -31,15 +36,19 @@ const articleLd = {
 };
 ---
 <BaseLayout title={`${article.title} | Kvisl`} description={article.dek} image={article.cover_url} article>
-  <main class="article-shell">
-    <header class="article-head">
+  <main class="article-page">
+    <header class="article-head container">
       <div class="topic">{article.topic}</div>
       <h1>{article.title}</h1>
       <p class="dek">{article.dek}</p>
       <p class="article-meta">{article.author}{article.published_at ? ` · ${fmt(article.published_at)}` : ''}</p>
     </header>
-    {article.cover_url && <img class="article-cover" src={article.cover_url} alt={article.cover_alt} fetchpriority="high" />}
-    {article.cover_credit && <p class="media-credit" style="text-align:center">{article.cover_credit}</p>}
+    {article.cover_url && (
+      <figure class="article-cover-wrap">
+        <img class="article-cover" src={article.cover_url} alt={article.cover_alt} fetchpriority="high" />
+        {article.cover_credit && <figcaption>{article.cover_credit}</figcaption>}
+      </figure>
+    )}
     <article class="article-copy" set:html={safeBody} />
     <script type="application/ld+json" set:html={JSON.stringify(articleLd)}></script>
   </main>

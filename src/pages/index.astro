@@ -1,88 +1,56 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SubscribeForm from '../components/SubscribeForm.astro';
 import { getPublishedArticles } from '../lib/db';
 
 const articles = await getPublishedArticles(8);
-const hero = articles.find((article) => article.featured) ?? articles[0];
-const stories = articles.filter((article) => article.slug !== hero?.slug).slice(0, 6);
-const topics = ['Philosophy & Ideas', 'Science & Nature', 'Society & Culture', 'Art & Attention'];
-
+const latest = articles[0];
+const stories = articles.slice(1, 7);
 const fmt = (value: string | null) => value
   ? new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
-  : 'Kvisl';
+  : '';
 ---
 <BaseLayout>
-  <main>
-    {hero && (
-      <section class="hero">
-        <div class="container hero-grid">
-          <div>
-            <div class="hero-kicker">{hero.topic}</div>
-            <h1><a href={`/essay/${hero.slug}`}>{hero.title}</a></h1>
-            <p class="hero-dek">{hero.dek}</p>
-            <p class="byline">{hero.author} · {fmt(hero.published_at)}</p>
-          </div>
-          <a class="hero-media" href={`/essay/${hero.slug}`}>
-            {hero.cover_url
-              ? <img src={hero.cover_url} alt={hero.cover_alt} loading="eager" fetchpriority="high" />
-              : <img src="/icon.svg" alt="Kvisl" loading="eager" />}
-            {hero.cover_credit && <p class="media-credit">{hero.cover_credit}</p>}
-          </a>
+  <main class="home-main">
+    {latest && (
+      <a class="home-hero" href={`/essay/${latest.slug}`} aria-label={`阅读：${latest.title}`}>
+        {latest.cover_url
+          ? <img src={latest.cover_url} alt={latest.cover_alt} loading="eager" fetchpriority="high" />
+          : <img src="/icon.svg" alt="Kvisl" loading="eager" />}
+        <div class="home-hero-shade"></div>
+        <div class="container home-hero-content">
+          <p class="home-hero-kicker">{latest.topic}</p>
+          <h1>{latest.title}</h1>
+          <p class="home-hero-dek">{latest.dek}</p>
+          <p class="home-hero-meta">{latest.author}{latest.published_at ? ` · ${fmt(latest.published_at)}` : ''}</p>
+        </div>
+        {latest.cover_credit && <span class="home-credit">{latest.cover_credit}</span>}
+      </a>
+    )}
+
+    {stories.length > 0 && (
+      <section class="container home-essays">
+        <div class="section-heading">
+          <h2>Essays / 长文</h2>
+          <a href="/archive">档案 →</a>
+        </div>
+        <div class="story-grid">
+          {stories.map((story) => (
+            <article class="story-card">
+              <a href={`/essay/${story.slug}`}>
+                {story.cover_url && <img src={story.cover_url} alt={story.cover_alt} loading="lazy" />}
+                <div class="eyebrow">{story.topic}</div>
+                <h3>{story.title}</h3>
+                <p>{story.dek}</p>
+                <div class="story-meta"><span>{story.author}</span><span>{fmt(story.published_at)}</span></div>
+              </a>
+            </article>
+          ))}
         </div>
       </section>
     )}
 
-    <section class="container intro-strip section-rule" aria-label="Kvisl 宣言">
-      <p class="intro-tagline">To attend is to inhabit.</p>
-      <p class="intro-copy">探索人与世界的存在。Kvisl 是一个由成员运营的独立非盈利组织。拒绝碎片化喧嚣，只为纯粹的思考与探索而存在。</p>
-    </section>
-
-    <section class="container section-rule">
-      <div class="section-heading">
-        <h2>Essays / 长文</h2>
-        <a href="/archive">查看全部档案 →</a>
-      </div>
-      <div class="story-grid">
-        {stories.length > 0 ? stories.map((story) => (
-          <article class="story-card">
-            <a href={`/essay/${story.slug}`}>
-              {story.cover_url && <img src={story.cover_url} alt={story.cover_alt} loading="lazy" />}
-              <div class="eyebrow">{story.topic}</div>
-              <h3>{story.title}</h3>
-              <p>{story.dek}</p>
-              <div class="story-meta"><span>{story.author}</span><span>{fmt(story.published_at)}</span></div>
-            </a>
-          </article>
-        )) : (
-          <article class="story-card">
-            <div class="eyebrow">Editorial</div>
-            <h3>慢下来，不等于退出世界。</h3>
-            <p>Kvisl 选择长文、论证与持续的注意力。更多文章发布后会自动进入这里。</p>
-          </article>
-        )}
-      </div>
-    </section>
-
-    <section class="container topics">
-      <div class="section-heading section-rule"><h2>Fields / 领域</h2></div>
-      <div class="topic-list">
-        {topics.map((topic, i) => (
-          <a href={`/search?q=${encodeURIComponent(topic.split(' & ')[0])}`}>
-            <span class="num">0{i + 1}</span><strong>{topic}</strong><span>Explore →</span>
-          </a>
-        ))}
-      </div>
-    </section>
-
-    <section class="container" id="subscribe">
-      <div class="membership-block">
-        <h2>Read slowly.<br />Stay with it.</h2>
-        <div>
-          <p>Kvisl 不做信息流。订阅只会在值得打扰你的时候出现。成员支持用于编辑、研究与独立出版。</p>
-          <SubscribeForm />
-        </div>
-      </div>
+    <section class="container home-archive-strip">
+      <a href="/archive"><span>Archive</span><strong>查看全部文章</strong><span>→</span></a>
     </section>
   </main>
 </BaseLayout>
