@@ -84,6 +84,55 @@ img { display: block; max-width: 100%; }
   letter-spacing: -.05em;
 }
 
+
+/* One-click vertical arrow to the bottom of the page. */
+.scroll-to-bottom {
+  position: fixed;
+  right: max(14px, env(safe-area-inset-right));
+  top: 50%;
+  top: 50dvh;
+  z-index: 43;
+  width: 44px;
+  height: 92px;
+  transform: translateY(-50%);
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #fff;
+  opacity: .52;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  mix-blend-mode: difference;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.scroll-to-bottom[hidden] { display: none; }
+.scroll-to-bottom:hover { opacity: .9; }
+.scroll-to-bottom:active { transform: translateY(-50%) translateY(2px); }
+.scroll-arrow-line {
+  width: 1.5px;
+  height: 36px;
+  background: currentColor;
+}
+.scroll-arrow-head {
+  width: 12px;
+  height: 12px;
+  margin-top: -7px;
+  border-right: 1.8px solid currentColor;
+  border-bottom: 1.8px solid currentColor;
+  transform: rotate(45deg);
+}
+.scroll-to-bottom:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -7px;
+  border-radius: 999px;
+}
+
 /* Home */
 .home-main { padding-top: var(--header-h); }
 .latest-image { display: block; width: 100%; background: var(--paper-2); overflow: hidden; }
@@ -496,6 +545,8 @@ img { display: block; max-width: 100%; }
 
   .container { width: calc(100% - 28px); }
   .wordmark { font-size: 2.05rem; }
+  .scroll-to-bottom { right: max(6px, env(safe-area-inset-right)); width: 40px; height: 82px; }
+  .scroll-arrow-line { height: 32px; }
   .latest-image img,
   .article-cover { aspect-ratio: 16 / 9; }
 
