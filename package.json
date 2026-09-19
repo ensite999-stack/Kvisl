@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/vercel": "^8.2.6",
     "@neondatabase/serverless": "^1.0.1",
     "astro": "^5.13.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "@astrojs/netlify": "^6.6.5"
   },
   "devDependencies": {}
 }
