@@ -1,13 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleLabel from '../components/ArticleLabel.astro';
 import { getPublishedArticles } from '../lib/db';
 
 const articles = await getPublishedArticles(8);
 const latest = articles[0];
 const stories = articles.slice(1, 7);
-const fmt = (value: string | null) => value
-  ? new Intl.DateTimeFormat('en-GB', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value))
-  : '';
 ---
 <BaseLayout>
   <main class="home-main">
@@ -19,11 +17,10 @@ const fmt = (value: string | null) => value
             : <img src="/icon.svg" alt="Kvisl" loading="eager" />}
         </a>
         <div class="container latest-copy">
-          <p class="latest-topic">{latest.topic}</p>
+          <ArticleLabel type={latest.article_type} category={latest.topic} />
           <h1><a href={'/essay/' + latest.slug}>{latest.title}</a></h1>
           <p class="latest-dek">{latest.dek}</p>
-          <p class="latest-meta">{latest.author}{latest.published_at ? ' · ' + fmt(latest.published_at) : ''}</p>
-          {latest.cover_credit && <p class="latest-credit">{latest.cover_credit}</p>}
+          <p class="latest-meta">{latest.author}</p>
         </div>
       </section>
     )}
@@ -39,10 +36,10 @@ const fmt = (value: string | null) => value
             <article class="story-card">
               <a href={'/essay/' + story.slug}>
                 {story.cover_url && <img src={story.cover_url} alt={story.cover_alt} loading="lazy" />}
-                <div class="eyebrow">{story.topic}</div>
+                <ArticleLabel type={story.article_type} category={story.topic} />
                 <h3>{story.title}</h3>
                 <p>{story.dek}</p>
-                <div class="story-meta"><span>{story.author}</span><span>{fmt(story.published_at)}</span></div>
+                <div class="story-meta"><span>{story.author}</span></div>
               </a>
             </article>
           ))}
