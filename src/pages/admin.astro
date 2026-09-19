@@ -1,21 +1,49 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { ADMIN_COOKIE, adminPasswordValid } from '../lib/admin-auth';
 import { deleteAdminArticle, getAdminArticle, getAdminArticles, saveAdminArticle } from '../lib/db';
 
 let error = '';
 const saved = Astro.url.searchParams.get('saved') === '1';
 const deleted = Astro.url.searchParams.get('deleted') === '1';
+let authorized = adminPasswordValid(Astro.cookies.get(ADMIN_COOKIE)?.value ?? '');
 
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const action = String(form.get('action') ?? 'save');
+
+  if (action === 'login') {
+    const password = String(form.get('password') ?? '');
+    if (adminPasswordValid(password)) {
+      Astro.cookies.set(ADMIN_COOKIE, password, {
+        path: '/admin',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 12
+      });
+      return Astro.redirect('/admin', 303);
+    }
+    error = 'Incorrect password.';
+  }
+
+  if (action === 'logout') {
+    Astro.cookies.delete(ADMIN_COOKIE, { path: '/admin' });
+    return Astro.redirect('/admin', 303);
+  }
+
+  if (action !== 'login' && !authorized) {
+    error = 'Sign in to continue.';
+  }
+
   const slug = String(form.get('slug') ?? '').trim();
 
-  if (action === 'delete') {
+  if (authorized && action === 'delete') {
     if (slug) await deleteAdminArticle(slug);
     return Astro.redirect('/admin?deleted=1', 303);
   }
 
+  if (authorized && action !== 'login') {
   const title = String(form.get('title') ?? '').trim();
   const author = String(form.get('author') ?? '').trim();
   const dek = String(form.get('dek') ?? '').trim();
@@ -68,18 +96,38 @@ if (Astro.request.method === 'POST') {
 
     return Astro.redirect('/admin?edit=' + encodeURIComponent(savedSlug) + '&saved=1', 303);
   }
+  }
 }
 
-const articles = await getAdminArticles();
+authorized = adminPasswordValid(Astro.cookies.get(ADMIN_COOKIE)?.value ?? '');
+const articles = authorized ? await getAdminArticles() : [];
 const newArticle = Astro.url.searchParams.get('new') === '1';
 const requestedSlug = Astro.url.searchParams.get('edit');
 const selectedSlug = newArticle ? '' : (requestedSlug || articles[0]?.slug || '');
-const article = selectedSlug ? await getAdminArticle(selectedSlug) : null;
+const article = authorized && selectedSlug ? await getAdminArticle(selectedSlug) : null;
 const today = new Date().toISOString().slice(0, 10);
 const publishedDate = article?.published_at ? new Date(article.published_at).toISOString().slice(0, 10) : today;
 ---
 <BaseLayout title="Editorial | Kvisl" description="Kvisl modular editorial workspace." noindex>
   <main class="admin-page">
+    {!authorized ? (
+      <section class="admin-lock">
+        <div class="admin-lock-card">
+          <p class="eyebrow">Editorial</p>
+          <h1>Sign in</h1>
+          <p>Enter the editorial password to access the Kvisl publishing workspace.</p>
+          <form class="admin-login" method="post">
+            <input type="hidden" name="action" value="login" />
+            <label>
+              <span>Password</span>
+              <input type="password" name="password" required autocomplete="current-password" autofocus />
+            </label>
+            {error && <p class="form-error">{error}</p>}
+            <button type="submit">Sign in</button>
+          </form>
+        </div>
+      </section>
+    ) : (
     <div class="admin-workspace">
       <aside class="admin-library">
         <div class="admin-library-head">
@@ -87,7 +135,13 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
             <p class="eyebrow">Editorial</p>
             <h1>Articles</h1>
           </div>
-          <a class="admin-new" href="/admin?new=1">New</a>
+          <div class="admin-library-actions">
+            <a class="admin-new" href="/admin?new=1">New</a>
+            <form method="post">
+              <input type="hidden" name="action" value="logout" />
+              <button type="submit">Sign out</button>
+            </form>
+          </div>
         </div>
 
         <div class="admin-library-list">
@@ -237,6 +291,7 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
                     <option value="cursor">Image: at cursor</option>
                   </select>
                   <button type="button" data-image-url>Image link</button>
+                  <button type="button" data-remove-image disabled>Remove image</button>
                   <label class="toolbar-upload">
                     Upload image
                     <input type="file" accept="image/*" data-body-image hidden />
@@ -259,7 +314,7 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
                 ></div>
               </div>
 
-              <p class="editor-help">The body stays inside a fixed scrollable frame. Paste plain text to turn paragraphs into article blocks automatically. Images can be uploaded or inserted from a link.</p>
+              <p class="editor-help">The body stays inside a fixed scrollable frame. Paste plain text to turn paragraphs into article blocks automatically. Images can be uploaded or inserted from a link. Tap an image to select it, then use Remove image.</p>
             </section>
 
             <section class="editor-module">
@@ -283,6 +338,7 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
         </form>
       </section>
     </div>
+    )}
   </main>
 
   <script>
@@ -295,8 +351,10 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
     const coverLink = document.querySelector('[data-cover-link]');
     const coverPreviewWrap = document.querySelector('[data-cover-preview-wrap]');
     const imagePosition = document.querySelector('[data-image-position]');
+    const removeImageButton = document.querySelector('[data-remove-image]');
 
     let savedRange: Range | null = null;
+    let selectedFigure: HTMLElement | null = null;
 
     const rememberSelection = () => {
       if (!(editor instanceof HTMLElement)) return;
@@ -384,9 +442,19 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       refreshImagePositions();
     };
 
+    const setSelectedFigure = (figure: HTMLElement | null) => {
+      selectedFigure?.classList.remove('editor-selected-figure');
+      selectedFigure = figure;
+      selectedFigure?.classList.add('editor-selected-figure');
+      if (removeImageButton instanceof HTMLButtonElement) {
+        removeImageButton.disabled = !selectedFigure;
+      }
+    };
+
     const syncBody = () => {
       if (!(editor instanceof HTMLElement) || !(bodyField instanceof HTMLTextAreaElement)) return;
       normalizeEditor();
+      editor.querySelectorAll('.editor-selected-figure').forEach((node) => node.classList.remove('editor-selected-figure'));
       bodyField.value = editor.innerHTML.trim();
     };
 
@@ -502,6 +570,24 @@ const publishedDate = article?.published_at ? new Date(article.published_at).toI
       setCover('');
       if (coverLink instanceof HTMLInputElement) coverLink.value = '';
       if (coverFile instanceof HTMLInputElement) coverFile.value = '';
+    });
+
+    editor?.addEventListener('click', (event) => {
+      if (!(event.target instanceof Element)) return;
+      const figure = event.target.closest('figure');
+      setSelectedFigure(figure instanceof HTMLElement ? figure : null);
+    });
+
+    removeImageButton?.addEventListener('click', () => {
+      if (!selectedFigure) return;
+      const next = selectedFigure.nextElementSibling;
+      selectedFigure.remove();
+      if (next instanceof HTMLParagraphElement && !next.textContent?.trim() && next.querySelector('br')) {
+        next.remove();
+      }
+      setSelectedFigure(null);
+      refreshImagePositions();
+      editor instanceof HTMLElement && editor.focus();
     });
 
     const bodyImage = document.querySelector('[data-body-image]');

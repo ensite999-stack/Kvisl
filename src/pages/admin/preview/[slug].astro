@@ -1,7 +1,12 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ArticleLabel from '../../../components/ArticleLabel.astro';
+import { ADMIN_COOKIE, adminPasswordValid } from '../../../lib/admin-auth';
 import { getAdminArticle } from '../../../lib/db';
+
+if (!adminPasswordValid(Astro.cookies.get(ADMIN_COOKIE)?.value ?? '')) {
+  return Astro.redirect('/admin');
+}
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect('/admin');
